@@ -14,6 +14,8 @@ import { useTheme } from '../../context/ThemeContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { destinations } from '../../data/destinations';
 import { DestinationCard } from '../../components/DestinationCard';
+import { GemmaAIFloatingButton } from '../../components/GemmaAIFloatingButton';
+import { GemmaAssistantModal } from '../../components/GemmaAssistantModal';
 
 const categories = ['All', 'Beaches', 'Nature', 'Heritage', 'Spiritual', 'Hidden Gems'];
 const crowdFilters = ['All Crowds', '🟢 Low Crowd Only', '🟡 Moderate', '🔴 High'];
@@ -26,6 +28,7 @@ export const ExploreScreen = ({ navigation }) => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedCrowd, setSelectedCrowd] = useState('All Crowds');
   const [ecoOnly, setEcoOnly] = useState(false);
+  const [gemmaModalVisible, setGemmaModalVisible] = useState(false);
 
   const filtered = destinations.filter((dest) => {
     // Search filter
@@ -222,6 +225,20 @@ export const ExploreScreen = ({ navigation }) => {
 
         <View style={{ height: 40 }} />
       </ScrollView>
+
+      {/* Floating Gemma AI Assistant Pop-up Button */}
+      <GemmaAIFloatingButton
+        bottomOffset={24}
+        rightOffset={18}
+        onPress={() => setGemmaModalVisible(true)}
+      />
+
+      {/* Google Gemma AI Assistant Interactive Pop-up Modal */}
+      <GemmaAssistantModal
+        visible={gemmaModalVisible}
+        onClose={() => setGemmaModalVisible(false)}
+        navigation={navigation}
+      />
     </SafeAreaView>
   );
 };

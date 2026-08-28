@@ -15,6 +15,7 @@ import * as Speech from 'expo-speech';
 import { useTheme } from '../../context/ThemeContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTrips } from '../../context/TripContext';
+import { queryGemmaAssistant, GEMMA_MODEL_VERSION } from '../../utils/gemmaAI';
 
 const quickPrompts = [
   'Suggest places near me',
@@ -27,16 +28,17 @@ const quickPrompts = [
 export const AIAssistantScreen = ({ navigation }) => {
   const { theme } = useTheme();
   const { currentLanguage } = useLanguage();
-  const { activeTrip, applyWeatherAdjustment } = useTrips();
+  const { activeTrip, applyWeatherAdjustment, optimizeBudget } = useTrips();
   const scrollViewRef = useRef(null);
 
   const [inputMessage, setInputMessage] = useState('');
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState([
     {
       id: '1',
       sender: 'ai',
-      text: 'Namaste! I am SmartTour AI 🤖. How can I help you explore, optimize budgets, or adjust your travel itinerary today?',
+      text: `Namaste! I am **SmartTour Gemma AI** 🤖 (powered by Google Gemma architecture).\n\nHow can I help you explore destinations, optimize budgets, or dynamically adapt your travel itinerary today?`,
       time: '10:00 AM',
     },
   ]);
@@ -48,7 +50,8 @@ export const AIAssistantScreen = ({ navigation }) => {
         setIsSpeaking(false);
       } else {
         setIsSpeaking(true);
-        Speech.speak(text, {
+        const cleanText = text.replace(/\*\*/g, '').replace(/•/g, '');
+        Speech.speak(cleanText, {
           language: currentLanguage === 'hi' ? 'hi-IN' : 'en-IN',
           onDone: () => setIsSpeaking(false),
           onError: () => setIsSpeaking(false),
@@ -60,7 +63,7 @@ export const AIAssistantScreen = ({ navigation }) => {
     }
   };
 
-  const handleSend = (textToSend) => {
+  const handleSend = async (textToSend) => {
     const query = (textToSend || inputMessage).trim();
     if (!query) return;
 
@@ -73,43 +76,48 @@ export const AIAssistantScreen = ({ navigation }) => {
 
     setMessages((prev) => [...prev, userMsg]);
     setInputMessage('');
+    setLoading(true);
 
-    // Generate intelligent contextual response
-    setTimeout(() => {
-      let aiReply = '';
-      const lower = query.toLowerCase();
-
-      if (lower.includes('near me') || lower.includes('places near')) {
-        aiReply =
-          '📍 Here are 5 prime attractions near your location in Visakhapatnam:\n1. INS Kursura Submarine Museum (1.2 km)\n2. RK Beach Promenade (1.5 km)\n3. TU 142 Aircraft Simulator (2.1 km)\n4. Kailasagiri Hilltop Ropeway (4.5 km)\n5. Ross Hill Viewpoint (6.0 km)';
-      } else if (lower.includes('2,000') || lower.includes('2000') || lower.includes('budget') || lower.includes('remaining')) {
-        aiReply =
-          '💰 With your remaining ₹2,000 budget, you can comfortably:\n• Visit TU 142 Museum (₹50)\n• Enjoy authentic Andhra Banana-Leaf Thali at Andhra Ruchulu (₹350)\n• Buy genuine Etikoppaka lacquer craft toys (₹600)\n• Hop on the Eco EV Beach Shuttle (₹40)\n\nYou will still have ~₹960 left for souvenirs!';
-      } else if (lower.includes('rain') || lower.includes('weather') || lower.includes('tomorrow')) {
-        applyWeatherAdjustment();
-        aiReply =
-          '🌧️ I checked the weather radar! Heavy showers are expected tomorrow afternoon. I have automatically updated your itinerary by swapping the outdoor Kailasagiri hilltop trek for the air-conditioned INS Kursura Submarine and Visakha Heritage Arts Pavilion.';
-      } else if (lower.includes('coffee') || lower.includes('craft') || lower.includes('store') || lower.includes('artisan')) {
-        aiReply =
-          '☕ & 🎨 Here are verified local cooperatives:\n• Araku Organic Tribal Coffee & Spices Co-op (Shade grown Arabica beans)\n• Etikoppaka Lacquer Wooden Toy Artisans (Natural vegetable dyes)\n• Bagru Block Printing Studio\nAll sales directly support indigenous village families!';
-      } else if (lower.includes('crowd') || lower.includes('alternative') || lower.includes('gems')) {
-        aiReply =
-          '💎 To escape peak crowds at RK Beach & Tirumala, consider these serene alternatives:\n• Yarada Golden Beach (75% lower density)\n• Chandragiri Vijayanagara Fort (Peaceful royal gardens)\n• Araku Valley Organic Belt (Zero over-tourism)';
-      } else {
-        aiReply =
-          `I understand you are asking about "${query}". In SmartTour SIH 2026, I can help you find certified eco-hotels, compare multi-modal trains vs buses, rebalance budgets, and issue your Digital Tourism Pass!`;
-      }
+    try {
+      const response = await queryGemmaAssistant({
+        prompt: query,
+        activeTrip,
+        userLanguage: currentLanguage,
+      });
 
       const aiMsg = {
         id: `msg_ai_${Date.now()}`,
         sender: 'ai',
-        text: aiReply,
+        text: response.text,
+        actionSuggestion: response.actionSuggestion,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
 
       setMessages((prev) => [...prev, aiMsg]);
-      speakText(aiReply);
-    }, 500);
+      setLoading(false);
+      speakText(response.text);
+    } catch (err) {
+      setLoading(false);
+    }
+  };
+
+  const handleAction = (action) => {
+    if (!action) return;
+    if (action.type === 'APPLY_WEATHER_SWAP') {
+      applyWeatherAdjustment();
+      alert('🌧️ Weather adjustment applied to your itinerary!');
+    } else if (action.type === 'OPTIMIZE_BUDGET') {
+      optimizeBudget();
+      alert('💰 Budget optimization applied!');
+    } else if (action.type === 'EXPLORE_GEMS') {
+      navigation.navigate('HiddenGems');
+    } else if (action.type === 'VIEW_BUSINESSES') {
+      navigation.navigate('LocalBusiness');
+    } else if (action.type === 'OPEN_MAP') {
+      navigation.navigate('SmartMap');
+    } else if (action.type === 'OPEN_PLANNER') {
+      navigation.navigate('TripPlannerWizard');
+    }
   };
 
   return (
@@ -122,10 +130,13 @@ export const AIAssistantScreen = ({ navigation }) => {
         <View style={styles.headerTitleWrap}>
           <View style={styles.botRow}>
             <View style={[styles.botDot, { backgroundColor: theme.ecoGreen }]} />
-            <Text style={[styles.headerTitle, { color: theme.text }]}>SmartTour AI</Text>
+            <Text style={[styles.headerTitle, { color: theme.text }]}>SmartTour Gemma AI</Text>
+            <View style={styles.gemmaBadge}>
+              <Text style={styles.gemmaBadgeText}>Google Gemma</Text>
+            </View>
           </View>
           <Text style={[styles.headerSub, { color: theme.textSecondary }]}>
-            Active Assistant • Multilingual & Voice Ready
+            {GEMMA_MODEL_VERSION} • Multilingual & Voice
           </Text>
         </View>
         <TouchableOpacity
@@ -201,6 +212,19 @@ export const AIAssistantScreen = ({ navigation }) => {
                     >
                       {msg.text}
                     </Text>
+
+                    {/* Action Suggestion Button */}
+                    {msg.actionSuggestion && (
+                      <TouchableOpacity
+                        activeOpacity={0.8}
+                        onPress={() => handleAction(msg.actionSuggestion)}
+                        style={[styles.actionCta, { backgroundColor: theme.primary }]}
+                      >
+                        <Ionicons name="flash" size={13} color="#FFFFFF" />
+                        <Text style={styles.actionCtaText}>{msg.actionSuggestion.label}</Text>
+                      </TouchableOpacity>
+                    )}
+
                     <Text
                       style={[
                         styles.timeText,
@@ -213,6 +237,19 @@ export const AIAssistantScreen = ({ navigation }) => {
                 </View>
               );
             })}
+
+            {loading && (
+              <View style={styles.loadingRow}>
+                <View style={[styles.avatarBox, { backgroundColor: theme.primaryLight }]}>
+                  <Ionicons name="sparkles" size={14} color={theme.primary} />
+                </View>
+                <View style={[styles.bubble, styles.aiBubble, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                  <Text style={[styles.bubbleText, { color: theme.textSecondary, fontStyle: 'italic' }]}>
+                    Gemma AI is analyzing travel parameters...
+                  </Text>
+                </View>
+              </View>
+            )}
           </View>
         </ScrollView>
 
@@ -228,7 +265,7 @@ export const AIAssistantScreen = ({ navigation }) => {
           <TextInput
             value={inputMessage}
             onChangeText={setInputMessage}
-            placeholder="Ask SmartTour AI anything..."
+            placeholder="Ask Gemma about budget, rain, hidden gems..."
             placeholderTextColor={theme.textMuted}
             style={[styles.inputField, { color: theme.text, backgroundColor: theme.cardSecondary }]}
             onSubmitEditing={() => handleSend()}
@@ -280,12 +317,42 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
+  },
+  gemmaBadge: {
+    backgroundColor: '#CCFBF1',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  gemmaBadgeText: {
+    color: '#0F766E',
+    fontSize: 10,
+    fontWeight: '800',
   },
   headerSub: {
     fontSize: 11,
     marginTop: 1,
+  },
+  actionCta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  actionCtaText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  loadingRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 8,
   },
   voiceBtn: {
     width: 36,

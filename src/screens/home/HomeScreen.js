@@ -20,6 +20,8 @@ import { DestinationCard } from '../../components/DestinationCard';
 import { WeatherAlertCard } from '../../components/WeatherAlertCard';
 import { EcoScoreBadge } from '../../components/EcoScoreBadge';
 import { Button } from '../../components/Button';
+import { GemmaAIFloatingButton } from '../../components/GemmaAIFloatingButton';
+import { GemmaAssistantModal } from '../../components/GemmaAssistantModal';
 
 export const HomeScreen = ({ navigation }) => {
   const { theme } = useTheme();
@@ -27,6 +29,7 @@ export const HomeScreen = ({ navigation }) => {
   const { activeTrip, applyWeatherAdjustment } = useTrips();
   const [searchQuery, setSearchQuery] = useState('');
   const [weatherApplied, setWeatherApplied] = useState(false);
+  const [gemmaModalVisible, setGemmaModalVisible] = useState(false);
 
   const filteredDestinations = destinations.filter((d) =>
     d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -271,6 +274,13 @@ export const HomeScreen = ({ navigation }) => {
         <View style={{ height: 40 }} />
       </ScrollView>
 
+      {/* Floating Gemma AI Assistant Pop-up Button (Placed directly above SOS) */}
+      <GemmaAIFloatingButton
+        bottomOffset={76}
+        rightOffset={18}
+        onPress={() => setGemmaModalVisible(true)}
+      />
+
       {/* Floating Emergency SOS Quick Button */}
       <TouchableOpacity
         activeOpacity={0.9}
@@ -280,6 +290,13 @@ export const HomeScreen = ({ navigation }) => {
         <Ionicons name="warning" size={20} color="#FFFFFF" />
         <Text style={styles.floatingSOSText}>SOS</Text>
       </TouchableOpacity>
+
+      {/* Google Gemma AI Assistant Interactive Pop-up Modal */}
+      <GemmaAssistantModal
+        visible={gemmaModalVisible}
+        onClose={() => setGemmaModalVisible(false)}
+        navigation={navigation}
+      />
     </SafeAreaView>
   );
 };
