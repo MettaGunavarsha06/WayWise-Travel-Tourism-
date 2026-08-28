@@ -79,25 +79,26 @@ export const ProfileScreen = ({ navigation }) => {
   const [targetLang, setTargetLang] = useState('hi');
 
   // --- EDIT PROFILE HANDLERS ---
-  const handlePickImageFromGallery = async () => {
+  const pickImageFromGallery = async () => {
     try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permission Denied', 'Gallery access permission is needed to choose a profile photo.');
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (permissionResult.granted === false) {
+        Alert.alert('Permission Required', 'Permission to access your photo gallery is required to pick a profile picture.');
         return;
       }
+
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
       });
+
       if (!result.canceled && result.assets && result.assets.length > 0) {
         setEditAvatar(result.assets[0].uri);
       }
     } catch (err) {
-      console.warn('Image picker error', err);
-      Alert.alert('Selection Error', 'Could not select photo from gallery.');
+      Alert.alert('Error', 'Could not open photo gallery. Please try again.');
     }
   };
 
@@ -567,11 +568,11 @@ export const ProfileScreen = ({ navigation }) => {
 
                   <View style={styles.avatarBtnRow}>
                     <TouchableOpacity
-                      onPress={handlePickImageFromGallery}
+                      onPress={pickImageFromGallery}
                       style={[styles.smallActionBtn, { backgroundColor: theme.primaryLight, borderColor: theme.primary }]}
                     >
-                      <Ionicons name="images-outline" size={14} color={theme.primaryDark} />
-                      <Text style={[styles.smallActionBtnText, { color: theme.primaryDark }]}>Upload from Gallery</Text>
+                      <Ionicons name="image-outline" size={14} color={theme.primaryDark} />
+                      <Text style={[styles.smallActionBtnText, { color: theme.primaryDark }]}>Upload Photo</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
