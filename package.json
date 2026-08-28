@@ -15,6 +15,7 @@
     "@react-navigation/native": "^6.1.18",
     "@react-navigation/native-stack": "^6.10.1",
     "babel-preset-expo": "^57.0.9",
+    "buffer": "^6.0.3",
     "expo": "^57.0.17",
     "expo-asset": "^57.0.15",
     "expo-constants": "^57.0.15",
