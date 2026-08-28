@@ -6,8 +6,8 @@ import { useTheme } from '../context/ThemeContext';
 export const Button = ({
   title,
   onPress,
-  variant = 'primary', // primary | secondary | outline | eco | danger | ghost
-  size = 'medium', // small | medium | large
+  variant = 'primary', // primary | secondary | eco | outline | danger | ghost
+  size = 'medium',     // small | medium | large
   icon,
   iconRight,
   loading = false,
@@ -20,61 +20,49 @@ export const Button = ({
   const getBackgroundColor = () => {
     if (disabled) return theme.border;
     switch (variant) {
-      case 'primary':
-        return theme.primary;
-      case 'secondary':
-        return theme.secondary;
-      case 'eco':
-        return theme.ecoGreen;
-      case 'danger':
-        return theme.error;
+      case 'primary':  return theme.primary;
+      case 'secondary': return theme.secondary;
+      case 'eco':      return theme.ecoGreen;
+      case 'danger':   return theme.error;
       case 'outline':
-      case 'ghost':
-        return 'transparent';
-      default:
-        return theme.primary;
+      case 'ghost':    return 'transparent';
+      default:         return theme.primary;
     }
   };
 
   const getTextColor = () => {
     if (disabled) return theme.textMuted;
     switch (variant) {
-      case 'outline':
-        return theme.primary;
-      case 'ghost':
-        return theme.text;
-      case 'secondary':
-        return '#0F172A';
-      default:
-        return '#FFFFFF';
+      case 'outline': return theme.primary;
+      case 'ghost':   return theme.text;
+      default:        return '#FFFFFF';
     }
+  };
+
+  const getBorderColor = () => {
+    if (variant === 'outline') return theme.primary;
+    return 'transparent';
   };
 
   const getPadding = () => {
     switch (size) {
-      case 'small':
-        return { paddingVertical: 8, paddingHorizontal: 14 };
-      case 'large':
-        return { paddingVertical: 16, paddingHorizontal: 24 };
-      default:
-        return { paddingVertical: 12, paddingHorizontal: 18 };
+      case 'small':  return { paddingVertical: 8, paddingHorizontal: 14 };
+      case 'large':  return { paddingVertical: 15, paddingHorizontal: 24 };
+      default:       return { paddingVertical: 12, paddingHorizontal: 18 };
     }
   };
 
   const getFontSize = () => {
     switch (size) {
-      case 'small':
-        return 13;
-      case 'large':
-        return 16;
-      default:
-        return 14;
+      case 'small': return 13;
+      case 'large': return 15;
+      default:      return 14;
     }
   };
 
   return (
     <TouchableOpacity
-      activeOpacity={0.8}
+      activeOpacity={0.82}
       onPress={onPress}
       disabled={disabled || loading}
       style={[
@@ -82,8 +70,9 @@ export const Button = ({
         getPadding(),
         {
           backgroundColor: getBackgroundColor(),
-          borderColor: variant === 'outline' ? theme.primary : 'transparent',
+          borderColor: getBorderColor(),
           borderWidth: variant === 'outline' ? 1.5 : 0,
+          opacity: disabled ? 0.55 : 1,
         },
         style,
       ]}
@@ -95,7 +84,7 @@ export const Button = ({
           {icon && (
             <Ionicons
               name={icon}
-              size={getFontSize() + 4}
+              size={getFontSize() + 3}
               color={getTextColor()}
               style={styles.leftIcon}
             />
@@ -106,6 +95,7 @@ export const Button = ({
               {
                 color: getTextColor(),
                 fontSize: getFontSize(),
+                fontFamily: 'Manrope_600SemiBold',
               },
               textStyle,
             ]}
@@ -115,7 +105,7 @@ export const Button = ({
           {iconRight && (
             <Ionicons
               name={iconRight}
-              size={getFontSize() + 4}
+              size={getFontSize() + 3}
               color={getTextColor()}
               style={styles.rightIcon}
             />
@@ -128,7 +118,7 @@ export const Button = ({
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: 12,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
@@ -139,7 +129,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   text: {
-    fontWeight: '600',
     textAlign: 'center',
   },
   leftIcon: {

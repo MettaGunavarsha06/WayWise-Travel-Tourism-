@@ -4,12 +4,12 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  SafeAreaView,
   TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Speech from 'expo-speech';
 import { useTheme } from '../../context/ThemeContext';

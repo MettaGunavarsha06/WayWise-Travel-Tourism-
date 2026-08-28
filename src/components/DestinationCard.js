@@ -25,19 +25,19 @@ export const DestinationCard = ({ destination, onPress, style, horizontal = fals
         ]}
       >
         <Image source={{ uri: destination.image }} style={styles.horizontalImage} />
-        <View style={styles.horizontalContent}>
-          <View style={styles.topRow}>
-            <Text style={[styles.name, { color: theme.text }]} numberOfLines={1}>
-              {destination.name}
-            </Text>
-            <View style={styles.ratingRow}>
-              <Ionicons name="star" size={13} color="#F59E0B" />
-              <Text style={[styles.rating, { color: theme.text }]}>{destination.rating}</Text>
-            </View>
-          </View>
+        {/* Overlay rating badge */}
+        <View style={styles.hOverlayRating}>
+          <Ionicons name="star" size={11} color="#F59E0B" />
+          <Text style={styles.hOverlayRatingText}>{destination.rating}</Text>
+        </View>
 
+        <View style={styles.horizontalContent}>
+          <Text style={[styles.name, { color: theme.text }]} numberOfLines={1}>
+            {destination.name}
+          </Text>
           <Text style={[styles.location, { color: theme.textSecondary }]} numberOfLines={1}>
-            {destination.state} • {destination.category}
+            <Ionicons name="location-outline" size={11} color={theme.textMuted} />{' '}
+            {destination.state}
           </Text>
 
           {destination.isHiddenGem && destination.alternativeTo ? (
@@ -54,7 +54,7 @@ export const DestinationCard = ({ destination, onPress, style, horizontal = fals
           <View style={styles.bottomRow}>
             <Text style={[styles.cost, { color: theme.primary }]}>
               {formatCurrency(destination.estimatedCost)}
-              <Text style={[styles.perPerson, { color: theme.textSecondary }]}> / trip</Text>
+              <Text style={[styles.perPerson, { color: theme.textMuted }]}> / trip</Text>
             </Text>
             <Text style={[styles.duration, { color: theme.textSecondary }]}>
               {destination.duration}
@@ -81,11 +81,14 @@ export const DestinationCard = ({ destination, onPress, style, horizontal = fals
     >
       <View style={styles.imageContainer}>
         <Image source={{ uri: destination.image }} style={styles.image} />
+
+        {/* Hidden Gem badge — green instead of dark/blue */}
         {destination.isHiddenGem && (
           <View style={styles.hiddenGemBadge}>
             <Text style={styles.hiddenGemText}>💎 Hidden Gem</Text>
           </View>
         )}
+
         <View style={styles.overlayRating}>
           <Ionicons name="star" size={12} color="#F59E0B" />
           <Text style={styles.overlayRatingText}>{destination.rating}</Text>
@@ -93,14 +96,13 @@ export const DestinationCard = ({ destination, onPress, style, horizontal = fals
       </View>
 
       <View style={styles.content}>
-        <View style={styles.titleRow}>
-          <Text style={[styles.name, { color: theme.text }]} numberOfLines={1}>
-            {destination.name}
-          </Text>
-        </View>
+        <Text style={[styles.name, { color: theme.text }]} numberOfLines={1}>
+          {destination.name}
+        </Text>
 
         <Text style={[styles.location, { color: theme.textSecondary }]} numberOfLines={1}>
-          {destination.state} • {destination.category}
+          <Ionicons name="location-outline" size={12} color={theme.textMuted} />{' '}
+          {destination.state} · {destination.category}
         </Text>
 
         <Text style={[styles.description, { color: theme.textSecondary }]} numberOfLines={2}>
@@ -112,7 +114,7 @@ export const DestinationCard = ({ destination, onPress, style, horizontal = fals
           <EcoScoreBadge score={destination.ecoScore} size="small" showLabel={false} />
         </View>
 
-        <View style={[styles.divider, { backgroundColor: theme.border }]} />
+        <View style={[styles.divider, { backgroundColor: theme.borderLight }]} />
 
         <View style={styles.footer}>
           <View>
@@ -134,18 +136,19 @@ export const DestinationCard = ({ destination, onPress, style, horizontal = fals
 };
 
 const styles = StyleSheet.create({
+  // Vertical card
   card: {
     borderRadius: 16,
     borderWidth: 1,
     overflow: 'hidden',
     marginBottom: 16,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.07,
+    shadowRadius: 8,
+    elevation: 2,
   },
   imageContainer: {
-    height: 160,
+    height: 165,
     width: '100%',
     position: 'relative',
   },
@@ -157,21 +160,21 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 10,
     left: 10,
-    backgroundColor: 'rgba(15, 23, 42, 0.85)',
+    backgroundColor: 'rgba(22, 101, 52, 0.88)',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
   },
   hiddenGemText: {
-    color: '#38BDF8',
+    color: '#BBF7D0',
     fontSize: 11,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
   },
   overlayRating: {
     position: 'absolute',
     top: 10,
     right: 10,
-    backgroundColor: 'rgba(15, 23, 42, 0.85)',
+    backgroundColor: 'rgba(10, 30, 10, 0.78)',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 7,
@@ -182,36 +185,32 @@ const styles = StyleSheet.create({
   overlayRatingText: {
     color: '#FFFFFF',
     fontSize: 11,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
   },
   content: {
     padding: 14,
   },
-  titleRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
   name: {
-    fontSize: 16,
-    fontWeight: '700',
-    flex: 1,
+    fontSize: 15,
+    fontFamily: 'Manrope_700Bold',
+    marginBottom: 3,
   },
   location: {
     fontSize: 12,
-    marginTop: 2,
+    fontFamily: 'Manrope_400Regular',
     marginBottom: 6,
   },
   description: {
     fontSize: 12,
-    lineHeight: 17,
+    fontFamily: 'Manrope_400Regular',
+    lineHeight: 18,
     marginBottom: 10,
   },
   badgesRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginVertical: 4,
+    marginBottom: 4,
   },
   divider: {
     height: 1,
@@ -224,15 +223,18 @@ const styles = StyleSheet.create({
   },
   estLabel: {
     fontSize: 10,
+    fontFamily: 'Manrope_500Medium',
     textTransform: 'uppercase',
+    letterSpacing: 0.3,
+    marginBottom: 1,
   },
   cost: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 15,
+    fontFamily: 'Manrope_700Bold',
   },
   perPerson: {
     fontSize: 11,
-    fontWeight: '400',
+    fontFamily: 'Manrope_400Regular',
   },
   durationPill: {
     flexDirection: 'row',
@@ -241,11 +243,12 @@ const styles = StyleSheet.create({
   },
   durationText: {
     fontSize: 12,
-    fontWeight: '500',
+    fontFamily: 'Manrope_500Medium',
   },
-  // Horizontal layout
+
+  // Horizontal card
   horizontalCard: {
-    width: 260,
+    width: 240,
     borderRadius: 16,
     borderWidth: 1,
     overflow: 'hidden',
@@ -254,32 +257,36 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.06,
     shadowRadius: 6,
     elevation: 2,
+    position: 'relative',
   },
   horizontalImage: {
     width: '100%',
     height: 130,
   },
+  hOverlayRating: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: 'rgba(10, 30, 10, 0.78)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 6,
+    gap: 3,
+  },
+  hOverlayRatingText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontFamily: 'Manrope_700Bold',
+  },
   horizontalContent: {
-    padding: 12,
-  },
-  topRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  ratingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-  },
-  rating: {
-    fontSize: 12,
-    fontWeight: '600',
+    padding: 11,
   },
   altTag: {
     fontSize: 11,
-    fontWeight: '600',
-    marginVertical: 2,
+    fontFamily: 'Manrope_600SemiBold',
+    marginVertical: 3,
   },
   bottomRow: {
     flexDirection: 'row',
@@ -289,6 +296,6 @@ const styles = StyleSheet.create({
   },
   duration: {
     fontSize: 11,
-    fontWeight: '500',
+    fontFamily: 'Manrope_500Medium',
   },
 });

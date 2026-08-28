@@ -10,3 +10,5 @@ npm-debug.*
 *.orig.*
 .system_generated/
 web-build/
+expo_qr.png
+gen_qr.js

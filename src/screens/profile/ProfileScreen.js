@@ -4,12 +4,12 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  SafeAreaView,
   TouchableOpacity,
   Image,
   Switch,
-  Alert,
+  Alert
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 import { useLanguage } from '../../context/LanguageContext';
@@ -23,7 +23,7 @@ export const ProfileScreen = ({ navigation }) => {
   const { user, role, toggleRole, logout } = useAuth();
 
   const handleLogout = () => {
-    Alert.alert('Sign Out', 'Are you sure you want to sign out of SmartTour?', [
+    Alert.alert('Sign Out', 'Are you sure you want to sign out of WayWise?', [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Sign Out', style: 'destructive', onPress: logout },
     ]);
@@ -32,7 +32,7 @@ export const ProfileScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       {/* Header */}
-      <View style={[styles.header, { borderBottomColor: theme.border }]}>
+      <View style={[styles.header, { borderBottomColor: theme.border, backgroundColor: theme.card }]}>
         <Text style={[styles.headerTitle, { color: theme.text }]}>Profile & Settings</Text>
       </View>
 
@@ -52,7 +52,7 @@ export const ProfileScreen = ({ navigation }) => {
               <View style={[styles.ecoBadgePill, { backgroundColor: theme.ecoGreenLight }]}>
                 <Ionicons name="leaf" size={13} color={theme.ecoGreen} />
                 <Text style={[styles.ecoBadgeText, { color: theme.ecoGreen }]}>
-                  {user?.ecoPoints || 520} Eco-Points 🌱
+                  {user?.ecoPoints || 520} Eco Points 🌱
                 </Text>
               </View>
             </View>
@@ -60,15 +60,23 @@ export const ProfileScreen = ({ navigation }) => {
         </View>
 
         {/* Role Switcher Banner */}
-        <View style={[styles.roleSwitchCard, { backgroundColor: role === 'authority_admin' ? '#FEF3C7' : theme.primaryLight, borderColor: role === 'authority_admin' ? '#F59E0B' : theme.primary }]}>
+        <View
+          style={[
+            styles.roleSwitchCard,
+            {
+              backgroundColor: role === 'authority_admin' ? theme.accentLight : theme.primaryLight,
+              borderColor: role === 'authority_admin' ? theme.accent : theme.primary,
+            },
+          ]}
+        >
           <View style={styles.roleHeader}>
             <Ionicons
               name={role === 'authority_admin' ? 'shield-checkmark' : 'person'}
               size={22}
-              color={role === 'authority_admin' ? '#B45309' : theme.primaryDark}
+              color={role === 'authority_admin' ? '#92400E' : theme.primaryDark}
             />
             <View style={{ flex: 1 }}>
-              <Text style={[styles.roleTitle, { color: role === 'authority_admin' ? '#B45309' : theme.primaryDark }]}>
+              <Text style={[styles.roleTitle, { color: role === 'authority_admin' ? '#92400E' : theme.primaryDark }]}>
                 {role === 'authority_admin' ? '🏛️ Tourism Authority Mode' : '🧳 Tourist Mode Active'}
               </Text>
               <Text style={[styles.roleSub, { color: role === 'authority_admin' ? '#92400E' : theme.primaryDark }]}>
@@ -87,7 +95,7 @@ export const ProfileScreen = ({ navigation }) => {
           />
         </View>
 
-        {/* Language Selection Section */}
+        {/* Language Selection */}
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <Text style={[styles.cardTitle, { color: theme.text }]}>🌐 Language / భాష / भाषा</Text>
           <View style={styles.langGrid}>
@@ -104,6 +112,7 @@ export const ProfileScreen = ({ navigation }) => {
                       borderColor: isSelected ? theme.primary : theme.border,
                     },
                   ]}
+                  activeOpacity={0.8}
                 >
                   <Text style={[styles.langBtnName, { color: isSelected ? theme.primaryDark : theme.text }]}>
                     {lang.name}
@@ -130,7 +139,7 @@ export const ProfileScreen = ({ navigation }) => {
             <Switch
               value={isDark}
               onValueChange={toggleTheme}
-              trackColor={{ false: '#CBD5E1', true: theme.primary }}
+              trackColor={{ false: theme.border, true: theme.primary }}
               thumbColor="#FFFFFF"
             />
           </View>
@@ -138,7 +147,7 @@ export const ProfileScreen = ({ navigation }) => {
           {/* Feedback */}
           <TouchableOpacity
             onPress={() => navigation.navigate('Feedback')}
-            style={styles.menuRow}
+            style={[styles.menuRow, { borderTopColor: theme.borderLight }]}
           >
             <View style={styles.settingLeft}>
               <Ionicons name="star-outline" size={20} color={theme.text} />
@@ -150,7 +159,7 @@ export const ProfileScreen = ({ navigation }) => {
           {/* Notifications */}
           <TouchableOpacity
             onPress={() => navigation.navigate('Notifications')}
-            style={styles.menuRow}
+            style={[styles.menuRow, { borderTopColor: theme.borderLight }]}
           >
             <View style={styles.settingLeft}>
               <Ionicons name="notifications-outline" size={20} color={theme.text} />
@@ -162,7 +171,7 @@ export const ProfileScreen = ({ navigation }) => {
           {/* Emergency SOS */}
           <TouchableOpacity
             onPress={() => navigation.navigate('EmergencySOS')}
-            style={styles.menuRow}
+            style={[styles.menuRow, { borderTopColor: theme.borderLight }]}
           >
             <View style={styles.settingLeft}>
               <Ionicons name="warning-outline" size={20} color={theme.error} />
@@ -172,7 +181,7 @@ export const ProfileScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
-        {/* Logout Button */}
+        {/* Sign Out */}
         <Button
           title="Sign Out"
           variant="outline"
@@ -194,12 +203,13 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
     borderBottomWidth: 1,
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+    letterSpacing: -0.3,
   },
   scrollContent: {
     padding: 16,
@@ -207,7 +217,7 @@ const styles = StyleSheet.create({
   userCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 18,
+    borderRadius: 16,
     borderWidth: 1,
     padding: 16,
     marginBottom: 14,
@@ -222,19 +232,21 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   userName: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 17,
+    fontFamily: 'Manrope_700Bold',
   },
   userEmail: {
     fontSize: 12,
+    fontFamily: 'Manrope_400Regular',
     marginTop: 2,
   },
   userPhone: {
     fontSize: 11,
+    fontFamily: 'Manrope_400Regular',
     marginTop: 2,
   },
   badgeRow: {
-    marginTop: 6,
+    marginTop: 7,
   },
   ecoBadgePill: {
     flexDirection: 'row',
@@ -247,10 +259,10 @@ const styles = StyleSheet.create({
   },
   ecoBadgeText: {
     fontSize: 11,
-    fontWeight: '700',
+    fontFamily: 'Manrope_600SemiBold',
   },
   roleSwitchCard: {
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1.5,
     padding: 14,
     marginBottom: 16,
@@ -260,23 +272,24 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   roleTitle: {
-    fontSize: 15,
-    fontWeight: '700',
+    fontSize: 14,
+    fontFamily: 'Manrope_700Bold',
     marginBottom: 3,
   },
   roleSub: {
     fontSize: 12,
-    lineHeight: 16,
+    fontFamily: 'Manrope_400Regular',
+    lineHeight: 17,
   },
   card: {
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
     padding: 16,
     marginBottom: 14,
   },
   cardTitle: {
-    fontSize: 15,
-    fontWeight: '700',
+    fontSize: 14,
+    fontFamily: 'Manrope_700Bold',
     marginBottom: 12,
   },
   langGrid: {
@@ -286,17 +299,18 @@ const styles = StyleSheet.create({
   },
   langButton: {
     width: '31%',
-    borderRadius: 12,
+    borderRadius: 10,
     borderWidth: 1,
     paddingVertical: 10,
     alignItems: 'center',
   },
   langBtnName: {
     fontSize: 12,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
   },
   langBtnNative: {
     fontSize: 10,
+    fontFamily: 'Manrope_400Regular',
     marginTop: 2,
   },
   settingRow: {
@@ -311,7 +325,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderTopWidth: 1,
-    borderTopColor: '#E2E8F0',
   },
   settingLeft: {
     flexDirection: 'row',
@@ -320,9 +333,9 @@ const styles = StyleSheet.create({
   },
   settingLabel: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'Manrope_500Medium',
   },
   logoutBtn: {
-    marginTop: 10,
+    marginTop: 6,
   },
 });

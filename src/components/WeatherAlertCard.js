@@ -12,25 +12,30 @@ export const WeatherAlertCard = ({ alertMessage, onApplyChanges, isApplied = fal
       style={[
         styles.card,
         {
-          backgroundColor: isApplied ? theme.successLight : '#FEF3C7',
-          borderColor: isApplied ? theme.success : '#F59E0B',
+          backgroundColor: isApplied ? theme.successLight : '#F0F7EE',
+          borderColor: isApplied ? theme.ecoGreen : '#A5C8A0',
         },
       ]}
     >
       <View style={styles.headerRow}>
-        <View style={styles.iconContainer}>
+        <View
+          style={[
+            styles.iconBox,
+            { backgroundColor: isApplied ? theme.ecoGreenLight : '#DCF0D8' },
+          ]}
+        >
           <Ionicons
-            name={isApplied ? 'checkmark-circle' : 'rainy'}
-            size={22}
-            color={isApplied ? theme.success : '#D97706'}
+            name={isApplied ? 'checkmark-circle' : 'partly-sunny-outline'}
+            size={20}
+            color={isApplied ? theme.ecoGreen : '#2E7D32'}
           />
         </View>
-        <View style={styles.titleContainer}>
-          <Text style={[styles.title, { color: isApplied ? theme.success : '#92400E' }]}>
-            {isApplied ? 'Weather Adjustment Applied' : 'Smart Plan Adjustment'}
+        <View style={styles.textBlock}>
+          <Text style={[styles.title, { color: isApplied ? theme.ecoGreen : '#1B5E20' }]}>
+            {isApplied ? '✓ Adjustment Applied' : '💡 Smart Travel Tip'}
           </Text>
-          <Text style={[styles.subtitle, { color: isApplied ? theme.success : '#78350F' }]}>
-            {alertMessage || '🌧️ Rain is expected tomorrow. Outdoor activity → Indoor attraction'}
+          <Text style={[styles.subtitle, { color: isApplied ? '#2E7D32' : '#33691E' }]}>
+            {alertMessage || '🌧️ Rain expected tomorrow. Outdoor activity → Indoor attraction'}
           </Text>
         </View>
       </View>
@@ -38,9 +43,9 @@ export const WeatherAlertCard = ({ alertMessage, onApplyChanges, isApplied = fal
       {!isApplied && onApplyChanges && (
         <Button
           title="Apply Suggested Changes"
-          variant="secondary"
+          variant="primary"
           size="small"
-          icon="refresh"
+          icon="refresh-outline"
           onPress={onApplyChanges}
           style={styles.applyBtn}
         />
@@ -59,22 +64,29 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
+    gap: 10,
   },
-  iconContainer: {
-    marginRight: 10,
-    marginTop: 2,
+  iconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+    marginTop: 1,
   },
-  titleContainer: {
+  textBlock: {
     flex: 1,
   },
   title: {
-    fontSize: 14,
-    fontWeight: '700',
-    marginBottom: 2,
+    fontSize: 13,
+    fontFamily: 'Manrope_700Bold',
+    marginBottom: 3,
   },
   subtitle: {
     fontSize: 12,
-    lineHeight: 17,
+    fontFamily: 'Manrope_400Regular',
+    lineHeight: 18,
   },
   applyBtn: {
     marginTop: 12,

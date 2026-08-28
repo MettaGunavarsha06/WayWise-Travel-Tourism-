@@ -8,7 +8,7 @@ export const GemmaAIFloatingButton = ({ onPress, bottomOffset = 82, rightOffset 
 
   return (
     <TouchableOpacity
-      activeOpacity={0.88}
+      activeOpacity={0.85}
       onPress={onPress}
       style={[
         styles.floatingButton,
@@ -16,15 +16,15 @@ export const GemmaAIFloatingButton = ({ onPress, bottomOffset = 82, rightOffset 
           bottom: bottomOffset,
           right: rightOffset,
           backgroundColor: theme.primary,
-          shadowColor: theme.primary,
+          shadowColor: theme.primaryDark,
         },
       ]}
     >
       <View style={styles.contentRow}>
-        <View style={styles.iconContainer}>
-          <Ionicons name="sparkles" size={18} color="#FFFFFF" />
+        <View style={[styles.iconContainer, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
+          <Ionicons name="chatbubble-ellipses" size={16} color="#FFFFFF" />
         </View>
-        <Text style={styles.label}>Gemma AI</Text>
+        <Text style={styles.label}>WayWise AI</Text>
       </View>
     </TouchableOpacity>
   );
@@ -35,30 +35,31 @@ const styles = StyleSheet.create({
     position: 'absolute',
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
+    paddingHorizontal: 13,
     paddingVertical: 9,
-    borderRadius: 24,
+    borderRadius: 22,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 8,
-    elevation: 6,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 7,
     zIndex: 999,
   },
   contentRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 7,
   },
   iconContainer: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     alignItems: 'center',
     justifyContent: 'center',
   },
   label: {
     color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '800',
-    letterSpacing: 0.3,
+    fontSize: 13,
+    fontFamily: 'Manrope_700Bold',
+    letterSpacing: 0.1,
   },
 });

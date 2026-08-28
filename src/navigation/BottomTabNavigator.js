@@ -1,6 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { HomeScreen } from '../screens/home/HomeScreen';
@@ -14,44 +15,54 @@ const Tab = createBottomTabNavigator();
 export const BottomTabNavigator = () => {
   const { theme } = useTheme();
   const { t } = useLanguage();
+  const insets = useSafeAreaInsets();
 
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: theme.card,
+          backgroundColor: theme.tabBar,
           borderTopColor: theme.border,
-          height: 60,
-          paddingBottom: 8,
-          paddingTop: 6,
-          elevation: 8,
+          borderTopWidth: 1,
+          // Dynamic height — base 56px + bottom safe area
+          height: 56 + insets.bottom,
+          paddingBottom: insets.bottom + 6,
+          paddingTop: 8,
           shadowColor: theme.shadow,
           shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.06,
-          shadowRadius: 8,
+          shadowRadius: 10,
+          elevation: 10,
         },
         tabBarActiveTintColor: theme.primary,
         tabBarInactiveTintColor: theme.tabBarInactive,
         tabBarLabelStyle: {
           fontSize: 11,
-          fontWeight: '600',
+          fontFamily: 'Manrope_600SemiBold',
+          marginTop: -2,
         },
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
-
-          if (route.name === 'HomeTab') {
-            iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'ExploreTab') {
-            iconName = focused ? 'compass' : 'compass-outline';
-          } else if (route.name === 'TripsTab') {
-            iconName = focused ? 'calendar' : 'calendar-outline';
-          } else if (route.name === 'MapTab') {
-            iconName = focused ? 'map' : 'map-outline';
-          } else if (route.name === 'ProfileTab') {
-            iconName = focused ? 'person' : 'person-outline';
+          switch (route.name) {
+            case 'HomeTab':
+              iconName = focused ? 'home' : 'home-outline';
+              break;
+            case 'ExploreTab':
+              iconName = focused ? 'compass' : 'compass-outline';
+              break;
+            case 'TripsTab':
+              iconName = focused ? 'calendar' : 'calendar-outline';
+              break;
+            case 'MapTab':
+              iconName = focused ? 'map' : 'map-outline';
+              break;
+            case 'ProfileTab':
+              iconName = focused ? 'person' : 'person-outline';
+              break;
+            default:
+              iconName = 'ellipse-outline';
           }
-
           return <Ionicons name={iconName} size={22} color={color} />;
         },
       })}

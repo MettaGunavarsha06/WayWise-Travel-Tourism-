@@ -8,6 +8,7 @@ import {
   FlatList,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
@@ -18,21 +19,35 @@ export const Header = ({ onSOSPress, onNotificationsPress }) => {
   const { currentLanguage, languages, setLanguage, t } = useLanguage();
   const { user, role, toggleRole } = useAuth();
   const { unreadCount } = useNotifications();
+  const insets = useSafeAreaInsets();
   const [langModalVisible, setLangModalVisible] = useState(false);
 
   const currentLangObj = languages.find((l) => l.code === currentLanguage) || languages[0];
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: theme.card,
+          borderBottomColor: theme.border,
+          // Safe area: push header content below status bar / notch / camera cutout
+          paddingTop: insets.top + 8,
+        },
+      ]}
+    >
       {/* Top Bar: Brand, Role Switcher, Controls */}
       <View style={styles.topRow}>
+        {/* WayWise Brand */}
         <View style={styles.brandContainer}>
           <View style={[styles.logoIcon, { backgroundColor: theme.primaryLight }]}>
-            <Ionicons name="compass" size={20} color={theme.primary} />
+            <Ionicons name="leaf" size={18} color={theme.primary} />
           </View>
           <View>
-            <Text style={[styles.brandTitle, { color: theme.text }]}>SmartTour</Text>
-            <Text style={[styles.brandSubtitle, { color: theme.textSecondary }]}>SIH 2026</Text>
+            <Text style={[styles.brandTitle, { color: theme.primaryDark }]}>WayWise</Text>
+            <Text style={[styles.brandSubtitle, { color: theme.textSecondary }]}>
+              Sustainable Travel
+            </Text>
           </View>
         </View>
 
@@ -44,20 +59,22 @@ export const Header = ({ onSOSPress, onNotificationsPress }) => {
             style={[
               styles.rolePill,
               {
-                backgroundColor: role === 'authority_admin' ? '#FEF3C7' : theme.primaryLight,
-                borderColor: role === 'authority_admin' ? '#F59E0B' : theme.primary,
+                backgroundColor:
+                  role === 'authority_admin' ? theme.accentLight : theme.primaryLight,
+                borderColor:
+                  role === 'authority_admin' ? theme.accent : theme.primary,
               },
             ]}
           >
             <Ionicons
               name={role === 'authority_admin' ? 'shield-checkmark' : 'person'}
-              size={12}
-              color={role === 'authority_admin' ? '#B45309' : theme.primaryDark}
+              size={11}
+              color={role === 'authority_admin' ? '#92400E' : theme.primaryDark}
             />
             <Text
               style={[
                 styles.roleText,
-                { color: role === 'authority_admin' ? '#B45309' : theme.primaryDark },
+                { color: role === 'authority_admin' ? '#92400E' : theme.primaryDark },
               ]}
             >
               {role === 'authority_admin' ? 'Admin' : 'Tourist'}
@@ -67,7 +84,7 @@ export const Header = ({ onSOSPress, onNotificationsPress }) => {
           {/* Language Selector */}
           <TouchableOpacity
             onPress={() => setLangModalVisible(true)}
-            style={[styles.iconButton, { backgroundColor: theme.cardSecondary }]}
+            style={[styles.iconButton, { backgroundColor: theme.cardSecondary, borderColor: theme.border }]}
           >
             <Text style={[styles.langCode, { color: theme.text }]}>
               {currentLangObj.code.toUpperCase()}
@@ -77,11 +94,11 @@ export const Header = ({ onSOSPress, onNotificationsPress }) => {
           {/* Theme Toggle */}
           <TouchableOpacity
             onPress={toggleTheme}
-            style={[styles.iconButton, { backgroundColor: theme.cardSecondary }]}
+            style={[styles.iconButton, { backgroundColor: theme.cardSecondary, borderColor: theme.border }]}
           >
             <Ionicons
-              name={isDark ? 'sunny' : 'moon'}
-              size={18}
+              name={isDark ? 'sunny-outline' : 'moon-outline'}
+              size={16}
               color={isDark ? '#FBBF24' : theme.text}
             />
           </TouchableOpacity>
@@ -89,9 +106,9 @@ export const Header = ({ onSOSPress, onNotificationsPress }) => {
           {/* Notifications */}
           <TouchableOpacity
             onPress={onNotificationsPress}
-            style={[styles.iconButton, { backgroundColor: theme.cardSecondary }]}
+            style={[styles.iconButton, { backgroundColor: theme.cardSecondary, borderColor: theme.border }]}
           >
-            <Ionicons name="notifications-outline" size={18} color={theme.text} />
+            <Ionicons name="notifications-outline" size={17} color={theme.text} />
             {unreadCount > 0 && (
               <View style={[styles.badge, { backgroundColor: theme.error }]}>
                 <Text style={styles.badgeText}>{unreadCount}</Text>
@@ -101,22 +118,25 @@ export const Header = ({ onSOSPress, onNotificationsPress }) => {
         </View>
       </View>
 
-      {/* Greeting & Weather row if in Tourist Mode */}
+      {/* Greeting & Weather Row — Tourist Mode Only */}
       {role === 'tourist' && (
         <View style={styles.greetingRow}>
           <View style={styles.greetingTextContainer}>
             <Text style={[styles.greeting, { color: theme.text }]}>
               {t('greeting') || `Good morning, ${user?.name || 'Gunavarsha'} 👋`}
             </Text>
-            <Text style={[styles.subGreeting, { color: theme.textSecondary }]}>
-              Eco Points: {user?.ecoPoints || 520} 🌱 • {user?.ecoBadge || 'Eco Champion'}
-            </Text>
+            <View style={styles.ecoRow}>
+              <Ionicons name="leaf" size={12} color={theme.ecoGreen} />
+              <Text style={[styles.subGreeting, { color: theme.textSecondary }]}>
+                {user?.ecoPoints || 520} Eco Points • {user?.ecoBadge || 'Eco Champion'}
+              </Text>
+            </View>
           </View>
 
           {/* Weather Widget */}
-          <View style={[styles.weatherWidget, { backgroundColor: theme.cardSecondary }]}>
-            <Ionicons name="partly-sunny" size={18} color="#F59E0B" />
-            <Text style={[styles.weatherTemp, { color: theme.text }]}>29°C</Text>
+          <View style={[styles.weatherWidget, { backgroundColor: theme.primaryLight, borderColor: theme.border }]}>
+            <Ionicons name="partly-sunny-outline" size={16} color={theme.primary} />
+            <Text style={[styles.weatherTemp, { color: theme.primaryDark }]}>29°C</Text>
           </View>
         </View>
       )}
@@ -129,7 +149,9 @@ export const Header = ({ onSOSPress, onNotificationsPress }) => {
           style={styles.modalOverlay}
         >
           <View style={[styles.modalCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
-            <Text style={[styles.modalTitle, { color: theme.text }]}>Choose Language / భాష</Text>
+            <Text style={[styles.modalTitle, { color: theme.text }]}>
+              Choose Language / భాష
+            </Text>
             <FlatList
               data={languages}
               keyExtractor={(item) => item.code}
@@ -176,7 +198,6 @@ export const Header = ({ onSOSPress, onNotificationsPress }) => {
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 16,
-    paddingTop: 10,
     paddingBottom: 12,
     borderBottomWidth: 1,
   },
@@ -188,6 +209,7 @@ const styles = StyleSheet.create({
   brandContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
   },
   logoIcon: {
     width: 34,
@@ -195,18 +217,18 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 8,
   },
   brandTitle: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 17,
+    fontFamily: 'Manrope_700Bold',
     letterSpacing: -0.3,
   },
   brandSubtitle: {
     fontSize: 10,
-    fontWeight: '600',
+    fontFamily: 'Manrope_500Medium',
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0.6,
+    marginTop: 1,
   },
   controlsRow: {
     flexDirection: 'row',
@@ -217,30 +239,31 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    paddingHorizontal: 8,
+    paddingHorizontal: 9,
     paddingVertical: 5,
     borderRadius: 20,
     borderWidth: 1,
   },
   roleText: {
     fontSize: 11,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
   },
   iconButton: {
     width: 34,
     height: 34,
-    borderRadius: 17,
+    borderRadius: 10,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   langCode: {
-    fontSize: 11,
-    fontWeight: '700',
+    fontSize: 10,
+    fontFamily: 'Manrope_700Bold',
   },
   badge: {
     position: 'absolute',
-    top: -2,
-    right: -2,
+    top: -3,
+    right: -3,
     minWidth: 16,
     height: 16,
     borderRadius: 8,
@@ -251,40 +274,48 @@ const styles = StyleSheet.create({
   badgeText: {
     color: '#FFFFFF',
     fontSize: 9,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
   },
   greetingRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 12,
+    marginTop: 14,
   },
   greetingTextContainer: {
     flex: 1,
   },
   greeting: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 19,
+    fontFamily: 'Manrope_700Bold',
+    letterSpacing: -0.2,
+  },
+  ecoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 3,
   },
   subGreeting: {
     fontSize: 12,
-    marginTop: 2,
+    fontFamily: 'Manrope_500Medium',
   },
   weatherWidget: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 12,
-    gap: 4,
+    paddingVertical: 7,
+    borderRadius: 10,
+    borderWidth: 1,
+    gap: 5,
   },
   weatherTemp: {
     fontSize: 13,
-    fontWeight: '600',
+    fontFamily: 'Manrope_700Bold',
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.45)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
@@ -298,8 +329,8 @@ const styles = StyleSheet.create({
     maxHeight: 400,
   },
   modalTitle: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 15,
+    fontFamily: 'Manrope_700Bold',
     marginBottom: 12,
     textAlign: 'center',
   },
@@ -310,13 +341,15 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderRadius: 10,
-    marginBottom: 6,
+    marginBottom: 4,
   },
   langOptionName: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
   },
   langNative: {
     fontSize: 12,
+    fontFamily: 'Manrope_400Regular',
+    marginTop: 1,
   },
 });
