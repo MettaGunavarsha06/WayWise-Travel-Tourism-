@@ -8,11 +8,18 @@ const defaultTouristUser = {
   name: 'Gunavarsha',
   email: 'gunavarsha@sih2026.gov.in',
   phone: '+91 98480 99887',
+  address: 'Plot 42, Green Valley Enclave, Visakhapatnam, AP - 530017',
   avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
   role: 'tourist', // tourist | authority_admin
   ecoPoints: 520,
   ecoBadge: 'Eco Champion',
   savedDestinations: ['dest_vizag', 'dest_araku', 'dest_goa', 'dest_jaipur'],
+  settings: {
+    notifications: true,
+    locationPermission: true,
+    aiRecommendations: true,
+    ecoRecommendations: true,
+  },
 };
 
 const AuthContext = createContext({
@@ -27,6 +34,7 @@ const AuthContext = createContext({
   toggleRole: () => {},
   logout: () => {},
   updateUserPreferences: () => {},
+  updateProfile: () => {},
 });
 
 export const AuthProvider = ({ children }) => {
@@ -131,6 +139,32 @@ export const AuthProvider = ({ children }) => {
     AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updated)).catch(() => {});
   };
 
+  const updateProfile = async (profileData) => {
+    if (!user) return;
+    const updated = {
+      ...user,
+      ...profileData,
+    };
+    setUser(updated);
+    await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updated));
+    return updated;
+  };
+
+  const updateSettings = async (settingKey, value) => {
+    if (!user) return;
+    const currentSettings = user.settings || {};
+    const updated = {
+      ...user,
+      settings: {
+        ...currentSettings,
+        [settingKey]: value,
+      },
+    };
+    setUser(updated);
+    await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updated));
+    return updated;
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -145,6 +179,8 @@ export const AuthProvider = ({ children }) => {
         toggleRole,
         logout,
         updateUserPreferences,
+        updateProfile,
+        updateSettings,
       }}
     >
       {children}
