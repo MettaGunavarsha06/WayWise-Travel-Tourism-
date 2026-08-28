@@ -18,6 +18,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/Button';
+import * as ImagePicker from 'expo-image-picker';
 import {
   generateAITripPlan,
   queryDestinationGuide,
@@ -78,6 +79,28 @@ export const ProfileScreen = ({ navigation }) => {
   const [targetLang, setTargetLang] = useState('hi');
 
   // --- EDIT PROFILE HANDLERS ---
+  const handlePickImageFromGallery = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Denied', 'Gallery access permission is needed to choose a profile photo.');
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setEditAvatar(result.assets[0].uri);
+      }
+    } catch (err) {
+      console.warn('Image picker error', err);
+      Alert.alert('Selection Error', 'Could not select photo from gallery.');
+    }
+  };
+
   const openEditModal = () => {
     setEditName(user?.name || 'Gunavarsha');
     setEditEmail(user?.email || 'gunavarsha@sih2026.gov.in');
@@ -544,11 +567,19 @@ export const ProfileScreen = ({ navigation }) => {
 
                   <View style={styles.avatarBtnRow}>
                     <TouchableOpacity
+                      onPress={handlePickImageFromGallery}
+                      style={[styles.smallActionBtn, { backgroundColor: theme.primaryLight, borderColor: theme.primary }]}
+                    >
+                      <Ionicons name="images-outline" size={14} color={theme.primaryDark} />
+                      <Text style={[styles.smallActionBtnText, { color: theme.primaryDark }]}>Upload from Gallery</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
                       onPress={() => setShowUrlInput(!showUrlInput)}
                       style={[styles.smallActionBtn, { backgroundColor: theme.cardSecondary, borderColor: theme.border }]}
                     >
                       <Ionicons name="link-outline" size={14} color={theme.primary} />
-                      <Text style={[styles.smallActionBtnText, { color: theme.primary }]}>Image URL</Text>
+                      <Text style={[styles.smallActionBtnText, { color: theme.primary }]}>URL</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -556,7 +587,7 @@ export const ProfileScreen = ({ navigation }) => {
                       style={[styles.smallActionBtn, { backgroundColor: theme.cardSecondary, borderColor: theme.border }]}
                     >
                       <Ionicons name="trash-outline" size={14} color={theme.error} />
-                      <Text style={[styles.smallActionBtnText, { color: theme.error }]}>Remove Photo</Text>
+                      <Text style={[styles.smallActionBtnText, { color: theme.error }]}>Remove</Text>
                     </TouchableOpacity>
                   </View>
 
