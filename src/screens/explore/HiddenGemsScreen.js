@@ -24,39 +24,39 @@ export const HiddenGemsScreen = ({ navigation }) => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color={theme.text} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.text }]}>Hidden Gems of India</Text>
+        <Text style={[styles.headerTitle, { color: theme.text }]}>Hidden Gems &amp; Offbeat Spots</Text>
         <View style={{ width: 30 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Mission Statement Banner */}
-        <View style={[styles.missionCard, { backgroundColor: '#F5F3FF', borderColor: '#DDD6FE' }]}>
-          <Ionicons name="diamond" size={24} color="#7C3AED" style={{ marginRight: 10 }} />
+        <View style={[styles.missionCard, { backgroundColor: '#F0FDF4', borderColor: '#BBF7D0' }]}>
+          <Ionicons name="compass" size={22} color="#166534" style={{ marginRight: 10, marginTop: 2 }} />
           <View style={{ flex: 1 }}>
-            <Text style={[styles.missionTitle, { color: '#5B21B6' }]}>
-              Anti-Overtourism & Cultural Discovery
+            <Text style={[styles.missionTitle, { color: '#166534' }]}>
+              Balanced Tourism &amp; Cultural Discovery
             </Text>
-            <Text style={[styles.missionDesc, { color: '#6D28D9' }]}>
-              By exploring these lesser-known, peaceful destinations, you help distribute tourism benefits directly to indigenous communities while avoiding massive queues and high prices.
+            <Text style={[styles.missionDesc, { color: '#15803D' }]}>
+              By exploring these peaceful, lesser-known destinations, you help distribute tourism benefits directly to local communities while enjoying unhurried travel.
             </Text>
           </View>
         </View>
 
-        {/* Crowd Flow Indicator Legend */}
+        {/* Crowd Density Legend */}
         <View style={[styles.legendCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <Text style={[styles.legendTitle, { color: theme.text }]}>Real-Time Crowd Density Legend</Text>
+          <Text style={[styles.legendTitle, { color: theme.text }]}>Live Crowd Density Indicators</Text>
           <View style={styles.legendRow}>
             <View style={styles.legendItem}>
               <View style={[styles.dot, { backgroundColor: '#10B981' }]} />
-              <Text style={[styles.legendText, { color: theme.textSecondary }]}>🟢 Low (&lt;40%)</Text>
+              <Text style={[styles.legendText, { color: theme.textSecondary }]}>Low (&lt;40%)</Text>
             </View>
             <View style={styles.legendItem}>
               <View style={[styles.dot, { backgroundColor: '#F59E0B' }]} />
-              <Text style={[styles.legendText, { color: theme.textSecondary }]}>🟡 Moderate (40-75%)</Text>
+              <Text style={[styles.legendText, { color: theme.textSecondary }]}>Moderate (40-75%)</Text>
             </View>
             <View style={styles.legendItem}>
               <View style={[styles.dot, { backgroundColor: '#EF4444' }]} />
-              <Text style={[styles.legendText, { color: theme.textSecondary }]}>🔴 High (&gt;75%)</Text>
+              <Text style={[styles.legendText, { color: theme.textSecondary }]}>High (&gt;75%)</Text>
             </View>
           </View>
         </View>
@@ -64,7 +64,7 @@ export const HiddenGemsScreen = ({ navigation }) => {
         {/* Hidden Gems List */}
         <View style={styles.listHeadingRow}>
           <Text style={[styles.listHeading, { color: theme.text }]}>
-            Offbeat Curated Destinations ({hiddenGems.length})
+            Curated Offbeat Destinations ({hiddenGems.length})
           </Text>
         </View>
 
@@ -98,48 +98,50 @@ const styles = StyleSheet.create({
     padding: 6,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 17,
+    fontFamily: 'Manrope_700Bold',
   },
   scrollContent: {
     padding: 16,
   },
   missionCard: {
     flexDirection: 'row',
-    alignItems: 'center',
-    padding: 14,
-    borderRadius: 16,
+    alignItems: 'flex-start',
+    borderRadius: 14,
     borderWidth: 1,
+    padding: 14,
     marginBottom: 14,
   },
   missionTitle: {
     fontSize: 14,
-    fontWeight: '700',
-    marginBottom: 3,
+    fontFamily: 'Manrope_700Bold',
+    marginBottom: 4,
   },
   missionDesc: {
     fontSize: 12,
-    lineHeight: 16,
+    fontFamily: 'Manrope_400Regular',
+    lineHeight: 18,
   },
   legendCard: {
     borderRadius: 14,
     borderWidth: 1,
     padding: 12,
-    marginBottom: 16,
+    marginBottom: 18,
   },
   legendTitle: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 12,
+    fontFamily: 'Manrope_600SemiBold',
     marginBottom: 8,
   },
   legendRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
   },
   legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
   },
   dot: {
     width: 8,
@@ -147,13 +149,14 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   legendText: {
-    fontSize: 11,
+    fontSize: 11.5,
+    fontFamily: 'Manrope_500Medium',
   },
   listHeadingRow: {
     marginBottom: 12,
   },
   listHeading: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 15,
+    fontFamily: 'Manrope_700Bold',
   },
 });

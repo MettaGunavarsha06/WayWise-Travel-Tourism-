@@ -24,11 +24,11 @@ export const DigitalPassScreen = ({ route, navigation }) => {
   const trip = route?.params?.trip || activeTrip;
 
   const handleShare = () => {
-    Alert.alert('Pass Shared', `Digital Tourism Pass #${trip?.id || 'ST2026'} shared via QR link.`);
+    Alert.alert('Pass Shared', `WayWise Digital Pass #${trip?.id || 'WW2026'} shared successfully.`);
   };
 
   const handleDownload = () => {
-    Alert.alert('Pass Saved', 'Digital Pass saved offline to device wallet for seamless entry.');
+    Alert.alert('Pass Saved', 'Digital Pass saved offline to device for seamless entry.');
   };
 
   return (
@@ -50,11 +50,11 @@ export const DigitalPassScreen = ({ route, navigation }) => {
           {/* Top Notch Brand Header */}
           <View style={styles.passHeader}>
             <View>
-              <Text style={styles.passBrand}>SMARTTOUR PASS</Text>
+              <Text style={styles.passBrand}>WAYWISE DIGITAL PASS</Text>
               <Text style={styles.passGov}>Smart India Hackathon 2026</Text>
             </View>
             <View style={styles.validPill}>
-              <Text style={styles.validText}>● VALID</Text>
+              <Text style={styles.validText}>● ACTIVE</Text>
             </View>
           </View>
 
@@ -62,11 +62,11 @@ export const DigitalPassScreen = ({ route, navigation }) => {
           <View style={styles.qrContainer}>
             <QRCodeView
               size={150}
-              value={`SMARTTOUR:${trip?.id || 'ST2026VIZAG'}:${user?.name || 'Gunavarsha'}`}
+              value={`WAYWISE:${trip?.id || 'WW2026VIZAG'}:${user?.name || 'Gunavarsha'}`}
               bgColor="#FFFFFF"
               color="#0F172A"
             />
-            <Text style={styles.tripIdCode}>TRIP ID: {trip?.id || 'ST2026XXXX'}</Text>
+            <Text style={styles.tripIdCode}>PASS ID: {trip?.id || 'WW2026-081'}</Text>
           </View>
 
           {/* Dotted Cutout Line */}
@@ -115,53 +115,53 @@ export const DigitalPassScreen = ({ route, navigation }) => {
 
           <View style={styles.passFooter}>
             <EcoScoreBadge score={trip?.ecoScore || 88} />
-            <Text style={styles.securityTag}>🔒 Secured by Tourism Authority</Text>
+            <Text style={styles.securityTag}>Verified by Tourism Authority</Text>
           </View>
         </View>
 
         {/* Pass Benefits */}
         <View style={[styles.benefitsCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <Text style={[styles.benefitsTitle, { color: theme.text }]}>🎁 Passholder Benefits & Perks</Text>
+          <Text style={[styles.benefitsTitle, { color: theme.text }]}>Passholder Privileges</Text>
 
           <View style={styles.benefitItem}>
             <Ionicons name="flash-outline" size={18} color={theme.primary} />
             <Text style={[styles.benefitText, { color: theme.textSecondary }]}>
-              Express QR scan entry at INS Kursura Submarine & Borra Caves.
+              Express contactless QR scan entry at heritage monuments and museums.
             </Text>
           </View>
 
           <View style={styles.benefitItem}>
             <Ionicons name="pricetag-outline" size={18} color={theme.primary} />
             <Text style={[styles.benefitText, { color: theme.textSecondary }]}>
-              10% instant discount at verified Etikoppaka lacquer craft guilds.
+              10% privilege discount at verified community artisan craft guilds.
             </Text>
           </View>
 
           <View style={styles.benefitItem}>
             <Ionicons name="bus-outline" size={18} color={theme.primary} />
             <Text style={[styles.benefitText, { color: theme.textSecondary }]}>
-              Unlimited hop-on access to city beach road Electric Transit Shuttles.
+              Integrated boarding validation across all local green transit corridors.
             </Text>
           </View>
         </View>
 
-        {/* Actions */}
-        <View style={styles.actionRow}>
+        {/* Action Buttons */}
+        <View style={styles.btnRow}>
           <Button
             title="Download Pass"
             variant="primary"
-            size="large"
+            size="medium"
             icon="download-outline"
             onPress={handleDownload}
-            style={{ flex: 1 }}
+            style={styles.actionBtn}
           />
           <Button
-            title="Share"
+            title="Share Pass"
             variant="outline"
-            size="large"
+            size="medium"
             icon="share-outline"
             onPress={handleShare}
-            style={{ flex: 0.8 }}
+            style={styles.actionBtn}
           />
         </View>
 
@@ -187,68 +187,66 @@ const styles = StyleSheet.create({
     padding: 6,
   },
   topTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 17,
+    fontFamily: 'Manrope_700Bold',
   },
   scrollContent: {
     padding: 16,
   },
   passCard: {
-    borderRadius: 24,
+    borderRadius: 20,
     borderWidth: 1,
     overflow: 'hidden',
-    padding: 20,
     marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.25,
-    shadowRadius: 15,
-    elevation: 8,
   },
   passHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
+    alignItems: 'flex-start',
+    padding: 18,
+    paddingBottom: 14,
   },
   passBrand: {
-    color: '#38BDF8',
-    fontSize: 18,
-    fontWeight: '800',
-    letterSpacing: 1,
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontFamily: 'Manrope_800ExtraBold',
+    letterSpacing: 0.6,
   },
   passGov: {
     color: '#94A3B8',
     fontSize: 11,
-    fontWeight: '500',
+    fontFamily: 'Manrope_400Regular',
+    marginTop: 2,
   },
   validPill: {
-    backgroundColor: '#064E3B',
-    paddingHorizontal: 10,
+    backgroundColor: 'rgba(22, 163, 74, 0.25)',
+    borderWidth: 1,
+    borderColor: '#16A34A',
+    paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: 8,
   },
   validText: {
-    color: '#34D399',
-    fontSize: 11,
-    fontWeight: '700',
+    color: '#4ADE80',
+    fontSize: 10,
+    fontFamily: 'Manrope_700Bold',
   },
   qrContainer: {
     alignItems: 'center',
-    marginVertical: 12,
+    paddingVertical: 14,
   },
   tripIdCode: {
-    color: '#CBD5E1',
-    fontSize: 13,
-    fontWeight: '700',
-    letterSpacing: 1.5,
+    color: '#94A3B8',
+    fontSize: 12,
+    fontFamily: 'Manrope_600SemiBold',
+    letterSpacing: 1,
     marginTop: 10,
   },
   cutoutRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: -20,
-    marginVertical: 16,
+    marginVertical: 4,
+    position: 'relative',
   },
   circleCutoutLeft: {
     width: 24,
@@ -262,6 +260,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#334155',
     borderStyle: 'dashed',
+    marginHorizontal: 4,
   },
   circleCutoutRight: {
     width: 24,
@@ -272,8 +271,8 @@ const styles = StyleSheet.create({
   fieldsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 14,
-    marginBottom: 16,
+    padding: 18,
+    gap: 12,
   },
   fieldCol: {
     width: '47%',
@@ -281,51 +280,57 @@ const styles = StyleSheet.create({
   fieldLabel: {
     color: '#64748B',
     fontSize: 10,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
     letterSpacing: 0.5,
     marginBottom: 2,
   },
   fieldValue: {
     color: '#F8FAFC',
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: 13,
+    fontFamily: 'Manrope_600SemiBold',
   },
   passFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: 18,
+    paddingVertical: 14,
     borderTopWidth: 1,
     borderTopColor: '#1E293B',
-    paddingTop: 14,
   },
   securityTag: {
-    color: '#64748B',
-    fontSize: 10,
+    color: '#94A3B8',
+    fontSize: 11,
+    fontFamily: 'Manrope_500Medium',
   },
   benefitsCard: {
     borderRadius: 16,
     borderWidth: 1,
     padding: 16,
     marginBottom: 20,
-    gap: 12,
   },
   benefitsTitle: {
     fontSize: 15,
-    fontWeight: '700',
-    marginBottom: 4,
+    fontFamily: 'Manrope_700Bold',
+    marginBottom: 12,
   },
   benefitItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+    marginVertical: 6,
   },
   benefitText: {
-    fontSize: 13,
     flex: 1,
+    fontSize: 12.5,
+    fontFamily: 'Manrope_400Regular',
     lineHeight: 18,
   },
-  actionRow: {
+  btnRow: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 12,
+  },
+  actionBtn: {
+    flex: 1,
   },
 });

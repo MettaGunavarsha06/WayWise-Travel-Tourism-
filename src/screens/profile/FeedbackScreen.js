@@ -14,15 +14,21 @@ import { Input } from '../../components/Input';
 import { Button } from '../../components/Button';
 
 const categories = ['Hotel', 'Destination', 'Transport', 'Restaurant', 'Local Guide'];
-const feedbackTags = ['Eco-friendly 🌱', 'Clean Facilities 🧹', 'Helpful Guide 🧭', 'Punctual ⏱️', 'Authentic Food 🍲'];
+const feedbackTags = [
+  'Eco-Friendly',
+  'Clean Facilities',
+  'Helpful Guide',
+  'Punctual Service',
+  'Authentic Cuisine',
+  'Fair Pricing',
+];
 
 export const FeedbackScreen = ({ navigation }) => {
   const { theme } = useTheme();
   const [category, setCategory] = useState('Hotel');
   const [rating, setRating] = useState(5);
   const [feedbackText, setFeedbackText] = useState('');
-  const [selectedTags, setSelectedTags] = useState(['Eco-friendly 🌱']);
-  const [submitted, setSubmitted] = useState(false);
+  const [selectedTags, setSelectedTags] = useState(['Eco-Friendly']);
 
   const toggleTag = (tag) => {
     if (selectedTags.includes(tag)) {
@@ -37,9 +43,8 @@ export const FeedbackScreen = ({ navigation }) => {
       Alert.alert('Feedback Required', 'Please provide a brief comment on your experience.');
       return;
     }
-    setSubmitted(true);
     Alert.alert(
-      'Feedback Received! ⭐',
+      'Feedback Submitted',
       'Thank you for your valuable feedback. It has been routed to the Tourism Authority Quality Dashboard and helps improve ecosystem rankings.',
       [{ text: 'OK', onPress: () => navigation.goBack() }]
     );
@@ -61,7 +66,7 @@ export const FeedbackScreen = ({ navigation }) => {
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <Text style={[styles.cardTitle, { color: theme.text }]}>Rate Your Tourism Experience</Text>
           <Text style={[styles.cardSub, { color: theme.textSecondary }]}>
-            Your ratings directly influence hotel quality certifications and local guide accreditations.
+            Your ratings directly influence quality certifications and local guide accreditations.
           </Text>
 
           {/* Category Selector */}
@@ -105,25 +110,16 @@ export const FeedbackScreen = ({ navigation }) => {
               >
                 <Ionicons
                   name={star <= rating ? 'star' : 'star-outline'}
-                  size={36}
-                  color="#F59E0B"
+                  size={32}
+                  color={star <= rating ? '#F59E0B' : theme.border}
                 />
               </TouchableOpacity>
             ))}
           </View>
-          <Text style={[styles.ratingLabel, { color: theme.textSecondary }]}>
-            {rating === 5
-              ? '⭐⭐⭐⭐⭐ Exceptional Quality'
-              : rating === 4
-              ? '⭐⭐⭐⭐ Very Good'
-              : rating === 3
-              ? '⭐⭐⭐ Average'
-              : 'Needs Improvement'}
-          </Text>
 
-          {/* Experience Tags */}
-          <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>Highlights & Attributes</Text>
-          <View style={styles.tagsGrid}>
+          {/* Tags */}
+          <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>Experience Highlights</Text>
+          <View style={styles.tagsRow}>
             {feedbackTags.map((tag) => {
               const isSelected = selectedTags.includes(tag);
               return (
@@ -140,8 +136,8 @@ export const FeedbackScreen = ({ navigation }) => {
                 >
                   <Text
                     style={[
-                      styles.tagText,
-                      { color: isSelected ? theme.primaryDark : theme.text },
+                      styles.tagPillText,
+                      { color: isSelected ? theme.primaryDark : theme.textSecondary },
                     ]}
                   >
                     {tag}
@@ -151,24 +147,24 @@ export const FeedbackScreen = ({ navigation }) => {
             })}
           </View>
 
-          {/* Review Text */}
+          {/* Comment Box */}
+          <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>Detailed Review</Text>
           <Input
-            label="Detailed Comments & Suggestions"
             value={feedbackText}
             onChangeText={setFeedbackText}
-            placeholder="Share details about cleanliness, staff hospitality, punctuality or eco-efforts..."
+            placeholder="Describe your experience with cleanliness, hospitality, pricing..."
             multiline
             numberOfLines={4}
-            style={{ marginTop: 14 }}
+            style={styles.textArea}
           />
 
           <Button
-            title="Submit Tourist Review"
+            title="Submit Feedback"
             variant="primary"
             size="large"
             icon="send-outline"
             onPress={handleSubmit}
-            style={styles.submitBtn}
+            style={{ marginTop: 16 }}
           />
         </View>
 
@@ -194,37 +190,41 @@ const styles = StyleSheet.create({
     padding: 6,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 17,
+    fontFamily: 'Manrope_700Bold',
   },
   scrollContent: {
     padding: 16,
   },
   card: {
-    borderRadius: 20,
+    borderRadius: 16,
     borderWidth: 1,
-    padding: 18,
+    padding: 16,
   },
   cardTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 16,
+    fontFamily: 'Manrope_700Bold',
     marginBottom: 4,
   },
   cardSub: {
-    fontSize: 12,
-    lineHeight: 16,
+    fontSize: 12.5,
+    fontFamily: 'Manrope_400Regular',
+    lineHeight: 18,
     marginBottom: 16,
   },
   sectionLabel: {
-    fontSize: 13,
-    fontWeight: '700',
-    marginTop: 12,
+    fontSize: 12,
+    fontFamily: 'Manrope_700Bold',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
     marginBottom: 8,
+    marginTop: 10,
   },
   catRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
+    marginBottom: 10,
   },
   catPill: {
     paddingHorizontal: 12,
@@ -233,39 +233,35 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   catPillText: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 12.5,
+    fontFamily: 'Manrope_600SemiBold',
   },
   starsRow: {
     flexDirection: 'row',
-    gap: 12,
-    marginVertical: 6,
+    gap: 8,
+    marginBottom: 10,
   },
   starBtn: {
     padding: 4,
   },
-  ratingLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    marginTop: 4,
-    marginBottom: 8,
-  },
-  tagsGrid: {
+  tagsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
+    marginBottom: 14,
   },
   tagPill: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 8,
+    borderRadius: 16,
     borderWidth: 1,
   },
-  tagText: {
-    fontSize: 11,
-    fontWeight: '600',
+  tagPillText: {
+    fontSize: 12,
+    fontFamily: 'Manrope_600SemiBold',
   },
-  submitBtn: {
-    marginTop: 16,
+  textArea: {
+    minHeight: 90,
+    textAlignVertical: 'top',
   },
 });

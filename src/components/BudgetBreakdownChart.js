@@ -21,12 +21,12 @@ export const BudgetBreakdownChart = ({
   const remaining = breakdown.remaining || 0;
 
   const items = [
-    { label: 'Hotel & Lodging', amount: breakdown.hotel, icon: 'bed-outline', color: '#3B82F6' },
-    { label: 'Transport & Transit', amount: breakdown.transport, icon: 'train-outline', color: '#10B981' },
-    { label: 'Food & Dining', amount: breakdown.food, icon: 'restaurant-outline', color: '#F59E0B' },
-    { label: 'Activities & Tours', amount: breakdown.activities, icon: 'ticket-outline', color: '#8B5CF6' },
-    { label: 'Artisan Shopping', amount: breakdown.shopping, icon: 'bag-handle-outline', color: '#EC4899' },
-    { label: 'Other / Emergency', amount: breakdown.other, icon: 'shield-checkmark-outline', color: '#64748B' },
+    { label: 'Hotel & Lodging', amount: breakdown.hotel, icon: 'bed-outline', color: '#2563EB' },
+    { label: 'Transit & Local Transport', amount: breakdown.transport, icon: 'train-outline', color: '#15803D' },
+    { label: 'Food & Dining', amount: breakdown.food, icon: 'restaurant-outline', color: '#D97706' },
+    { label: 'Attractions & Sightseeing', amount: breakdown.activities, icon: 'ticket-outline', color: '#7C3AED' },
+    { label: 'Artisan Crafts & Shopping', amount: breakdown.shopping, icon: 'bag-handle-outline', color: '#DB2777' },
+    { label: 'Contingency / Emergency', amount: breakdown.other, icon: 'shield-checkmark-outline', color: '#475569' },
   ];
 
   return (
@@ -42,7 +42,7 @@ export const BudgetBreakdownChart = ({
     >
       <View style={styles.headerRow}>
         <View>
-          <Text style={[styles.title, { color: theme.text }]}>AI Budget Optimizer</Text>
+          <Text style={[styles.title, { color: theme.text }]}>Budget Breakdown</Text>
           <Text style={[styles.subTitle, { color: theme.textSecondary }]}>
             Target Budget: {formatCurrency(userBudget)}
           </Text>
@@ -92,9 +92,9 @@ export const BudgetBreakdownChart = ({
       {/* Over Budget Alert Box */}
       {isOver && (
         <View style={[styles.alertBox, { backgroundColor: theme.errorLight, borderColor: theme.error }]}>
-          <Ionicons name="alert-circle" size={20} color={theme.error} style={{ marginRight: 8 }} />
+          <Ionicons name="alert-circle" size={18} color={theme.error} style={{ marginRight: 8 }} />
           <Text style={[styles.alertText, { color: theme.error }]}>
-            Your current plan exceeds your budget by {formatCurrency(deficit)}.
+            Current itinerary exceeds target budget by {formatCurrency(deficit)}.
           </Text>
         </View>
       )}
@@ -102,13 +102,13 @@ export const BudgetBreakdownChart = ({
       {/* Optimized Badge Box */}
       {breakdown.isOptimized && (
         <View style={[styles.optimizedBox, { backgroundColor: theme.successLight, borderColor: theme.success }]}>
-          <Ionicons name="sparkles" size={18} color={theme.success} style={{ marginRight: 6 }} />
+          <Ionicons name="checkmark-circle" size={18} color={theme.success} style={{ marginRight: 6 }} />
           <View style={{ flex: 1 }}>
             <Text style={[styles.optimizedTitle, { color: theme.success }]}>
-              Plan Budget Optimized!
+              Budget Optimized
             </Text>
             <Text style={[styles.optimizedDesc, { color: theme.textSecondary }]}>
-              Saved {formatCurrency(breakdown.savingsGained || 1850)} by choosing high-rated eco homestays and community transit.
+              Saved {formatCurrency(breakdown.savingsGained || 1850)} by selecting certified eco-homestays and public transit.
             </Text>
           </View>
         </View>
@@ -123,7 +123,7 @@ export const BudgetBreakdownChart = ({
           return (
             <View key={index} style={styles.itemRow}>
               <View style={styles.itemLeft}>
-                <View style={[styles.itemIcon, { backgroundColor: item.color + '18' }]}>
+                <View style={[styles.itemIcon, { backgroundColor: item.color + '15' }]}>
                   <Ionicons name={item.icon} size={15} color={item.color} />
                 </View>
                 <Text style={[styles.itemLabel, { color: theme.text }]}>{item.label}</Text>
@@ -176,7 +176,7 @@ export const BudgetBreakdownChart = ({
         <Button
           title="Optimize Budget"
           variant="primary"
-          icon="sparkles"
+          icon="options-outline"
           onPress={onOptimizePress}
           style={styles.optimizeBtn}
         />
@@ -199,10 +199,11 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
   },
   subTitle: {
     fontSize: 12,
+    fontFamily: 'Manrope_400Regular',
     marginTop: 2,
   },
   statusPill: {
@@ -212,7 +213,7 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 11,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
   },
   progressBarBg: {
     height: 8,
@@ -232,10 +233,11 @@ const styles = StyleSheet.create({
   },
   totalLabel: {
     fontSize: 12,
+    fontFamily: 'Manrope_400Regular',
   },
   utilizationText: {
     fontSize: 12,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
   },
   alertBox: {
     flexDirection: 'row',
@@ -248,7 +250,7 @@ const styles = StyleSheet.create({
   alertText: {
     flex: 1,
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
     lineHeight: 16,
   },
   optimizedBox: {
@@ -261,12 +263,13 @@ const styles = StyleSheet.create({
   },
   optimizedTitle: {
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
     marginBottom: 2,
   },
   optimizedDesc: {
-    fontSize: 11,
-    lineHeight: 15,
+    fontSize: 11.5,
+    fontFamily: 'Manrope_400Regular',
+    lineHeight: 16,
   },
   divider: {
     height: 1,
@@ -294,6 +297,7 @@ const styles = StyleSheet.create({
   },
   itemLabel: {
     fontSize: 13,
+    fontFamily: 'Manrope_500Medium',
   },
   itemRight: {
     flexDirection: 'row',
@@ -302,10 +306,11 @@ const styles = StyleSheet.create({
   },
   itemAmount: {
     fontSize: 13,
-    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
   },
   itemPercent: {
     fontSize: 11,
+    fontFamily: 'Manrope_400Regular',
   },
   optimizeBtn: {
     marginTop: 14,

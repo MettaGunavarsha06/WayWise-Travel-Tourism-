@@ -15,26 +15,25 @@ import { Input } from '../../components/Input';
 import { Button } from '../../components/Button';
 
 const categoryOptions = [
-  'Handicrafts',
-  'Local Guides',
-  'Restaurants',
-  'Homestays',
-  'Adventure',
-  'Cultural Experiences',
-  'Taxi Services',
-  'Small Hotels',
+  'Handicrafts & Artisans',
+  'Eco-Friendly Homestays',
+  'Organic Food & Dining',
+  'Certified Local Guides',
+  'Green Transport & EV',
 ];
+
+const priceOptions = ['₹ (Affordable)', '₹₹ (Moderate)', '₹₹₹ (Premium)'];
 
 export const RegisterBusinessScreen = ({ navigation }) => {
   const { theme } = useTheme();
   const { registerBusiness } = useBusinesses();
 
   const [name, setName] = useState('');
-  const [category, setCategory] = useState('Handicrafts');
+  const [category, setCategory] = useState(categoryOptions[0]);
   const [location, setLocation] = useState('');
   const [contactPerson, setContactPerson] = useState('');
   const [phone, setPhone] = useState('');
-  const [priceRange, setPriceRange] = useState('₹300 - ₹1,500');
+  const [priceRange, setPriceRange] = useState('₹₹ (Moderate)');
   const [description, setDescription] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -57,8 +56,8 @@ export const RegisterBusinessScreen = ({ navigation }) => {
     setSubmitting(false);
 
     Alert.alert(
-      'Business Registered! 🎉',
-      `"${name}" has been successfully added to the SmartTour Local Business Marketplace and Tourism Authority Directory.`,
+      'Business Registered',
+      `"${name}" has been successfully added to the WayWise Local Business Marketplace and Tourism Authority Directory.`,
       [{ text: 'View Marketplace', onPress: () => navigation.goBack() }]
     );
   };
@@ -79,7 +78,7 @@ export const RegisterBusinessScreen = ({ navigation }) => {
         <View style={[styles.infoBox, { backgroundColor: theme.primaryLight, borderColor: theme.primary }]}>
           <Ionicons name="shield-checkmark" size={22} color={theme.primaryDark} style={{ marginRight: 8 }} />
           <Text style={[styles.infoText, { color: theme.primaryDark }]}>
-            Join the SIH 2026 Integrated Tourism Network. Verified listings connect directly with thousands of traveling tourists.
+            Join the SIH 2026 Integrated Tourism Network. Verified listings connect directly with traveling tourists.
           </Text>
         </View>
 
@@ -111,7 +110,7 @@ export const RegisterBusinessScreen = ({ navigation }) => {
                 >
                   <Text
                     style={[
-                      styles.catText,
+                      styles.catPillText,
                       { color: isSelected ? '#FFFFFF' : theme.text },
                     ]}
                   >
@@ -123,55 +122,78 @@ export const RegisterBusinessScreen = ({ navigation }) => {
           </ScrollView>
 
           <Input
-            label="Location / Area *"
+            label="Operational Location / Address *"
             value={location}
             onChangeText={setLocation}
-            placeholder="e.g. Etikoppaka Village, Vizag Region"
+            placeholder="e.g. Etikoppaka Village, Visakhapatnam"
             icon="location-outline"
           />
 
           <Input
-            label="Contact Person / Owner"
+            label="Contact Person Name"
             value={contactPerson}
             onChangeText={setContactPerson}
-            placeholder="e.g. K. Someswara Rao"
+            placeholder="e.g. Master Artisan Ramana"
             icon="person-outline"
           />
 
           <Input
-            label="Phone Number / WhatsApp *"
+            label="Contact Phone / WhatsApp *"
             value={phone}
             onChangeText={setPhone}
-            placeholder="e.g. +91 98480 11223"
+            placeholder="e.g. +91 98480 12345"
             icon="call-outline"
             keyboardType="phone-pad"
           />
 
-          <Input
-            label="Price Range / Fee Structure"
-            value={priceRange}
-            onChangeText={setPriceRange}
-            placeholder="e.g. ₹200 - ₹1,200 per item / session"
-            icon="cash-outline"
-          />
+          {/* Price Range */}
+          <Text style={[styles.label, { color: theme.textSecondary }]}>Typical Price Range</Text>
+          <View style={styles.priceRow}>
+            {priceOptions.map((p) => {
+              const isSelected = priceRange === p;
+              return (
+                <TouchableOpacity
+                  key={p}
+                  onPress={() => setPriceRange(p)}
+                  style={[
+                    styles.pricePill,
+                    {
+                      backgroundColor: isSelected ? theme.primary : theme.cardSecondary,
+                      borderColor: isSelected ? theme.primary : theme.border,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.priceText,
+                      { color: isSelected ? '#FFFFFF' : theme.text },
+                    ]}
+                  >
+                    {p}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
 
           <Input
-            label="Business Description & Story"
+            label="Business Description"
             value={description}
             onChangeText={setDescription}
-            placeholder="Tell tourists about your craft, organic meals, or guided tours..."
+            placeholder="Describe your artisan heritage, eco practices, products..."
             multiline
-            numberOfLines={4}
+            numberOfLines={3}
+            style={styles.textArea}
           />
 
           <Button
-            title="Submit Business Listing"
+            title="Submit Registration"
             variant="primary"
             size="large"
             loading={submitting}
             icon="checkmark-circle-outline"
             onPress={handleSubmit}
-            style={styles.submitBtn}
+            style={{ marginTop: 16 }}
           />
         </View>
 
@@ -197,8 +219,8 @@ const styles = StyleSheet.create({
     padding: 6,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 17,
+    fontFamily: 'Manrope_700Bold',
   },
   scrollContent: {
     padding: 16,
@@ -206,29 +228,33 @@ const styles = StyleSheet.create({
   infoBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 14,
-    borderRadius: 14,
+    padding: 12,
+    borderRadius: 12,
     borderWidth: 1,
     marginBottom: 16,
   },
   infoText: {
-    fontSize: 12,
+    fontSize: 12.5,
+    fontFamily: 'Manrope_500Medium',
+    lineHeight: 18,
     flex: 1,
-    lineHeight: 17,
   },
   formCard: {
-    borderRadius: 20,
+    borderRadius: 16,
     borderWidth: 1,
-    padding: 18,
+    padding: 16,
   },
   label: {
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: 12,
+    fontFamily: 'Manrope_700Bold',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
     marginBottom: 8,
+    marginTop: 6,
   },
   catScroll: {
     gap: 8,
-    marginBottom: 16,
+    paddingBottom: 14,
   },
   catPill: {
     paddingHorizontal: 12,
@@ -236,11 +262,28 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
   },
-  catText: {
-    fontSize: 12,
-    fontWeight: '600',
+  catPillText: {
+    fontSize: 12.5,
+    fontFamily: 'Manrope_600SemiBold',
   },
-  submitBtn: {
-    marginTop: 10,
+  priceRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 14,
+  },
+  pricePill: {
+    flex: 1,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+  priceText: {
+    fontSize: 12,
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  textArea: {
+    minHeight: 80,
+    textAlignVertical: 'top',
   },
 });

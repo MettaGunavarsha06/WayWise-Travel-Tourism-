@@ -123,12 +123,12 @@ export const Header = ({ onSOSPress, onNotificationsPress }) => {
         <View style={styles.greetingRow}>
           <View style={styles.greetingTextContainer}>
             <Text style={[styles.greeting, { color: theme.text }]}>
-              {t('greeting') || `Good morning, ${user?.name || 'Gunavarsha'} 👋`}
+              {t('greeting') || `Good morning, ${user?.name || 'Gunavarsha'}`}
             </Text>
             <View style={styles.ecoRow}>
               <Ionicons name="leaf" size={12} color={theme.ecoGreen} />
               <Text style={[styles.subGreeting, { color: theme.textSecondary }]}>
-                {user?.ecoPoints || 520} Eco Points • {user?.ecoBadge || 'Eco Champion'}
+                {user?.ecoPoints || 520} Eco Points · {user?.ecoBadge || 'Eco Champion'}
               </Text>
             </View>
           </View>

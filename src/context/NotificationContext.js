@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState } from 'react';
 const initialDemoNotifications = [
   {
     id: 'notif_1',
-    title: '🏨 Hotel Check-In Tomorrow',
+    title: 'Hotel Check-In Tomorrow',
     message: 'Your stay at Bay Breeze Eco-Luxury Resort is scheduled for tomorrow at 11:00 AM.',
     time: '10 mins ago',
     type: 'hotel',
@@ -11,15 +11,15 @@ const initialDemoNotifications = [
   },
   {
     id: 'notif_2',
-    title: '🌧️ Weather Alert: Rain Expected',
-    message: 'Rain expected tomorrow. Tap to swap outdoor beach stops to air-conditioned naval museums.',
+    title: 'Weather Advisory: Rain Expected',
+    message: 'Rain expected tomorrow. Tap to swap outdoor beach stops to sheltered cultural venues.',
     time: '1 hour ago',
     type: 'weather',
     unread: true,
   },
   {
     id: 'notif_3',
-    title: '👥 High Crowd Density Detected',
+    title: 'High Crowd Density Advisory',
     message: 'Crowd levels are peak (88%) at RK Beach. We found 3 tranquil alternatives nearby.',
     time: '3 hours ago',
     type: 'crowd',
@@ -27,7 +27,7 @@ const initialDemoNotifications = [
   },
   {
     id: 'notif_4',
-    title: '💰 AI Budget Status',
+    title: 'Budget Status Update',
     message: 'Great planning! You have ₹2,000 remaining in your trip budget.',
     time: '5 hours ago',
     type: 'budget',
@@ -35,8 +35,8 @@ const initialDemoNotifications = [
   },
   {
     id: 'notif_5',
-    title: '🌱 Eco-Tourism Milestone',
-    message: 'You earned 50 Eco-Points by choosing electric rail over cab transit!',
+    title: 'Eco-Tourism Milestone',
+    message: 'You earned 50 Eco-Points by choosing electric rail over private cab transit!',
     time: '1 day ago',
     type: 'eco',
     unread: false,
@@ -63,7 +63,7 @@ export const NotificationProvider = ({ children }) => {
   const triggerDemoNotification = (customNotif) => {
     const newEntry = {
       id: `notif_${Date.now()}`,
-      title: customNotif?.title || '🔔 SmartTour Alert',
+      title: customNotif?.title || 'WayWise Alert',
       message: customNotif?.message || 'New tourism updates available for your itinerary.',
       time: 'Just now',
       type: customNotif?.type || 'general',

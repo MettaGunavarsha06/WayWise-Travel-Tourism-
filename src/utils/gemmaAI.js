@@ -1,12 +1,6 @@
 /**
- * Google Gemma AI Travel Assistant Service
- * Inspired by Google Gemma Cookbook (https://github.com/google-gemma/cookbook)
- * 
- * Implements:
- * 1. Gemma Travel Agent System Prompting
- * 2. Gemma Structured Function Calling & Tool Use
- * 3. Multilingual Indian Tourism Dialects (Hindi, Telugu, Tamil, Kannada, Malayalam)
- * 4. Offline High-Speed Reasoning Fallback & Custom API Endpoint Connector
+ * WayWise Travel Assistant Service
+ * High-speed local reasoning and smart travel concierges
  */
 
 import { destinations } from '../data/destinations';
@@ -15,60 +9,18 @@ import { transportModes } from '../data/transport';
 import { crowdData } from '../data/crowdData';
 import { weatherData, defaultWeather } from '../data/weather';
 
-export const GEMMA_MODEL_VERSION = 'Gemma 2 (9B Instruction-Tuned)';
+export const GEMMA_MODEL_VERSION = 'WayWise Travel Concierge';
 
-// Gemma System Instruction aligned with Google Gemma Cookbook patterns
 export const GEMMA_SYSTEM_INSTRUCTION = `
-You are SmartTour Gemma AI, an advanced AI travel reasoning model trained on Indian Tourism datasets for Smart India Hackathon 2026.
+You are the WayWise Travel Assistant, designed for sustainable and cultural tourism across India.
 Your role:
 1. Provide personalized day-by-day itineraries based on budget, interests, and eco-preferences.
-2. Monitor real-time crowd saturation and suggest hidden offbeat alternatives to prevent over-tourism.
-3. Adapt itineraries dynamically to forecasted weather anomalies (e.g., swapping outdoor treks to naval/archaeological museums during rain).
+2. Monitor real-time crowd saturation and suggest peaceful alternatives to prevent over-tourism.
+3. Adapt itineraries dynamically to forecasted weather anomalies.
 4. Direct spending toward local grassroots artisans, tribal cooperatives, and certified green homestays.
 5. Offer emergency safety guidance and multi-lingual assistance across English, Hindi, Telugu, Tamil, Kannada, and Malayalam.
 `;
 
-// Available Gemma Tool Declarations for Function Calling
-export const GEMMA_TOOLS = [
-  {
-    name: 'optimize_budget',
-    description: 'Rebalances tourist budget by substituting luxury lodging with certified eco homestays and commercial cabs with express electric trains.',
-    parameters: {
-      currentTotal: 'number',
-      userTarget: 'number',
-      destination: 'string',
-    },
-  },
-  {
-    name: 'weather_adaptive_swap',
-    description: 'Swaps outdoor destinations with weather-safe indoor cultural venues and museums when precipitation probability exceeds 60%.',
-    parameters: {
-      destinationId: 'string',
-      forecastCondition: 'string',
-    },
-  },
-  {
-    name: 'crowd_anti_overtourism_reroute',
-    description: 'Finds peaceful, low-density alternative attractions when destination capacity exceeds 75%.',
-    parameters: {
-      spotName: 'string',
-      crowdDensityPercent: 'number',
-    },
-  },
-  {
-    name: 'locate_grassroots_artisans',
-    description: 'Identifies certified indigenous craftsmen, tribal coffee growers, and local guides with zero middleman commissions.',
-    parameters: {
-      category: 'string',
-      destination: 'string',
-    },
-  }
-];
-
-/**
- * Executes Gemma reasoning loop on user prompts.
- * Connects to remote Gemma endpoints if configured, or executes instant local Gemma-reasoning pipeline.
- */
 export const queryGemmaAssistant = async ({
   prompt,
   conversationHistory = [],
@@ -78,8 +30,7 @@ export const queryGemmaAssistant = async ({
   const query = prompt.trim();
   const lower = query.toLowerCase();
 
-  // Simulated Gemma inference latency (realistic AI thinking time)
-  await new Promise((resolve) => setTimeout(resolve, 600));
+  await new Promise((resolve) => setTimeout(resolve, 500));
 
   // 1. Budget Optimization Intent
   if (
@@ -92,7 +43,7 @@ export const queryGemmaAssistant = async ({
   ) {
     return {
       model: GEMMA_MODEL_VERSION,
-      text: `✨ **Gemma AI Budget Analysis & Optimization:**\n\nI analyzed your target travel parameters. Here is your rebalanced expenditure breakdown:\n\n• **Lodging:** Swapped premium suites for *Bay Breeze Eco-Homestay* (Saved ₹2,800)\n• **Transit:** Express Rail / E-Auto corridors instead of private cabs (Saved ₹1,300)\n• **Dining:** Curated authentic banana-leaf Andhra thalis (Saved ₹600)\n• **Direct Local Benefit:** 82% of your budget now directly benefits grassroots artisans!\n\n💡 **Remaining Surplus:** You have **₹2,000+** available for authentic lacquer wooden crafts and coffee estate tours.`,
+      text: `Budget Analysis & Optimization Summary:\n\nBased on your travel parameters, here is a rebalanced expenditure breakdown:\n\n• Lodging: Swapped premium suites for Bay Breeze Eco-Homestay (Saved ₹2,800)\n• Transit: Electric rail and local transit corridors instead of private cabs (Saved ₹1,300)\n• Dining: Authentic local dining and seasonal thalis (Saved ₹600)\n• Local Community Benefit: 82% of your budget now directly supports local businesses and artisans.\n\nRemaining Surplus: You have ₹2,000+ available for artisan crafts and guided tours.`,
       actionSuggestion: {
         type: 'OPTIMIZE_BUDGET',
         label: 'Apply Budget Optimization',
@@ -111,7 +62,7 @@ export const queryGemmaAssistant = async ({
   ) {
     return {
       model: GEMMA_MODEL_VERSION,
-      text: `🌧️ **Gemma Predictive Weather Rerouting:**\n\nAccording to meteorological telemetry, heavy coastal rain (85% probability) is expected tomorrow from 11:00 AM.\n\n**Gemma Adaptive Plan:**\n1. 🔄 **Substituted Outdoor Activity:** Kailasagiri Hilltop Ropeway & Beach Walk.\n2. 🏛️ **Protected Indoor Alternative:** INS Kursura Submarine Museum, TU 142 Aircraft Simulator & Visakha Art Gallery.\n3. ⏱️ **Zero time lost:** Fully sheltered, air-conditioned, and family-friendly.`,
+      text: `Weather Adaptive Recommendation:\n\nHeavy coastal rain is forecasted tomorrow morning.\n\nSuggested Plan Adjustments:\n1. Rescheduled Outdoor Activities: Hilltop ropeway and open beach walks.\n2. Sheltered Cultural Venues: INS Kursura Submarine Museum, TU 142 Aircraft Museum, and City Art Gallery.\n3. Continuous Experience: Fully sheltered, air-conditioned, and comfortable for all age groups.`,
       actionSuggestion: {
         type: 'APPLY_WEATHER_SWAP',
         label: 'Apply Weather Adjustment to Itinerary',
@@ -131,7 +82,7 @@ export const queryGemmaAssistant = async ({
   ) {
     return {
       model: GEMMA_MODEL_VERSION,
-      text: `💎 **Gemma Anti-Overtourism Intelligence:**\n\nRK Beach & Tirumala sanctums are currently experiencing peak visitor density (>85%). Here are Gemma's top 3 peaceful alternatives:\n\n1. 🏖️ **Yarada Golden Beach:** Secluded coastal bay flanked by dolphin hills with 75% fewer tourists.\n2. ☕ **Araku Organic Valley:** Zero over-tourism, misty coffee plantations, and million-year-old Borra limestone caverns.\n3. 🏰 **Chandragiri Royal Citadel:** Vijayanagara architecture and quiet botanical lawns.`,
+      text: `Crowd Density & Offbeat Recommendations:\n\nPopular central sites are currently experiencing higher visitor density. Here are peaceful curated alternatives nearby:\n\n1. Yarada Beach: Secluded coastal bay flanked by verdant hills with fewer crowds.\n2. Araku Valley: Misty coffee plantations, indigenous culture, and limestone caverns.\n3. Chandragiri Citadel: Historic royal architecture with tranquil garden courtyards.`,
       actionSuggestion: {
         type: 'EXPLORE_GEMS',
         label: 'View Hidden Gems on Map',
@@ -151,7 +102,7 @@ export const queryGemmaAssistant = async ({
   ) {
     return {
       model: GEMMA_MODEL_VERSION,
-      text: `🏪 **Gemma Grassroots Marketplace Recommender:**\n\nDirectly verified vendor cooperatives near you:\n\n• 🪵 **Etikoppaka Lacquer Craft Guild:** Chemical-free natural vegetable dye wooden toys.\n• ☕ **Araku Tribal Coffee Co-op:** 100% shade-grown organic Arabica roast.\n• 🎨 **Bagru Block Print Artisans:** Heritage mud-resist Dabu fabric printing.\n• 🐟 **Andhra Ruchulu:** Farm-to-table coastal cuisine on fresh banana leaves.`,
+      text: `Verified Local Artisans & Cooperative Markets:\n\nCertified community businesses in the area:\n\n• Etikoppaka Lacquer Craft Guild: Natural vegetable dye wooden handicrafts.\n• Araku Tribal Coffee Cooperative: Shade-grown organic Arabica roasts.\n• Bagru Hand Block Print Artisans: Heritage natural dye textile printing.\n• Coastal Kitchens: Authentic regional dining on fresh banana leaves.`,
       actionSuggestion: {
         type: 'VIEW_BUSINESSES',
         label: 'Open Local Marketplace',
@@ -169,22 +120,22 @@ export const queryGemmaAssistant = async ({
   ) {
     return {
       model: GEMMA_MODEL_VERSION,
-      text: `📍 **Gemma Proximity Intelligence (Within 10 km):**\n\n1. **INS Kursura Submarine Museum** (1.2 km • ⭐ 4.8 • ₹70)\n2. **RK Beach & Promenade** (1.5 km • Free Entry • High Crowd)\n3. **TU 142 Aircraft Museum** (2.1 km • ⭐ 4.7 • ₹50)\n4. **Kailasagiri Hilltop Park & Ropeway** (4.5 km • ⭐ 4.9 • ₹150)\n5. **Tenneti Coastal Green Park** (6.0 km • ⭐ 4.6 • Peaceful)`,
+      text: `Key Attractions Nearby (Within 10 km):\n\n1. INS Kursura Submarine Museum (1.2 km · 4.8 Rating · ₹70 Entry)\n2. RK Beach & Promenade (1.5 km · Open Shoreline · Free Entry)\n3. TU 142 Aircraft Museum (2.1 km · 4.7 Rating · ₹50 Entry)\n4. Kailasagiri Hilltop Park (4.5 km · 4.9 Rating · ₹150 Entry)\n5. Tenneti Coastal Park (6.0 km · 4.6 Rating · Scenic Views)`,
       actionSuggestion: {
         type: 'OPEN_MAP',
-        label: 'Show Nearby Spots on Smart Map',
+        label: 'Show Nearby Spots on Map',
       },
       toolCall: 'proximity_search',
     };
   }
 
-  // General Gemma Response
+  // General Response
   return {
     model: GEMMA_MODEL_VERSION,
-    text: `🤖 **SmartTour Gemma AI:**\n\nI have processed your inquiry: "${query}".\n\nAs your integrated SIH 2026 travel copilot, I can:\n• Generate a customized 1-7 day itinerary with live cost estimation.\n• Reschedule stops automatically when rain is detected.\n• Optimize your lodging and transport budget.\n• Issue your secure **Digital Tourism Pass (QR)** for express access.`,
+    text: `WayWise Travel Assistant:\n\nI have received your request: "${query}".\n\nI can assist you with:\n• Planning customized day-by-day travel itineraries.\n• Rescheduling activities when rain or high heat is forecasted.\n• Optimizing lodging and transit budgets.\n• Generating your Digital Tourism Pass for contactless entry.`,
     actionSuggestion: {
       type: 'OPEN_PLANNER',
-      label: '✨ Create AI Smart Itinerary',
+      label: 'Plan Trip Itinerary',
     },
   };
 };

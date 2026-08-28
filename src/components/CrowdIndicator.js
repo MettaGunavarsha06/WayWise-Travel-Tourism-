@@ -11,10 +11,9 @@ export const CrowdIndicator = ({ level = 'low', percent, compact = false }) => {
       case 'high':
         return {
           label: t('highCrowd') || 'High Crowd',
-          color: '#EF4444',
+          color: '#DC2626',
           bg: '#FEE2E2',
           icon: 'people',
-          dot: '🔴',
         };
       case 'moderate':
         return {
@@ -22,16 +21,14 @@ export const CrowdIndicator = ({ level = 'low', percent, compact = false }) => {
           color: '#D97706',
           bg: '#FEF3C7',
           icon: 'people-outline',
-          dot: '🟡',
         };
       case 'low':
       default:
         return {
           label: t('lowCrowd') || 'Low Crowd',
-          color: '#059669',
-          bg: '#D1FAE5',
+          color: '#15803D',
+          bg: '#DCFCE7',
           icon: 'person-outline',
-          dot: '🟢',
         };
     }
   };
@@ -50,10 +47,10 @@ export const CrowdIndicator = ({ level = 'low', percent, compact = false }) => {
   }
 
   return (
-    <View style={[styles.badge, { backgroundColor: config.bg, borderColor: config.color + '40' }]}>
-      <Ionicons name={config.icon} size={14} color={config.color} style={{ marginRight: 4 }} />
+    <View style={[styles.badge, { backgroundColor: config.bg, borderColor: config.color + '30' }]}>
+      <Ionicons name={config.icon} size={13} color={config.color} style={{ marginRight: 4 }} />
       <Text style={[styles.text, { color: config.color }]}>
-        {config.label} {percent ? `• ${percent}% density` : ''}
+        {config.label} {percent ? `· ${percent}% capacity` : ''}
       </Text>
     </View>
   );
@@ -65,14 +62,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 8,
+    borderRadius: 7,
     borderWidth: 1,
     alignSelf: 'flex-start',
   },
   compactBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 6,
+    paddingHorizontal: 7,
     paddingVertical: 3,
     borderRadius: 6,
     alignSelf: 'flex-start',
@@ -81,7 +78,7 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    marginRight: 4,
+    marginRight: 5,
   },
   text: {
     fontSize: 12,

@@ -17,10 +17,10 @@ import { formatCurrency } from '../../utils/helpers';
 
 const filters = [
   { id: 'all', label: 'All Modes' },
-  { id: 'cheapest', label: '💸 Cheapest' },
-  { id: 'fastest', label: '⚡ Fastest' },
-  { id: 'comfortable', label: '🛋️ Comfortable' },
-  { id: 'eco', label: '🌱 Eco-friendly' },
+  { id: 'cheapest', label: 'Budget-Friendly' },
+  { id: 'fastest', label: 'Express Transit' },
+  { id: 'comfortable', label: 'Comfortable' },
+  { id: 'eco', label: 'Eco-Friendly' },
 ];
 
 export const TransportScreen = ({ navigation }) => {
@@ -37,9 +37,9 @@ export const TransportScreen = ({ navigation }) => {
 
   const handleSelect = (mode) => {
     Alert.alert(
-      'Transport Selected 🚆',
+      'Transport Selected',
       `"${mode.name}" set as your preferred transit mode.\nCost: ${formatCurrency(mode.cost)} | Time: ${mode.time} | Eco: ${mode.ecoScore}/100`,
-      [{ text: 'Great!', style: 'default' }]
+      [{ text: 'OK', style: 'default' }]
     );
   };
 
@@ -50,14 +50,14 @@ export const TransportScreen = ({ navigation }) => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color={theme.text} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.text }]}>Multi-Modal Transport Planner</Text>
+        <Text style={[styles.headerTitle, { color: theme.text }]}>Transport &amp; Mobility Planner</Text>
         <View style={{ width: 30 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Quick Comparison Summary Table Card */}
         <View style={[styles.tableCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <Text style={[styles.tableTitle, { color: theme.text }]}>⚡ Multi-Modal Comparison Matrix</Text>
+          <Text style={[styles.tableTitle, { color: theme.text }]}>Multi-Modal Comparison Matrix</Text>
 
           <View style={[styles.tableHeader, { backgroundColor: theme.cardSecondary }]}>
             <Text style={[styles.th, { flex: 1.2, color: theme.textSecondary }]}>Transport</Text>
@@ -75,11 +75,11 @@ export const TransportScreen = ({ navigation }) => {
                 idx === 0 && { backgroundColor: theme.primaryLight + '40' },
               ]}
             >
-              <Text style={[styles.td, { flex: 1.2, fontWeight: '700', color: theme.text }]} numberOfLines={1}>
+              <Text style={[styles.td, { flex: 1.2, fontFamily: 'Manrope_700Bold', color: theme.text }]} numberOfLines={1}>
                 {t.name.split(' ')[0]}
               </Text>
               <Text style={[styles.td, { flex: 0.8, color: theme.textSecondary }]}>{t.time}</Text>
-              <Text style={[styles.td, { flex: 0.8, color: theme.primary, fontWeight: '700' }]}>
+              <Text style={[styles.td, { flex: 0.8, color: theme.primary, fontFamily: 'Manrope_700Bold' }]}>
                 {formatCurrency(t.cost)}
               </Text>
               <View style={{ flex: 0.8 }}>
@@ -98,7 +98,7 @@ export const TransportScreen = ({ navigation }) => {
                 key={f.id}
                 onPress={() => setSelectedFilter(f.id)}
                 style={[
-                  styles.filterPill,
+                  styles.filterChip,
                   {
                     backgroundColor: isSelected ? theme.primary : theme.card,
                     borderColor: isSelected ? theme.primary : theme.border,
@@ -107,7 +107,7 @@ export const TransportScreen = ({ navigation }) => {
               >
                 <Text
                   style={[
-                    styles.filterPillText,
+                    styles.filterText,
                     { color: isSelected ? '#FFFFFF' : theme.text },
                   ]}
                 >
@@ -118,39 +118,36 @@ export const TransportScreen = ({ navigation }) => {
           })}
         </ScrollView>
 
-        {/* Transport Mode Cards */}
-        <View style={styles.cardsList}>
+        {/* Cards */}
+        <View style={styles.cardList}>
           {filteredModes.map((mode) => (
             <View
               key={mode.id}
-              style={[
-                styles.modeCard,
-                {
-                  backgroundColor: theme.card,
-                  borderColor: theme.border,
-                  shadowColor: theme.shadow,
-                },
-              ]}
+              style={[styles.modeCard, { backgroundColor: theme.card, borderColor: theme.border }]}
             >
-              <View style={styles.cardTopRow}>
-                <View style={[styles.iconBox, { backgroundColor: theme.primaryLight }]}>
-                  <Ionicons name={mode.icon} size={24} color={theme.primary} />
+              <View style={styles.modeHeader}>
+                <View style={[styles.modeIconBox, { backgroundColor: theme.primaryLight }]}>
+                  <Ionicons name={mode.icon || 'train-outline'} size={24} color={theme.primary} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.modeName, { color: theme.text }]}>{mode.name}</Text>
-                  <Text style={[styles.modeDesc, { color: theme.textSecondary }]}>{mode.description}</Text>
+                  <Text style={[styles.modeRoute, { color: theme.textSecondary }]}>{mode.route}</Text>
                 </View>
               </View>
 
-              <View style={styles.statsRow}>
+              <Text style={[styles.modeDesc, { color: theme.textSecondary }]}>
+                {mode.description}
+              </Text>
+
+              <View style={styles.statGrid}>
                 <View style={styles.statCol}>
-                  <Text style={[styles.statLabel, { color: theme.textMuted }]}>TRAVEL TIME</Text>
+                  <Text style={[styles.statLabel, { color: theme.textMuted }]}>DURATION</Text>
                   <Text style={[styles.statValue, { color: theme.text }]}>{mode.time}</Text>
                 </View>
 
                 <View style={styles.statCol}>
                   <Text style={[styles.statLabel, { color: theme.textMuted }]}>TICKET FARE</Text>
-                  <Text style={[styles.statValue, { color: theme.primary, fontWeight: '800' }]}>
+                  <Text style={[styles.statValue, { color: theme.primary, fontFamily: 'Manrope_700Bold' }]}>
                     {formatCurrency(mode.cost)}
                   </Text>
                 </View>
@@ -172,7 +169,7 @@ export const TransportScreen = ({ navigation }) => {
 
               <View style={styles.cardBottomRow}>
                 <Text style={[styles.freqText, { color: theme.textMuted }]}>
-                  🕒 Frequency: {mode.frequency}
+                  Frequency: {mode.frequency}
                 </Text>
                 <Button
                   title="Choose Mode"
@@ -208,8 +205,8 @@ const styles = StyleSheet.create({
     padding: 6,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 17,
+    fontFamily: 'Manrope_700Bold',
   },
   scrollContent: {
     padding: 16,
@@ -222,63 +219,60 @@ const styles = StyleSheet.create({
   },
   tableTitle: {
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
     marginBottom: 10,
   },
   tableHeader: {
     flexDirection: 'row',
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    borderRadius: 8,
-    marginBottom: 4,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderRadius: 6,
   },
   th: {
     fontSize: 11,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
     textTransform: 'uppercase',
   },
   tableRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 8,
     borderBottomWidth: 1,
   },
   td: {
     fontSize: 12,
+    fontFamily: 'Manrope_500Medium',
   },
   filterRow: {
     gap: 8,
-    marginBottom: 16,
+    paddingBottom: 14,
   },
-  filterPill: {
+  filterChip: {
     paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 12,
+    paddingVertical: 7,
+    borderRadius: 20,
     borderWidth: 1,
   },
-  filterPillText: {
-    fontSize: 12,
-    fontWeight: '700',
+  filterText: {
+    fontSize: 12.5,
+    fontFamily: 'Manrope_600SemiBold',
   },
-  cardsList: {
+  cardList: {
     gap: 14,
   },
   modeCard: {
     borderRadius: 16,
     borderWidth: 1,
-    padding: 14,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 2,
+    padding: 16,
   },
-  cardTopRow: {
+  modeHeader: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: 12,
-    marginBottom: 12,
+    marginBottom: 10,
   },
-  iconBox: {
+  modeIconBox: {
     width: 44,
     height: 44,
     borderRadius: 12,
@@ -287,30 +281,36 @@ const styles = StyleSheet.create({
   },
   modeName: {
     fontSize: 15,
-    fontWeight: '700',
-    marginBottom: 2,
+    fontFamily: 'Manrope_700Bold',
+  },
+  modeRoute: {
+    fontSize: 12,
+    fontFamily: 'Manrope_400Regular',
+    marginTop: 2,
   },
   modeDesc: {
-    fontSize: 12,
-    lineHeight: 16,
+    fontSize: 12.5,
+    fontFamily: 'Manrope_400Regular',
+    lineHeight: 18,
+    marginBottom: 12,
   },
-  statsRow: {
+  statGrid: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   statCol: {
-    flex: 1,
+    alignItems: 'flex-start',
   },
   statLabel: {
-    fontSize: 9,
-    fontWeight: '700',
-    letterSpacing: 0.5,
+    fontSize: 9.5,
+    fontFamily: 'Manrope_700Bold',
+    letterSpacing: 0.4,
     marginBottom: 2,
   },
   statValue: {
     fontSize: 13,
-    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
   },
   divider: {
     height: 1,
@@ -322,7 +322,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   freqText: {
-    fontSize: 11,
+    fontSize: 11.5,
+    fontFamily: 'Manrope_400Regular',
   },
   chooseBtn: {
     minWidth: 110,

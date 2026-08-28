@@ -11,7 +11,7 @@ export const HotelCard = ({ hotel, onPress, onBookPress, isSelected = false }) =
 
   return (
     <TouchableOpacity
-      activeOpacity={0.85}
+      activeOpacity={0.88}
       onPress={onPress}
       style={[
         styles.card,
@@ -24,10 +24,10 @@ export const HotelCard = ({ hotel, onPress, onBookPress, isSelected = false }) =
       ]}
     >
       <View style={styles.imageContainer}>
-        <Image source={{ uri: hotel.image }} style={styles.image} />
+        <Image source={{ uri: hotel.image }} style={styles.image} resizeMode="cover" />
         {hotel.isRecommended && (
           <View style={[styles.recBadge, { backgroundColor: theme.primary }]}>
-            <Text style={styles.recBadgeText}>✨ Recommended for your trip</Text>
+            <Text style={styles.recBadgeText}>Recommended Stay</Text>
           </View>
         )}
         <View style={styles.ratingBadge}>
@@ -45,7 +45,7 @@ export const HotelCard = ({ hotel, onPress, onBookPress, isSelected = false }) =
         </View>
 
         <Text style={[styles.type, { color: theme.textSecondary }]}>
-          {hotel.type} • {hotel.destinationName}
+          {hotel.type} · {hotel.destinationName}
         </Text>
 
         <View style={styles.distanceRow}>
@@ -109,15 +109,16 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: 'hidden',
     marginBottom: 16,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
   },
   imageContainer: {
-    height: 150,
+    height: 160,
     width: '100%',
     position: 'relative',
+    backgroundColor: '#E2E8F0',
   },
   image: {
     width: '100%',
@@ -134,13 +135,13 @@ const styles = StyleSheet.create({
   recBadgeText: {
     color: '#FFFFFF',
     fontSize: 11,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
   },
   ratingBadge: {
     position: 'absolute',
     top: 10,
     right: 10,
-    backgroundColor: 'rgba(15, 23, 42, 0.85)',
+    backgroundColor: 'rgba(15, 23, 42, 0.82)',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 7,
@@ -151,29 +152,28 @@ const styles = StyleSheet.create({
   ratingText: {
     color: '#FFFFFF',
     fontSize: 11,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
   },
   reviewsText: {
-    color: '#94A3B8',
+    color: '#CBD5E1',
     fontSize: 10,
+    fontFamily: 'Manrope_400Regular',
   },
   content: {
     padding: 14,
   },
   titleRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    marginBottom: 2,
   },
   name: {
-    fontSize: 16,
-    fontWeight: '700',
-    flex: 1,
+    fontSize: 15,
+    fontFamily: 'Manrope_700Bold',
+    letterSpacing: -0.2,
   },
   type: {
     fontSize: 12,
-    marginTop: 2,
-    marginBottom: 4,
+    fontFamily: 'Manrope_500Medium',
+    marginBottom: 6,
   },
   distanceRow: {
     flexDirection: 'row',
@@ -182,7 +182,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   distanceText: {
-    fontSize: 12,
+    fontSize: 11.5,
+    fontFamily: 'Manrope_400Regular',
   },
   ecoRow: {
     flexDirection: 'row',
@@ -191,19 +192,19 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   ecoTag: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
     borderRadius: 6,
   },
   ecoTagText: {
     fontSize: 11,
-    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
   },
   facilitiesRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
-    marginBottom: 8,
+    marginBottom: 10,
   },
   facilityPill: {
     paddingHorizontal: 8,
@@ -212,7 +213,7 @@ const styles = StyleSheet.create({
   },
   facilityText: {
     fontSize: 11,
-    fontWeight: '500',
+    fontFamily: 'Manrope_400Regular',
   },
   divider: {
     height: 1,
@@ -225,11 +226,13 @@ const styles = StyleSheet.create({
   },
   priceLabel: {
     fontSize: 10,
+    fontFamily: 'Manrope_500Medium',
     textTransform: 'uppercase',
+    letterSpacing: 0.3,
   },
   price: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
   },
   bookBtn: {
     minWidth: 100,

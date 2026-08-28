@@ -12,7 +12,7 @@ export const DestinationCard = ({ destination, onPress, style, horizontal = fals
   if (horizontal) {
     return (
       <TouchableOpacity
-        activeOpacity={0.85}
+        activeOpacity={0.88}
         onPress={onPress}
         style={[
           styles.horizontalCard,
@@ -24,11 +24,13 @@ export const DestinationCard = ({ destination, onPress, style, horizontal = fals
           style,
         ]}
       >
-        <Image source={{ uri: destination.image }} style={styles.horizontalImage} />
-        {/* Overlay rating badge */}
-        <View style={styles.hOverlayRating}>
-          <Ionicons name="star" size={11} color="#F59E0B" />
-          <Text style={styles.hOverlayRatingText}>{destination.rating}</Text>
+        <View style={styles.hImageWrap}>
+          <Image source={{ uri: destination.image }} style={styles.horizontalImage} resizeMode="cover" />
+          {/* Overlay rating badge */}
+          <View style={styles.hOverlayRating}>
+            <Ionicons name="star" size={11} color="#F59E0B" />
+            <Text style={styles.hOverlayRatingText}>{destination.rating}</Text>
+          </View>
         </View>
 
         <View style={styles.horizontalContent}>
@@ -42,7 +44,7 @@ export const DestinationCard = ({ destination, onPress, style, horizontal = fals
 
           {destination.isHiddenGem && destination.alternativeTo ? (
             <Text style={[styles.altTag, { color: theme.primary }]} numberOfLines={1}>
-              💎 {destination.alternativeTo}
+              {destination.alternativeTo}
             </Text>
           ) : null}
 
@@ -67,7 +69,7 @@ export const DestinationCard = ({ destination, onPress, style, horizontal = fals
 
   return (
     <TouchableOpacity
-      activeOpacity={0.85}
+      activeOpacity={0.88}
       onPress={onPress}
       style={[
         styles.card,
@@ -80,12 +82,13 @@ export const DestinationCard = ({ destination, onPress, style, horizontal = fals
       ]}
     >
       <View style={styles.imageContainer}>
-        <Image source={{ uri: destination.image }} style={styles.image} />
+        <Image source={{ uri: destination.image }} style={styles.image} resizeMode="cover" />
 
-        {/* Hidden Gem badge — green instead of dark/blue */}
+        {/* Hidden Gem badge */}
         {destination.isHiddenGem && (
           <View style={styles.hiddenGemBadge}>
-            <Text style={styles.hiddenGemText}>💎 Hidden Gem</Text>
+            <Ionicons name="compass-outline" size={12} color="#BBF7D0" style={{ marginRight: 4 }} />
+            <Text style={styles.hiddenGemText}>Hidden Gem</Text>
           </View>
         )}
 
@@ -96,9 +99,16 @@ export const DestinationCard = ({ destination, onPress, style, horizontal = fals
       </View>
 
       <View style={styles.content}>
-        <Text style={[styles.name, { color: theme.text }]} numberOfLines={1}>
-          {destination.name}
-        </Text>
+        <View style={styles.titleRow}>
+          <Text style={[styles.name, { color: theme.text }]} numberOfLines={1}>
+            {destination.name}
+          </Text>
+          {destination.subtitle && (
+            <Text style={[styles.subtitleTag, { color: theme.primary }]}>
+              {destination.subtitle}
+            </Text>
+          )}
+        </View>
 
         <Text style={[styles.location, { color: theme.textSecondary }]} numberOfLines={1}>
           <Ionicons name="location-outline" size={12} color={theme.textMuted} />{' '}
@@ -148,9 +158,10 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   imageContainer: {
-    height: 165,
+    height: 180,
     width: '100%',
     position: 'relative',
+    backgroundColor: '#E2E8F0',
   },
   image: {
     width: '100%',
@@ -158,9 +169,11 @@ const styles = StyleSheet.create({
   },
   hiddenGemBadge: {
     position: 'absolute',
-    top: 10,
-    left: 10,
-    backgroundColor: 'rgba(22, 101, 52, 0.88)',
+    top: 12,
+    left: 12,
+    backgroundColor: 'rgba(22, 101, 52, 0.9)',
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
@@ -172,15 +185,15 @@ const styles = StyleSheet.create({
   },
   overlayRating: {
     position: 'absolute',
-    top: 10,
-    right: 10,
-    backgroundColor: 'rgba(10, 30, 10, 0.78)',
+    top: 12,
+    right: 12,
+    backgroundColor: 'rgba(15, 23, 42, 0.82)',
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 7,
-    paddingVertical: 3,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     borderRadius: 6,
-    gap: 3,
+    gap: 4,
   },
   overlayRatingText: {
     color: '#FFFFFF',
@@ -190,10 +203,22 @@ const styles = StyleSheet.create({
   content: {
     padding: 14,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 2,
+  },
   name: {
-    fontSize: 15,
+    fontSize: 16,
     fontFamily: 'Manrope_700Bold',
-    marginBottom: 3,
+    letterSpacing: -0.2,
+    flex: 1,
+  },
+  subtitleTag: {
+    fontSize: 11,
+    fontFamily: 'Manrope_600SemiBold',
+    marginLeft: 8,
   },
   location: {
     fontSize: 12,
@@ -248,7 +273,7 @@ const styles = StyleSheet.create({
 
   // Horizontal card
   horizontalCard: {
-    width: 240,
+    width: 250,
     borderRadius: 16,
     borderWidth: 1,
     overflow: 'hidden',
@@ -257,17 +282,22 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.06,
     shadowRadius: 6,
     elevation: 2,
+  },
+  hImageWrap: {
+    width: '100%',
+    height: 140,
     position: 'relative',
+    backgroundColor: '#E2E8F0',
   },
   horizontalImage: {
     width: '100%',
-    height: 130,
+    height: '100%',
   },
   hOverlayRating: {
     position: 'absolute',
     top: 10,
     right: 10,
-    backgroundColor: 'rgba(10, 30, 10, 0.78)',
+    backgroundColor: 'rgba(15, 23, 42, 0.82)',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 6,
@@ -281,7 +311,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope_700Bold',
   },
   horizontalContent: {
-    padding: 11,
+    padding: 12,
   },
   altTag: {
     fontSize: 11,

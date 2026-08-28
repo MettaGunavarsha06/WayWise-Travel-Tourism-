@@ -24,8 +24,8 @@ export const HotelDetailScreen = ({ route, navigation }) => {
 
   const handleBook = () => {
     Alert.alert(
-      'Reservation Confirmed! 🏨',
-      `Your stay at "${hotel.name}" has been reserved for your SmartTour itinerary.\n\nTotal: ${formatCurrency(hotel.pricePerNight * 3)} for 3 Nights\nCheck-in: 11:00 AM\nEco Points Earned: +45 🌱`,
+      'Reservation Confirmed',
+      `Your stay at "${hotel.name}" has been reserved for your WayWise itinerary.\n\nTotal: ${formatCurrency(hotel.pricePerNight * 3)} for 3 Nights\nCheck-in: 11:00 AM\nEco Points Earned: +45`,
       [
         { text: 'View in My Trips', onPress: () => navigation.navigate('MyTrips') },
         { text: 'OK', style: 'cancel' }
@@ -37,7 +37,7 @@ export const HotelDetailScreen = ({ route, navigation }) => {
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       {/* Banner / Main Photo */}
       <View style={styles.bannerContainer}>
-        <Image source={{ uri: gallery[selectedPhotoIndex] || hotel.image }} style={styles.bannerImg} />
+        <Image source={{ uri: gallery[selectedPhotoIndex] || hotel.image }} style={styles.bannerImg} resizeMode="cover" />
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={20} color="#0F172A" />
         </TouchableOpacity>
@@ -58,7 +58,7 @@ export const HotelDetailScreen = ({ route, navigation }) => {
                 selectedPhotoIndex === idx && { borderColor: theme.primary, borderWidth: 2 },
               ]}
             >
-              <Image source={{ uri: img }} style={styles.thumbImg} />
+              <Image source={{ uri: img }} style={styles.thumbImg} resizeMode="cover" />
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -71,7 +71,7 @@ export const HotelDetailScreen = ({ route, navigation }) => {
             <View style={{ flex: 1 }}>
               <Text style={[styles.name, { color: theme.text }]}>{hotel.name}</Text>
               <Text style={[styles.type, { color: theme.textSecondary }]}>
-                {hotel.type} • {hotel.destinationName}
+                {hotel.type} · {hotel.destinationName}
               </Text>
             </View>
             <View style={styles.ratingBadge}>
@@ -92,7 +92,7 @@ export const HotelDetailScreen = ({ route, navigation }) => {
         {/* Eco Score & Sustainability Credentials */}
         <View style={[styles.ecoCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <View style={styles.ecoHeader}>
-            <Text style={[styles.ecoCardTitle, { color: theme.text }]}>🌱 Green Tourism Certification</Text>
+            <Text style={[styles.ecoCardTitle, { color: theme.text }]}>Sustainable Tourism Credentials</Text>
             <EcoScoreBadge score={hotel.sustainabilityScore} />
           </View>
 
@@ -112,9 +112,12 @@ export const HotelDetailScreen = ({ route, navigation }) => {
           <Text style={[styles.descText, { color: theme.textSecondary }]}>
             {hotel.description}
           </Text>
-          <Text style={[styles.addressText, { color: theme.textMuted }]}>
-            📍 {hotel.address}
-          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
+            <Ionicons name="navigate-outline" size={13} color={theme.textMuted} />
+            <Text style={[styles.addressText, { color: theme.textMuted }]}>
+              {hotel.address}
+            </Text>
+          </View>
         </View>
 
         {/* Facilities & Amenities */}
@@ -139,31 +142,32 @@ export const HotelDetailScreen = ({ route, navigation }) => {
                 <View style={styles.revHeader}>
                   <Text style={[styles.revUser, { color: theme.text }]}>{rev.user}</Text>
                   <View style={styles.revRating}>
-                    <Ionicons name="star" size={12} color="#F59E0B" />
-                    <Text style={[styles.revRateText, { color: theme.text }]}>{rev.rating}</Text>
+                    <Ionicons name="star" size={11} color="#F59E0B" />
+                    <Text style={[styles.revScore, { color: theme.text }]}>{rev.rating}</Text>
                   </View>
                 </View>
-                <Text style={[styles.revComment, { color: theme.textSecondary }]}>"{rev.comment}"</Text>
+                <Text style={[styles.revComment, { color: theme.textSecondary }]}>{rev.comment}</Text>
+                <Text style={[styles.revDate, { color: theme.textMuted }]}>{rev.date}</Text>
               </View>
             ))}
           </View>
         )}
 
-        <View style={{ height: 90 }} />
+        <View style={{ height: 100 }} />
       </ScrollView>
 
-      {/* Sticky Bottom Bar */}
+      {/* Bottom Booking Bar */}
       <View style={[styles.bottomBar, { backgroundColor: theme.card, borderTopColor: theme.border }]}>
         <View>
-          <Text style={[styles.priceLabel, { color: theme.textMuted }]}>Nightly Tariff</Text>
-          <Text style={[styles.price, { color: theme.primary }]}>
+          <Text style={[styles.priceLabel, { color: theme.textMuted }]}>Price per Night</Text>
+          <Text style={[styles.bottomPrice, { color: theme.primary }]}>
             {formatCurrency(hotel.pricePerNight)}
             <Text style={[styles.perNight, { color: theme.textSecondary }]}> / room</Text>
           </Text>
         </View>
 
         <Button
-          title="Reserve Room"
+          title="Reserve Stay"
           variant="primary"
           size="medium"
           onPress={handleBook}
@@ -179,9 +183,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   bannerContainer: {
-    height: 220,
-    width: '100%',
+    height: 230,
     position: 'relative',
+    backgroundColor: '#E2E8F0',
   },
   bannerImg: {
     width: '100%',
@@ -191,23 +195,25 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 14,
     left: 16,
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
     alignItems: 'center',
     justifyContent: 'center',
+    elevation: 3,
   },
   heartBtn: {
     position: 'absolute',
     top: 14,
     right: 16,
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
     alignItems: 'center',
     justifyContent: 'center',
+    elevation: 3,
   },
   galleryScroll: {
     paddingHorizontal: 16,
@@ -215,58 +221,66 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   thumbWrap: {
-    borderRadius: 10,
+    width: 60,
+    height: 48,
+    borderRadius: 8,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   thumbImg: {
-    width: 60,
-    height: 45,
+    width: '100%',
+    height: '100%',
   },
   scrollContent: {
     padding: 16,
   },
   headerInfo: {
-    marginBottom: 14,
+    marginBottom: 16,
   },
   titleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
+    marginBottom: 6,
   },
   name: {
     fontSize: 20,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+    letterSpacing: -0.2,
   },
   type: {
-    fontSize: 13,
+    fontSize: 12.5,
+    fontFamily: 'Manrope_500Medium',
     marginTop: 2,
   },
   ratingBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FEF3C7',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
     gap: 3,
+    backgroundColor: 'rgba(245, 158, 11, 0.12)',
+    paddingHorizontal: 7,
+    paddingVertical: 4,
+    borderRadius: 6,
   },
   ratingText: {
-    color: '#92400E',
-    fontWeight: '700',
-    fontSize: 13,
+    fontSize: 12,
+    fontFamily: 'Manrope_700Bold',
+    color: '#B45309',
   },
   reviewsText: {
-    color: '#B45309',
     fontSize: 11,
+    fontFamily: 'Manrope_400Regular',
+    color: '#B45309',
   },
   distanceRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    marginTop: 6,
   },
   distanceText: {
     fontSize: 12,
+    fontFamily: 'Manrope_400Regular',
   },
   ecoCard: {
     borderRadius: 16,
@@ -282,24 +296,24 @@ const styles = StyleSheet.create({
   },
   ecoCardTitle: {
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
   },
   badgeChipsWrap: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 6,
+    gap: 8,
   },
   greenBadge: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 4,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
-    gap: 4,
   },
   greenBadgeText: {
     fontSize: 11,
-    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
   },
   card: {
     borderRadius: 16,
@@ -309,16 +323,18 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 15,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
     marginBottom: 8,
   },
   descText: {
     fontSize: 13,
-    lineHeight: 19,
-    marginBottom: 10,
+    fontFamily: 'Manrope_400Regular',
+    lineHeight: 20,
+    marginBottom: 8,
   },
   addressText: {
-    fontSize: 11,
+    fontSize: 12,
+    fontFamily: 'Manrope_400Regular',
   },
   facilitiesGrid: {
     flexDirection: 'row',
@@ -328,19 +344,19 @@ const styles = StyleSheet.create({
   facPill: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
-    gap: 4,
   },
   facText: {
     fontSize: 12,
-    fontWeight: '500',
+    fontFamily: 'Manrope_500Medium',
   },
   reviewItem: {
-    paddingVertical: 8,
-    borderTopWidth: 1,
-    borderTopColor: '#E2E8F0',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.05)',
   },
   revHeader: {
     flexDirection: 'row',
@@ -350,45 +366,49 @@ const styles = StyleSheet.create({
   },
   revUser: {
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
   },
   revRating: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 2,
   },
-  revRateText: {
-    fontSize: 12,
-    fontWeight: '700',
+  revScore: {
+    fontSize: 11,
+    fontFamily: 'Manrope_600SemiBold',
   },
   revComment: {
-    fontSize: 12,
-    lineHeight: 16,
+    fontSize: 12.5,
+    fontFamily: 'Manrope_400Regular',
+    lineHeight: 17,
+  },
+  revDate: {
+    fontSize: 10.5,
+    fontFamily: 'Manrope_400Regular',
+    marginTop: 4,
   },
   bottomBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderTopWidth: 1,
   },
   priceLabel: {
-    fontSize: 11,
+    fontSize: 10,
+    fontFamily: 'Manrope_500Medium',
+    textTransform: 'uppercase',
   },
-  price: {
-    fontSize: 20,
-    fontWeight: '700',
+  bottomPrice: {
+    fontSize: 18,
+    fontFamily: 'Manrope_700Bold',
   },
   perNight: {
     fontSize: 12,
-    fontWeight: '400',
+    fontFamily: 'Manrope_400Regular',
   },
   bookBtn: {
-    minWidth: 150,
+    minWidth: 140,
   },
 });

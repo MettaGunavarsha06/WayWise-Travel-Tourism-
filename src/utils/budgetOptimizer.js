@@ -22,8 +22,8 @@ export const optimizeTripBudget = (trip) => {
   // 3. Recalculate component costs
   const optimizedHotelCost = cheaperHotel.pricePerNight * (numDays - 1 > 0 ? numDays - 1 : 1);
   const optimizedTransportCost = cheaperTransport.cost * numTravelers * 2;
-  const optimizedFoodCost = Math.round(currentBreakdown.food * 0.85); // Organic local thalis
-  const optimizedActivitiesCost = Math.round(currentBreakdown.activities * 0.75); // Community workshops & free monuments
+  const optimizedFoodCost = Math.round(currentBreakdown.food * 0.85);
+  const optimizedActivitiesCost = Math.round(currentBreakdown.activities * 0.75);
   const optimizedShoppingCost = 1000;
   const optimizedOtherCost = 500;
 
@@ -42,7 +42,7 @@ export const optimizeTripBudget = (trip) => {
     ...trip,
     hotel: cheaperHotel,
     transport: cheaperTransport,
-    ecoScore: Math.min(98, (trip.ecoScore || 80) + 8), // Community eco-stays increase eco-score!
+    ecoScore: Math.min(98, (trip.ecoScore || 80) + 8),
     budgetBreakdown: {
       hotel: optimizedHotelCost,
       transport: optimizedTransportCost,
@@ -60,8 +60,8 @@ export const optimizeTripBudget = (trip) => {
       optimizationChanges: [
         `Replaced luxury lodging with ${cheaperHotel.name} (Saved ${Math.max(1000, currentBreakdown.hotel - optimizedHotelCost)})`,
         `Selected ${cheaperTransport.name} over private cab (Saved ${Math.max(800, currentBreakdown.transport - optimizedTransportCost)})`,
-        `Curated farm-to-table banana leaf meals & community craft visits`,
-        `Boosted overall Trip Eco-Score by +8 points 🌱`
+        `Curated farm-to-table regional meals & community craft visits`,
+        `Boosted overall Trip Eco-Score by +8 points`
       ]
     }
   };

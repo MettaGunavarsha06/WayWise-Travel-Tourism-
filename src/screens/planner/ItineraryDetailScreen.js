@@ -28,20 +28,20 @@ export const ItineraryDetailScreen = ({ route, navigation }) => {
   if (!trip) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: theme.background, justifyContent: 'center', alignItems: 'center' }]}>
-        <Text style={{ color: theme.text }}>No active trip found.</Text>
-        <Button title="Create Trip" onPress={() => navigation.navigate('TripPlannerWizard')} style={{ marginTop: 12 }} />
+        <Text style={{ color: theme.text, fontFamily: 'Manrope_500Medium' }}>No active trip found.</Text>
+        <Button title="Plan a Trip" onPress={() => navigation.navigate('TripPlannerWizard')} style={{ marginTop: 12 }} />
       </SafeAreaView>
     );
   }
 
   const handleWeatherApply = () => {
     applyWeatherAdjustment();
-    Alert.alert('Itinerary Updated 🌧️', 'Outdoor activities swapped for air-conditioned indoor museums and craft centers!');
+    Alert.alert('Itinerary Updated', 'Outdoor activities swapped for weather-protected indoor museums and cultural centers.');
   };
 
   const handleBudgetOptimize = () => {
     optimizeBudget();
-    Alert.alert('Budget Optimized 💰', 'Replaced expensive options with certified eco homestays and community transit. Budget deficit eliminated!');
+    Alert.alert('Budget Optimized', 'Replaced premium options with certified eco homestays and community transit.');
   };
 
   const activeDayPlan = trip.daysPlan?.find((d) => d.dayNumber === selectedDay) || trip.daysPlan?.[0];
@@ -55,34 +55,34 @@ export const ItineraryDetailScreen = ({ route, navigation }) => {
         </TouchableOpacity>
         <View style={styles.topTitleWrap}>
           <Text style={[styles.topTitle, { color: theme.text }]} numberOfLines={1}>
-            {trip.days}-Day {trip.destinationName} Trip
+            {trip.days}-Day {trip.destinationName} Travel Plan
           </Text>
           <Text style={[styles.topSubtitle, { color: theme.textSecondary }]}>
-            Trip ID: {trip.id} • {trip.travelers} Travelers
+            Trip ID: {trip.id} · {trip.travelers} Travelers
           </Text>
         </View>
         <TouchableOpacity
           onPress={() => navigation.navigate('DigitalPass', { trip })}
           style={[styles.passIconBtn, { backgroundColor: theme.primaryLight }]}
         >
-          <Ionicons name="qr-code" size={18} color={theme.primary} />
+          <Ionicons name="qr-code-outline" size={18} color={theme.primary} />
         </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Banner Card */}
         <View style={styles.bannerContainer}>
-          <Image source={{ uri: trip.bannerImage }} style={styles.bannerImg} />
+          <Image source={{ uri: trip.bannerImage }} style={styles.bannerImg} resizeMode="cover" />
           <View style={styles.bannerOverlay}>
             <View style={styles.ecoRow}>
               <EcoScoreBadge score={trip.ecoScore} />
               <View style={[styles.prefTag, { backgroundColor: 'rgba(15, 23, 42, 0.8)' }]}>
-                <Text style={styles.prefText}>⚡ {trip.travelPreference}</Text>
+                <Text style={styles.prefText}>{trip.travelPreference}</Text>
               </View>
             </View>
-            <Text style={styles.bannerDestTitle}>{trip.destinationName} AI Itinerary</Text>
+            <Text style={styles.bannerDestTitle}>{trip.destinationName} Itinerary</Text>
             <Text style={styles.bannerBudget}>
-              Target Budget: {formatCurrency(trip.userBudget)} • Planned: {formatCurrency(trip.budgetBreakdown?.total)}
+              Target Budget: {formatCurrency(trip.userBudget)} · Planned: {formatCurrency(trip.budgetBreakdown?.total)}
             </Text>
           </View>
         </View>
@@ -101,12 +101,12 @@ export const ItineraryDetailScreen = ({ route, navigation }) => {
             title="Optimize Budget"
             variant="secondary"
             size="small"
-            icon="sparkles"
+            icon="options-outline"
             onPress={handleBudgetOptimize}
             style={styles.actionPill}
           />
           <Button
-            title="Smart Map"
+            title="Map View"
             variant="outline"
             size="small"
             icon="map-outline"
@@ -117,7 +117,7 @@ export const ItineraryDetailScreen = ({ route, navigation }) => {
 
         {/* Live Weather Alert Banner */}
         <WeatherAlertCard
-          alertMessage="🌧️ Rain expected tomorrow. Outdoor activity → Indoor attraction."
+          alertMessage="Rain forecasted tomorrow. Outdoor activities have been adapted to sheltered cultural sites."
           onApplyChanges={handleWeatherApply}
           isApplied={trip.daysPlan?.some((d) => d.isWeatherAdjusted)}
         />
@@ -148,7 +148,12 @@ export const ItineraryDetailScreen = ({ route, navigation }) => {
                     Day {d.dayNumber}
                   </Text>
                   {d.isWeatherAdjusted && (
-                    <Text style={styles.weatherDot}>☔</Text>
+                    <Ionicons
+                      name="umbrella-outline"
+                      size={12}
+                      color={isSelected ? '#FFFFFF' : theme.primary}
+                      style={{ marginLeft: 4 }}
+                    />
                   )}
                 </TouchableOpacity>
               );
@@ -180,7 +185,10 @@ export const ItineraryDetailScreen = ({ route, navigation }) => {
                     <Text style={[styles.actTitle, { color: theme.text }]}>{act.title}</Text>
                   </View>
                   <View style={styles.actMetaRow}>
-                    <Text style={[styles.actVenue, { color: theme.textSecondary }]}>📍 {act.venue}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                      <Ionicons name="location-outline" size={12} color={theme.textSecondary} />
+                      <Text style={[styles.actVenue, { color: theme.textSecondary }]}>{act.venue}</Text>
+                    </View>
                     <Text style={[styles.actCost, { color: theme.primary }]}>
                       {act.cost === 0 ? 'Free' : formatCurrency(act.cost)}
                     </Text>
@@ -198,13 +206,13 @@ export const ItineraryDetailScreen = ({ route, navigation }) => {
 
         {/* Matched Hotel & Transport Details */}
         <View style={[styles.infoCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <Text style={[styles.infoCardTitle, { color: theme.text }]}>🏨 Selected Accommodation</Text>
+          <Text style={[styles.infoCardTitle, { color: theme.text }]}>Selected Accommodation</Text>
           <View style={styles.matchRow}>
-            <Image source={{ uri: trip.hotel?.image }} style={styles.thumbImg} />
+            <Image source={{ uri: trip.hotel?.image }} style={styles.thumbImg} resizeMode="cover" />
             <View style={{ flex: 1 }}>
               <Text style={[styles.matchName, { color: theme.text }]}>{trip.hotel?.name}</Text>
               <Text style={[styles.matchDetail, { color: theme.textSecondary }]}>
-                {trip.hotel?.type} • {formatCurrency(trip.hotel?.pricePerNight)}/night
+                {trip.hotel?.type} · {formatCurrency(trip.hotel?.pricePerNight)}/night
               </Text>
               <EcoScoreBadge score={trip.hotel?.sustainabilityScore} size="small" />
             </View>
@@ -212,22 +220,22 @@ export const ItineraryDetailScreen = ({ route, navigation }) => {
         </View>
 
         <View style={[styles.infoCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <Text style={[styles.infoCardTitle, { color: theme.text }]}>🚆 Transit & Mobility</Text>
+          <Text style={[styles.infoCardTitle, { color: theme.text }]}>Transit &amp; Mobility</Text>
           <View style={styles.matchRow}>
             <View style={[styles.thumbIcon, { backgroundColor: theme.primaryLight }]}>
-              <Ionicons name="train" size={24} color={theme.primary} />
+              <Ionicons name="train-outline" size={22} color={theme.primary} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.matchName, { color: theme.text }]}>{trip.transport?.name}</Text>
               <Text style={[styles.matchDetail, { color: theme.textSecondary }]}>
-                {trip.transport?.time} • {formatCurrency(trip.transport?.cost)}/person
+                {trip.transport?.time} · {formatCurrency(trip.transport?.cost)}/person
               </Text>
               <EcoScoreBadge score={trip.transport?.ecoScore} size="small" />
             </View>
           </View>
         </View>
 
-        {/* AI Budget Breakdown Chart */}
+        {/* Budget Breakdown Chart */}
         <BudgetBreakdownChart
           breakdown={trip.budgetBreakdown}
           onOptimizePress={handleBudgetOptimize}
@@ -260,10 +268,11 @@ const styles = StyleSheet.create({
   },
   topTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
   },
   topSubtitle: {
-    fontSize: 11,
+    fontSize: 11.5,
+    fontFamily: 'Manrope_400Regular',
     marginTop: 1,
   },
   passIconBtn: {
@@ -282,6 +291,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     position: 'relative',
     marginBottom: 14,
+    backgroundColor: '#E2E8F0',
   },
   bannerImg: {
     width: '100%',
@@ -302,21 +312,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
+    justifyContent: 'center',
   },
   prefText: {
-    color: '#FBBF24',
+    color: '#FFFFFF',
     fontSize: 11,
-    fontWeight: '700',
+    fontFamily: 'Manrope_600SemiBold',
   },
   bannerDestTitle: {
-    fontSize: 20,
-    fontWeight: '800',
     color: '#FFFFFF',
+    fontSize: 18,
+    fontFamily: 'Manrope_700Bold',
+    marginBottom: 2,
   },
   bannerBudget: {
+    color: '#CBD5E1',
     fontSize: 12,
-    color: '#E2E8F0',
-    marginTop: 2,
+    fontFamily: 'Manrope_400Regular',
   },
   actionPillsRow: {
     flexDirection: 'row',
@@ -333,20 +345,16 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   dayTab: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 10,
-    borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
   },
   dayTabText: {
     fontSize: 13,
-    fontWeight: '700',
-  },
-  weatherDot: {
-    fontSize: 12,
+    fontFamily: 'Manrope_600SemiBold',
   },
   timelineCard: {
     borderRadius: 16,
@@ -355,54 +363,52 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   timelineHeading: {
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 14,
+    fontSize: 15,
+    fontFamily: 'Manrope_700Bold',
+    marginBottom: 16,
   },
   timelineList: {
-    gap: 14,
+    gap: 12,
   },
   activityItem: {
     flexDirection: 'row',
-    gap: 12,
   },
   timeCol: {
-    width: 65,
-    alignItems: 'flex-end',
+    width: 72,
+    alignItems: 'flex-start',
     position: 'relative',
   },
   timeText: {
     fontSize: 11,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+    marginBottom: 4,
   },
   timeDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    marginTop: 4,
+    marginLeft: 2,
   },
   timeLine: {
     position: 'absolute',
-    right: 3,
+    left: 5,
     top: 20,
-    bottom: -15,
+    bottom: -10,
     width: 2,
   },
   actBox: {
     flex: 1,
     borderRadius: 12,
     borderWidth: 1,
-    padding: 10,
+    padding: 11,
+    marginLeft: 6,
   },
   actTitleRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     marginBottom: 4,
   },
   actTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    flex: 1,
+    fontSize: 13.5,
+    fontFamily: 'Manrope_600SemiBold',
   },
   actMetaRow: {
     flexDirection: 'row',
@@ -410,22 +416,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   actVenue: {
-    fontSize: 11,
+    fontSize: 11.5,
+    fontFamily: 'Manrope_400Regular',
   },
   actCost: {
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: 12.5,
+    fontFamily: 'Manrope_700Bold',
   },
   swappedBadge: {
     paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
     marginTop: 6,
   },
   swappedText: {
-    color: '#B45309',
-    fontSize: 10,
-    fontWeight: '600',
+    fontSize: 10.5,
+    fontFamily: 'Manrope_500Medium',
+    color: '#92400E',
   },
   infoCard: {
     borderRadius: 16,
@@ -435,32 +442,34 @@ const styles = StyleSheet.create({
   },
   infoCardTitle: {
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
     marginBottom: 10,
   },
   matchRow: {
     flexDirection: 'row',
-    gap: 12,
     alignItems: 'center',
+    gap: 12,
   },
   thumbImg: {
-    width: 55,
-    height: 55,
+    width: 50,
+    height: 50,
     borderRadius: 10,
   },
   thumbIcon: {
-    width: 55,
-    height: 55,
+    width: 50,
+    height: 50,
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
   matchName: {
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+    marginBottom: 2,
   },
   matchDetail: {
     fontSize: 12,
-    marginVertical: 2,
+    fontFamily: 'Manrope_400Regular',
+    marginBottom: 4,
   },
 });

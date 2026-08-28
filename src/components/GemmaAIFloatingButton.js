@@ -24,7 +24,7 @@ export const GemmaAIFloatingButton = ({ onPress, bottomOffset = 82, rightOffset 
         <View style={[styles.iconContainer, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
           <Ionicons name="chatbubble-ellipses" size={16} color="#FFFFFF" />
         </View>
-        <Text style={styles.label}>WayWise AI</Text>
+        <Text style={styles.label}>Assistant</Text>
       </View>
     </TouchableOpacity>
   );

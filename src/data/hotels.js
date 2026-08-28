@@ -227,5 +227,56 @@ export const hotels = [
     reviews: [
       { id: 'r10', user: 'Carlos M.', rating: 4.7, comment: 'Charming Portuguese architecture, felt like home!' }
     ]
+  },
+  {
+    id: 'hotel_j1',
+    destinationId: 'dest_jaipur',
+    destinationName: 'Jaipur',
+    name: 'Amer View Heritage Haveli & Eco-Lodge',
+    type: 'Heritage Haveli',
+    rating: 4.9,
+    reviewsCount: 380,
+    pricePerNight: 3600,
+    cheaperAlternativeId: 'hotel_j2',
+    distanceFromAttraction: '0.6 km from Amer Fort',
+    image: 'https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=800&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80'
+    ],
+    facilities: ['Rooftop Fort View', 'Solar Water Heating', 'Organic Rajasthani Dining', 'Artisan Block-Printing Workshop'],
+    sustainabilityScore: 93,
+    sustainabilityBadges: ['Heritage Preservation', 'Solar Powered', 'Zero Plastic'],
+    isRecommended: true,
+    description: 'Restored 19th-century royal haveli offering panoramic sunset views of Amer Fort ramparts and traditional Rajput hospitality.',
+    address: 'Amer Road, Near Maota Lake, Jaipur, Rajasthan 302028',
+    coordinates: { latitude: 26.9855, longitude: 75.8513 },
+    reviews: [
+      { id: 'rj1', user: 'Sunita Sharma', rating: 5, comment: 'The view of Amer Fort lit up at night from the rooftop was unforgettable!' }
+    ]
+  },
+  {
+    id: 'hotel_j2',
+    destinationId: 'dest_jaipur',
+    destinationName: 'Jaipur',
+    name: 'Pink City Artisan Homestay',
+    type: 'Community Homestay / Budget',
+    rating: 4.7,
+    reviewsCount: 210,
+    pricePerNight: 1500,
+    cheaperAlternativeId: null,
+    distanceFromAttraction: '1.2 km from Hawa Mahal',
+    image: 'https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=800&q=80',
+    gallery: ['https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=800&q=80'],
+    facilities: ['Courtyard Garden', 'Home-cooked Dal Baati Churma', 'Free WiFi', 'Heritage Walk Maps'],
+    sustainabilityScore: 95,
+    sustainabilityBadges: ['Locally Owned', 'Water Harvesting', 'Community Sourced'],
+    isRecommended: true,
+    description: 'Charming traditional home hosted by a local family of block printers. Walking distance to Old City bazaars.',
+    address: 'Johari Bazaar Lane, Old Pink City, Jaipur, Rajasthan 302003',
+    coordinates: { latitude: 26.9200, longitude: 75.8250 },
+    reviews: [
+      { id: 'rj2', user: 'Vikram Singh', rating: 4.8, comment: 'Wonderful hosts, amazing homemade Rajasthani breakfast, and very budget friendly.' }
+    ]
   }
 ];

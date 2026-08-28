@@ -7,7 +7,8 @@ import {
   TouchableOpacity,
   FlatList,
   TextInput,
-  ImageBackground
+  ImageBackground,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
@@ -31,6 +32,16 @@ export const HomeScreen = ({ navigation }) => {
   const [weatherApplied, setWeatherApplied] = useState(false);
   const [gemmaModalVisible, setGemmaModalVisible] = useState(false);
 
+  const jaipurDest = destinations.find((d) => d.id === 'dest_jaipur') || destinations[4];
+  const amerFortAttraction = jaipurDest?.attractions?.find((a) => a.id === 'j1') || {
+    name: 'Amer Fort',
+    location: 'Jaipur, Rajasthan',
+    description: 'A historic hilltop fort known for its grand courtyards, architecture and views.',
+    image: 'https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=800&q=80',
+    time: '3 hrs',
+    cost: 200,
+  };
+
   const filteredDestinations = destinations.filter(
     (d) =>
       d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -47,7 +58,6 @@ export const HomeScreen = ({ navigation }) => {
   };
 
   return (
-    // Use plain View — Header handles top safe area with useSafeAreaInsets
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <Header onNotificationsPress={() => navigation.navigate('Notifications')} />
 
@@ -55,7 +65,7 @@ export const HomeScreen = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* ── Search Bar ── */}
+        {/* Search Bar */}
         <View style={styles.searchSection}>
           <View
             style={[
@@ -90,37 +100,35 @@ export const HomeScreen = ({ navigation }) => {
           </View>
         </View>
 
-        {/* ── Hero Banner ── */}
+        {/* Hero Banner: Sustainable Heritage Journeys */}
         <ImageBackground
           source={{
-            uri: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1000&q=80',
+            uri: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1200&q=80',
           }}
           style={styles.heroBanner}
           imageStyle={styles.heroBannerImage}
         >
-          {/* Soft green-nature gradient overlay — not a dark AI overlay */}
           <View style={styles.heroOverlay}>
-            {/* Tag */}
             <View style={styles.heroBadge}>
-              <Ionicons name="leaf" size={10} color="#166534" />
-              <Text style={styles.heroBadgeText}>SIH 2026 · SUSTAINABLE TRAVEL</Text>
+              <Ionicons name="leaf" size={11} color="#166534" />
+              <Text style={styles.heroBadgeText}>SUSTAINABLE HERITAGE TRAVEL</Text>
             </View>
 
-            <Text style={styles.heroTitle}>Plan Your Perfect{'\n'}Eco-Smart Journey</Text>
+            <Text style={styles.heroTitle}>Discover India's Royal Heritage &amp; Serene Landscapes</Text>
             <Text style={styles.heroSubtitle}>
-              AI-powered itineraries, green hotels &amp; eco-transit — all in one place.
+              Curated itineraries, certified green homestays, and crowd-conscious discovery across historic destinations.
             </Text>
 
             <View style={styles.heroBtnRow}>
               <Button
-                title={t('createAITrip') || '✨ Plan My Trip'}
+                title={t('createAITrip') || 'Plan Your Trip'}
                 variant="primary"
                 size="medium"
                 onPress={() => navigation.navigate('TripPlannerWizard')}
                 style={styles.heroCtaBtn}
               />
               <Button
-                title="My Pass"
+                title="Digital Pass"
                 variant="outline"
                 size="medium"
                 icon="qr-code-outline"
@@ -132,16 +140,87 @@ export const HomeScreen = ({ navigation }) => {
           </View>
         </ImageBackground>
 
-        {/* ── Smart Travel Tip (Weather Alert) ── */}
+        {/* Live Weather Advisory */}
         <WeatherAlertCard
-          alertMessage="🌧️ Heavy rain expected tomorrow in Visakhapatnam. We suggest swapping beach activities with INS Kursura Submarine Museum — an indoor gem!"
+          alertMessage="Heavy coastal rains forecasted tomorrow in Visakhapatnam. We recommend exploring indoor heritage sites such as the INS Kursura Submarine Museum."
           onApplyChanges={handleApplyWeather}
           isApplied={
             weatherApplied || activeTrip?.daysPlan?.some((d) => d.isWeatherAdjusted)
           }
         />
 
-        {/* ── Eco / Sustainability Card ── */}
+        {/* Spotlight: Featured Heritage Attraction (Amer Fort) */}
+        <View style={styles.sectionHeader}>
+          <View>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>Featured Heritage Attraction</Text>
+            <Text style={[styles.sectionSubtitle, { color: theme.textSecondary }]}>
+              Iconic landmarks and historic architecture
+            </Text>
+          </View>
+        </View>
+
+        <TouchableOpacity
+          activeOpacity={0.9}
+          onPress={() => navigation.navigate('DestinationDetail', { destination: jaipurDest })}
+          style={[styles.spotlightCard, { backgroundColor: theme.card, borderColor: theme.border, shadowColor: theme.shadow }]}
+        >
+          <View style={styles.spotlightImageWrap}>
+            <Image
+              source={{ uri: amerFortAttraction.image }}
+              style={styles.spotlightImage}
+              resizeMode="cover"
+            />
+            <View style={styles.spotlightRatingBadge}>
+              <Ionicons name="star" size={12} color="#F59E0B" />
+              <Text style={styles.spotlightRatingText}>4.9</Text>
+            </View>
+            <View style={styles.spotlightCategoryBadge}>
+              <Text style={styles.spotlightCategoryText}>UNESCO World Heritage</Text>
+            </View>
+          </View>
+
+          <View style={styles.spotlightContent}>
+            <View style={styles.spotlightHeaderRow}>
+              <Text style={[styles.spotlightTitle, { color: theme.text }]}>
+                {amerFortAttraction.name}
+              </Text>
+              <Text style={[styles.spotlightLocation, { color: theme.primary }]}>
+                {amerFortAttraction.location || 'Jaipur, Rajasthan'}
+              </Text>
+            </View>
+
+            <Text style={[styles.spotlightDesc, { color: theme.textSecondary }]}>
+              {amerFortAttraction.description}
+            </Text>
+
+            <View style={styles.spotlightFooter}>
+              <View style={styles.spotlightMetaGroup}>
+                <View style={styles.spotlightMetaItem}>
+                  <Ionicons name="time-outline" size={14} color={theme.textSecondary} />
+                  <Text style={[styles.spotlightMetaText, { color: theme.textSecondary }]}>
+                    {amerFortAttraction.time || '3 hrs'}
+                  </Text>
+                </View>
+                <View style={styles.spotlightMetaItem}>
+                  <Ionicons name="ticket-outline" size={14} color={theme.textSecondary} />
+                  <Text style={[styles.spotlightMetaText, { color: theme.textSecondary }]}>
+                    ₹{amerFortAttraction.cost || 200} entry
+                  </Text>
+                </View>
+              </View>
+
+              <TouchableOpacity
+                onPress={() => navigation.navigate('DestinationDetail', { destination: jaipurDest })}
+                style={[styles.exploreBtn, { backgroundColor: theme.primaryLight }]}
+              >
+                <Text style={[styles.exploreBtnText, { color: theme.primaryDark }]}>Explore Jaipur</Text>
+                <Ionicons name="arrow-forward" size={14} color={theme.primaryDark} />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </TouchableOpacity>
+
+        {/* Sustainability Impact Summary */}
         <View
           style={[
             styles.ecoSummaryCard,
@@ -150,14 +229,14 @@ export const HomeScreen = ({ navigation }) => {
         >
           <View style={styles.ecoLeft}>
             <View style={[styles.ecoIconBox, { backgroundColor: theme.ecoGreenLight }]}>
-              <Ionicons name="leaf" size={22} color={theme.ecoGreen} />
+              <Ionicons name="leaf" size={20} color={theme.ecoGreen} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.ecoTitle, { color: theme.text }]}>
-                Tourism Sustainability
+                Sustainable Travel Verification
               </Text>
               <Text style={[styles.ecoSub, { color: theme.textSecondary }]}>
-                Green-verified hotels &amp; electric public transit
+                Certified eco-stays, low-emission transit &amp; local artisan cooperatives
               </Text>
             </View>
           </View>
@@ -166,18 +245,18 @@ export const HomeScreen = ({ navigation }) => {
           </View>
         </View>
 
-        {/* ── Explore Ecosystem ── */}
+        {/* Quick Travel Services Navigation */}
         <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>Explore</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Explore Services</Text>
         </View>
         <View style={styles.quickGrid}>
           {[
-            { label: 'AI Planner', icon: 'sparkles', bg: theme.primaryLight, color: theme.primary, screen: 'TripPlannerWizard' },
-            { label: t('hotels') || 'Hotels', icon: 'bed', bg: '#EFF6FF', color: '#2563EB', screen: 'Hotels' },
-            { label: t('transport') || 'Transit', icon: 'train', bg: '#FFF7ED', color: '#C2410C', screen: 'Transport' },
-            { label: 'Artisans', icon: 'storefront', bg: '#FDF4FF', color: '#9333EA', screen: 'LocalBusiness' },
-            { label: 'Hidden Gems', icon: 'diamond', bg: '#F0FDF4', color: theme.primary, screen: 'HiddenGems' },
-            { label: 'Budget', icon: 'wallet', bg: '#ECFEFF', color: '#0891B2', screen: 'BudgetOptimizer' },
+            { label: 'Trip Planner', icon: 'map-outline', bg: theme.primaryLight, color: theme.primary, screen: 'TripPlannerWizard' },
+            { label: t('hotels') || 'Hotels', icon: 'bed-outline', bg: '#EFF6FF', color: '#2563EB', screen: 'Hotels' },
+            { label: t('transport') || 'Transit', icon: 'train-outline', bg: '#FFF7ED', color: '#C2410C', screen: 'Transport' },
+            { label: 'Artisans', icon: 'storefront-outline', bg: '#FDF4FF', color: '#9333EA', screen: 'LocalBusiness' },
+            { label: 'Hidden Gems', icon: 'compass-outline', bg: '#F0FDF4', color: theme.primary, screen: 'HiddenGems' },
+            { label: 'Budget', icon: 'wallet-outline', bg: '#ECFEFF', color: '#0891B2', screen: 'BudgetOptimizer' },
           ].map((item) => (
             <TouchableOpacity
               key={item.label}
@@ -186,21 +265,21 @@ export const HomeScreen = ({ navigation }) => {
               activeOpacity={0.8}
             >
               <View style={[styles.quickIcon, { backgroundColor: item.bg }]}>
-                <Ionicons name={item.icon} size={21} color={item.color} />
+                <Ionicons name={item.icon} size={20} color={item.color} />
               </View>
               <Text style={[styles.quickText, { color: theme.text }]}>{item.label}</Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        {/* ── Recommended Destinations ── */}
+        {/* Recommended Destinations */}
         <View style={styles.sectionHeader}>
           <View>
             <Text style={[styles.sectionTitle, { color: theme.text }]}>
-              {t('recommended') || 'Recommended'}
+              {t('recommended') || 'Recommended Destinations'}
             </Text>
             <Text style={[styles.sectionSubtitle, { color: theme.textSecondary }]}>
-              Curated for balanced crowds &amp; cultural depth
+              Handpicked destinations with balanced crowd density
             </Text>
           </View>
           <TouchableOpacity onPress={() => navigation.navigate('Explore')}>
@@ -225,14 +304,14 @@ export const HomeScreen = ({ navigation }) => {
           )}
         />
 
-        {/* ── Hidden Gems ── */}
+        {/* Hidden Gems */}
         <View style={styles.sectionHeader}>
           <View>
             <Text style={[styles.sectionTitle, { color: theme.text }]}>
               {t('hiddenGems') || 'Hidden Gems'}
             </Text>
             <Text style={[styles.sectionSubtitle, { color: theme.textSecondary }]}>
-              Discover lesser-known places with zero crowds
+              Peaceful offbeat destinations away from tourist congestion
             </Text>
           </View>
           <TouchableOpacity onPress={() => navigation.navigate('HiddenGems')}>
@@ -257,10 +336,10 @@ export const HomeScreen = ({ navigation }) => {
           )}
         />
 
-        {/* ── Trending Destinations ── */}
+        {/* All Destinations */}
         <View style={styles.sectionHeader}>
           <Text style={[styles.sectionTitle, { color: theme.text }]}>
-            {t('trending') || 'Trending Destinations'}
+            {t('trending') || 'All Travel Destinations'}
           </Text>
         </View>
 
@@ -275,24 +354,24 @@ export const HomeScreen = ({ navigation }) => {
         <View style={{ height: 100 }} />
       </ScrollView>
 
-      {/* ── Floating WayWise AI Button ── */}
+      {/* Floating Travel Assistant Button */}
       <GemmaAIFloatingButton
         bottomOffset={76}
         rightOffset={18}
-        onPress={() => setGemmaModalVisible(true)}
+        onPress={() => setGemmaModalVisible(false || true)}
       />
 
-      {/* ── Floating SOS Button ── */}
+      {/* Floating SOS Button */}
       <TouchableOpacity
         activeOpacity={0.9}
         onPress={() => navigation.navigate('EmergencySOS')}
         style={styles.floatingSOS}
       >
-        <Ionicons name="warning" size={18} color="#FFFFFF" />
+        <Ionicons name="warning" size={16} color="#FFFFFF" />
         <Text style={styles.floatingSOSText}>SOS</Text>
       </TouchableOpacity>
 
-      {/* ── Gemma AI Modal ── */}
+      {/* Travel Assistant Modal */}
       <GemmaAssistantModal
         visible={gemmaModalVisible}
         onClose={() => setGemmaModalVisible(false)}
@@ -318,12 +397,12 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderRadius: 12,
-    paddingHorizontal: 13,
+    paddingHorizontal: 14,
     height: 48,
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 2,
   },
@@ -342,24 +421,23 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     overflow: 'hidden',
     marginBottom: 16,
-    minHeight: 200,
+    minHeight: 210,
   },
   heroBannerImage: {
     borderRadius: 18,
   },
   heroOverlay: {
-    // Nature-oriented: semi-transparent dark green overlay (not heavy AI dark)
-    backgroundColor: 'rgba(10, 40, 15, 0.62)',
+    backgroundColor: 'rgba(12, 38, 18, 0.68)',
     padding: 20,
     borderRadius: 18,
-    minHeight: 200,
+    minHeight: 210,
     justifyContent: 'flex-end',
   },
   heroBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    backgroundColor: 'rgba(187, 247, 208, 0.92)',
+    backgroundColor: 'rgba(187, 247, 208, 0.95)',
     alignSelf: 'flex-start',
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -368,22 +446,22 @@ const styles = StyleSheet.create({
   },
   heroBadgeText: {
     color: '#166534',
-    fontSize: 9,
+    fontSize: 10,
     fontFamily: 'Manrope_800ExtraBold',
-    letterSpacing: 0.6,
+    letterSpacing: 0.5,
   },
   heroTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontFamily: 'Manrope_700Bold',
     color: '#FFFFFF',
     marginBottom: 6,
-    lineHeight: 30,
+    lineHeight: 28,
   },
   heroSubtitle: {
-    fontSize: 13,
+    fontSize: 12.5,
     fontFamily: 'Manrope_400Regular',
     color: '#D1FAE5',
-    lineHeight: 19,
+    lineHeight: 18,
     marginBottom: 16,
   },
   heroBtnRow: {
@@ -391,11 +469,122 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   heroCtaBtn: {
-    flex: 1.4,
+    flex: 1.3,
   },
   heroPassBtn: {
     flex: 1,
     borderColor: 'rgba(255,255,255,0.7)',
+  },
+
+  // Spotlight Card (Amer Fort)
+  spotlightCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
+    marginBottom: 20,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  spotlightImageWrap: {
+    height: 180,
+    width: '100%',
+    position: 'relative',
+    backgroundColor: '#E2E8F0',
+  },
+  spotlightImage: {
+    width: '100%',
+    height: '100%',
+  },
+  spotlightRatingBadge: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    backgroundColor: 'rgba(15, 23, 42, 0.85)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    gap: 4,
+  },
+  spotlightRatingText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontFamily: 'Manrope_700Bold',
+  },
+  spotlightCategoryBadge: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    backgroundColor: 'rgba(180, 83, 9, 0.9)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  spotlightCategoryText: {
+    color: '#FEF3C7',
+    fontSize: 10,
+    fontFamily: 'Manrope_700Bold',
+    letterSpacing: 0.3,
+  },
+  spotlightContent: {
+    padding: 14,
+  },
+  spotlightHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  spotlightTitle: {
+    fontSize: 17,
+    fontFamily: 'Manrope_700Bold',
+  },
+  spotlightLocation: {
+    fontSize: 12,
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  spotlightDesc: {
+    fontSize: 12.5,
+    fontFamily: 'Manrope_400Regular',
+    lineHeight: 18,
+    marginBottom: 12,
+  },
+  spotlightFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.06)',
+  },
+  spotlightMetaGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  spotlightMetaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  spotlightMetaText: {
+    fontSize: 12,
+    fontFamily: 'Manrope_500Medium',
+  },
+  exploreBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 11,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  exploreBtnText: {
+    fontSize: 12,
+    fontFamily: 'Manrope_700Bold',
   },
 
   // Eco Summary Card
@@ -419,9 +608,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   ecoIconBox: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
+    width: 40,
+    height: 40,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -448,7 +637,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   sectionTitle: {
-    fontSize: 17,
+    fontSize: 16,
     fontFamily: 'Manrope_700Bold',
     letterSpacing: -0.2,
   },
@@ -463,7 +652,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope_600SemiBold',
   },
 
-  // Quick Grid (Explore Ecosystem)
+  // Quick Grid (Services)
   quickGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -474,21 +663,21 @@ const styles = StyleSheet.create({
     width: '31%',
     borderRadius: 14,
     borderWidth: 1,
-    paddingVertical: 13,
+    paddingVertical: 12,
     paddingHorizontal: 8,
     alignItems: 'center',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.04,
     shadowRadius: 3,
     elevation: 1,
   },
   quickIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
+    width: 40,
+    height: 40,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 7,
+    marginBottom: 6,
   },
   quickText: {
     fontSize: 11,
@@ -501,29 +690,27 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
 
-  // Floating SOS Button — clearly red, distinct from green brand
+  // Floating SOS Button
   floatingSOS: {
     position: 'absolute',
     bottom: 24,
     right: 18,
-    backgroundColor: '#C62828',
+    backgroundColor: '#DC2626',
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderRadius: 22,
-    gap: 5,
-    shadowColor: '#C62828',
+    paddingHorizontal: 13,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 4,
+    shadowColor: '#DC2626',
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.45,
-    shadowRadius: 8,
+    shadowOpacity: 0.35,
+    shadowRadius: 6,
     elevation: 7,
-    borderWidth: 2,
-    borderColor: '#FFCDD2',
   },
   floatingSOSText: {
     color: '#FFFFFF',
-    fontSize: 13,
+    fontSize: 12,
     fontFamily: 'Manrope_800ExtraBold',
     letterSpacing: 0.5,
   },

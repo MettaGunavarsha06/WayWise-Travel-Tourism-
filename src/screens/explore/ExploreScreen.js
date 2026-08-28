@@ -6,7 +6,6 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
-  FlatList
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -18,7 +17,7 @@ import { GemmaAIFloatingButton } from '../../components/GemmaAIFloatingButton';
 import { GemmaAssistantModal } from '../../components/GemmaAssistantModal';
 
 const categories = ['All', 'Beaches', 'Nature', 'Heritage', 'Spiritual', 'Hidden Gems'];
-const crowdFilters = ['All Crowds', '🟢 Low', '🟡 Moderate', '🔴 High'];
+const crowdFilters = ['All Crowds', 'Low Crowd', 'Moderate Crowd', 'High Crowd'];
 
 export const ExploreScreen = ({ navigation }) => {
   const { theme } = useTheme();
@@ -46,9 +45,9 @@ export const ExploreScreen = ({ navigation }) => {
     }
 
     let matchesCrowd = true;
-    if (selectedCrowd.includes('Low')) matchesCrowd = dest.crowdLevel === 'low';
-    if (selectedCrowd.includes('Moderate')) matchesCrowd = dest.crowdLevel === 'moderate';
-    if (selectedCrowd.includes('High')) matchesCrowd = dest.crowdLevel === 'high';
+    if (selectedCrowd === 'Low Crowd') matchesCrowd = dest.crowdLevel === 'low';
+    if (selectedCrowd === 'Moderate Crowd') matchesCrowd = dest.crowdLevel === 'moderate';
+    if (selectedCrowd === 'High Crowd') matchesCrowd = dest.crowdLevel === 'high';
 
     let matchesEco = true;
     if (ecoOnly) matchesEco = dest.ecoScore >= 85;
@@ -58,7 +57,7 @@ export const ExploreScreen = ({ navigation }) => {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      {/* Search Header — uses insets for top safe area */}
+      {/* Search Header */}
       <View
         style={[
           styles.header,
@@ -70,7 +69,7 @@ export const ExploreScreen = ({ navigation }) => {
         ]}
       >
         <Text style={[styles.screenTitle, { color: theme.text }]}>
-          {t('explore') || 'Explore'}
+          {t('explore') || 'Explore Destinations'}
         </Text>
         <View
           style={[
@@ -83,7 +82,7 @@ export const ExploreScreen = ({ navigation }) => {
         >
           <Ionicons
             name="search-outline"
-            size={19}
+            size={18}
             color={searchFocused ? theme.primary : theme.textMuted}
             style={{ marginRight: 8 }}
           />
@@ -92,7 +91,7 @@ export const ExploreScreen = ({ navigation }) => {
             onChangeText={setSearch}
             onFocus={() => setSearchFocused(true)}
             onBlur={() => setSearchFocused(false)}
-            placeholder={t('searchPlaceholder') || 'Search cities, beaches, temples...'}
+            placeholder={t('searchPlaceholder') || 'Search cities, beaches, temples, heritage...'}
             placeholderTextColor={theme.textMuted}
             style={[styles.searchInput, { color: theme.text, fontFamily: 'Manrope_400Regular' }]}
           />
@@ -108,10 +107,10 @@ export const ExploreScreen = ({ navigation }) => {
         {/* Quick Service Portals */}
         <View style={styles.portalsRow}>
           {[
-            { label: 'Eco Hotels', icon: 'bed', bg: theme.primaryLight, color: theme.primary, screen: 'Hotels' },
-            { label: 'Transit', icon: 'train', bg: '#FFF7ED', color: '#C2410C', screen: 'Transport' },
-            { label: 'Artisans', icon: 'storefront', bg: '#FDF4FF', color: '#9333EA', screen: 'LocalBusiness' },
-            { label: 'Gems', icon: 'diamond', bg: '#F0FDF4', color: theme.ecoGreen, screen: 'HiddenGems' },
+            { label: 'Eco Hotels', icon: 'bed-outline', bg: theme.primaryLight, color: theme.primary, screen: 'Hotels' },
+            { label: 'Transit', icon: 'train-outline', bg: '#FFF7ED', color: '#C2410C', screen: 'Transport' },
+            { label: 'Artisans', icon: 'storefront-outline', bg: '#FDF4FF', color: '#9333EA', screen: 'LocalBusiness' },
+            { label: 'Hidden Gems', icon: 'compass-outline', bg: '#F0FDF4', color: theme.ecoGreen, screen: 'HiddenGems' },
           ].map((item) => (
             <TouchableOpacity
               key={item.label}
@@ -120,116 +119,111 @@ export const ExploreScreen = ({ navigation }) => {
               activeOpacity={0.8}
             >
               <Ionicons name={item.icon} size={20} color={item.color} />
-              <Text style={[styles.portalText, { color: item.color }]}>{item.label}</Text>
+              <Text style={[styles.portalLabel, { color: theme.text }]}>{item.label}</Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        {/* Category Filter Chips */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.chipsRow}
-        >
-          {categories.map((cat) => {
-            const isSelected = selectedCategory === cat;
-            return (
-              <TouchableOpacity
-                key={cat}
-                onPress={() => setSelectedCategory(cat)}
-                style={[
-                  styles.filterChip,
-                  {
-                    backgroundColor: isSelected ? theme.primary : theme.card,
-                    borderColor: isSelected ? theme.primary : theme.border,
-                  },
-                ]}
-                activeOpacity={0.8}
-              >
-                <Text
-                  style={[
-                    styles.filterChipText,
-                    { color: isSelected ? '#FFFFFF' : theme.textSecondary },
-                  ]}
-                >
-                  {cat}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-
-        {/* Crowd Filter + Eco Toggle */}
-        <View style={styles.subFilterRow}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.subFilterScroll}>
-            {crowdFilters.map((crowd) => {
-              const isSelected = selectedCrowd === crowd;
+        {/* Category Filters */}
+        <View style={styles.filterSection}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScroll}>
+            {categories.map((cat) => {
+              const isSelected = selectedCategory === cat;
               return (
                 <TouchableOpacity
-                  key={crowd}
-                  onPress={() => setSelectedCrowd(crowd)}
+                  key={cat}
+                  onPress={() => setSelectedCategory(cat)}
                   style={[
-                    styles.subChip,
+                    styles.filterChip,
                     {
-                      backgroundColor: isSelected ? theme.primaryLight : theme.card,
+                      backgroundColor: isSelected ? theme.primary : theme.card,
                       borderColor: isSelected ? theme.primary : theme.border,
                     },
                   ]}
-                  activeOpacity={0.8}
                 >
                   <Text
                     style={[
-                      styles.subChipText,
-                      { color: isSelected ? theme.primaryDark : theme.textSecondary },
+                      styles.filterChipText,
+                      { color: isSelected ? '#FFFFFF' : theme.text },
                     ]}
                   >
-                    {crowd}
+                    {cat}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+
+          {/* Secondary Filters (Crowd & Eco) */}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScrollSub}>
+            {crowdFilters.map((cr) => {
+              const isSelected = selectedCrowd === cr;
+              return (
+                <TouchableOpacity
+                  key={cr}
+                  onPress={() => setSelectedCrowd(cr)}
+                  style={[
+                    styles.filterSubChip,
+                    {
+                      backgroundColor: isSelected ? theme.cardSecondary : theme.card,
+                      borderColor: isSelected ? theme.primary : theme.border,
+                    },
+                  ]}
+                >
+                  {cr !== 'All Crowds' && (
+                    <View
+                      style={[
+                        styles.crowdDot,
+                        {
+                          backgroundColor:
+                            cr === 'Low Crowd' ? '#15803D' : cr === 'Moderate Crowd' ? '#D97706' : '#DC2626',
+                        },
+                      ]}
+                    />
+                  )}
+                  <Text
+                    style={[
+                      styles.filterSubChipText,
+                      { color: isSelected ? theme.primary : theme.textSecondary },
+                    ]}
+                  >
+                    {cr}
                   </Text>
                 </TouchableOpacity>
               );
             })}
 
-            {/* Eco Only Toggle */}
             <TouchableOpacity
               onPress={() => setEcoOnly(!ecoOnly)}
               style={[
-                styles.subChip,
+                styles.filterSubChip,
                 {
                   backgroundColor: ecoOnly ? theme.ecoGreenLight : theme.card,
                   borderColor: ecoOnly ? theme.ecoGreen : theme.border,
                 },
               ]}
-              activeOpacity={0.8}
             >
-              <Ionicons
-                name="leaf"
-                size={12}
-                color={ecoOnly ? theme.ecoGreen : theme.textSecondary}
-                style={{ marginRight: 4 }}
-              />
+              <Ionicons name="leaf-outline" size={13} color={ecoOnly ? theme.ecoGreen : theme.textSecondary} />
               <Text
                 style={[
-                  styles.subChipText,
-                  {
-                    color: ecoOnly ? theme.ecoGreen : theme.textSecondary,
-                    fontFamily: ecoOnly ? 'Manrope_700Bold' : 'Manrope_500Medium',
-                  },
+                  styles.filterSubChipText,
+                  { color: ecoOnly ? theme.ecoGreen : theme.textSecondary },
                 ]}
               >
-                Eco 85+ 🌱
+                High Eco-Score
               </Text>
             </TouchableOpacity>
           </ScrollView>
         </View>
 
-        {/* Results Count */}
-        <View style={styles.resultsBar}>
+        {/* Results Counter */}
+        <View style={styles.resultsRow}>
           <Text style={[styles.resultsCount, { color: theme.textSecondary }]}>
-            {filtered.length} destination{filtered.length !== 1 ? 's' : ''} found
+            Showing {filtered.length} {filtered.length === 1 ? 'destination' : 'destinations'}
           </Text>
         </View>
 
-        {/* Destinations */}
+        {/* Destination Cards List */}
         {filtered.map((dest) => (
           <DestinationCard
             key={dest.id}
@@ -238,29 +232,17 @@ export const ExploreScreen = ({ navigation }) => {
           />
         ))}
 
-        {filtered.length === 0 && (
-          <View style={[styles.emptyBox, { backgroundColor: theme.card, borderColor: theme.border }]}>
-            <Ionicons name="compass-outline" size={40} color={theme.textMuted} />
-            <Text style={[styles.emptyTitle, { color: theme.text }]}>
-              No destinations match
-            </Text>
-            <Text style={[styles.emptySub, { color: theme.textSecondary }]}>
-              Try adjusting your filters or search keyword.
-            </Text>
-          </View>
-        )}
-
-        <View style={{ height: 100 }} />
+        <View style={{ height: 90 }} />
       </ScrollView>
 
-      {/* Floating WayWise AI Button */}
+      {/* Floating Travel Assistant Button */}
       <GemmaAIFloatingButton
-        bottomOffset={24}
+        bottomOffset={76}
         rightOffset={18}
         onPress={() => setGemmaModalVisible(true)}
       />
 
-      {/* Gemma AI Modal */}
+      {/* Travel Assistant Modal */}
       <GemmaAssistantModal
         visible={gemmaModalVisible}
         onClose={() => setGemmaModalVisible(false)}
@@ -276,56 +258,57 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingBottom: 14,
     borderBottomWidth: 1,
   },
   screenTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontFamily: 'Manrope_700Bold',
-    marginBottom: 10,
     letterSpacing: -0.3,
+    marginBottom: 10,
   },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1.5,
     borderRadius: 12,
-    paddingHorizontal: 13,
-    height: 46,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    height: 44,
   },
   searchInput: {
     flex: 1,
-    fontSize: 14,
-    height: '100%',
+    fontSize: 13.5,
   },
   scrollContent: {
     padding: 16,
   },
-
-  // Service Portals
   portalsRow: {
     flexDirection: 'row',
-    gap: 8,
+    justifyContent: 'space-between',
     marginBottom: 16,
   },
   portalCard: {
-    flex: 1,
+    width: '23%',
     borderRadius: 12,
     borderWidth: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 4,
+    paddingVertical: 10,
     alignItems: 'center',
-    gap: 5,
+    gap: 4,
   },
-  portalText: {
+  portalLabel: {
     fontSize: 11,
-    fontFamily: 'Manrope_700Bold',
+    fontFamily: 'Manrope_600SemiBold',
   },
-
-  // Chips
-  chipsRow: {
+  filterSection: {
+    marginBottom: 14,
+  },
+  filterScroll: {
     gap: 8,
-    marginBottom: 10,
+    paddingBottom: 8,
+  },
+  filterScrollSub: {
+    gap: 8,
+    paddingBottom: 4,
   },
   filterChip: {
     paddingHorizontal: 14,
@@ -334,55 +317,32 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   filterChipText: {
-    fontSize: 12,
+    fontSize: 12.5,
     fontFamily: 'Manrope_600SemiBold',
   },
-  subFilterRow: {
-    marginBottom: 14,
-  },
-  subFilterScroll: {
-    gap: 8,
-  },
-  subChip: {
+  filterSubChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
+    gap: 5,
+    paddingHorizontal: 11,
+    paddingVertical: 5,
+    borderRadius: 16,
     borderWidth: 1,
   },
-  subChipText: {
-    fontSize: 11,
+  filterSubChipText: {
+    fontSize: 11.5,
     fontFamily: 'Manrope_500Medium',
   },
-
-  // Results
-  resultsBar: {
+  crowdDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  resultsRow: {
     marginBottom: 12,
   },
   resultsCount: {
     fontSize: 12,
     fontFamily: 'Manrope_500Medium',
-  },
-
-  // Empty state
-  emptyBox: {
-    borderRadius: 16,
-    borderWidth: 1,
-    padding: 30,
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  emptyTitle: {
-    fontSize: 15,
-    fontFamily: 'Manrope_700Bold',
-    marginTop: 10,
-  },
-  emptySub: {
-    fontSize: 12,
-    fontFamily: 'Manrope_400Regular',
-    marginTop: 4,
-    textAlign: 'center',
-    lineHeight: 18,
   },
 });

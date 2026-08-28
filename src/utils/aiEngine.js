@@ -149,7 +149,7 @@ export const applyWeatherSwap = (trip) => {
               venue: 'Air-Conditioned Coastal Museum Complex',
               type: 'indoor',
               isWeatherSafe: true,
-              swappedNote: 'Swapped from Outdoor Hilltop due to forecasted rain 🌧️',
+              swappedNote: 'Rescheduled from outdoor location due to forecasted rain',
             };
           }
           if (act.title.includes('Estate') || act.title.includes('Plantation') || act.title.includes('Promenade')) {
@@ -159,7 +159,7 @@ export const applyWeatherSwap = (trip) => {
               venue: 'Heritage Indoor Pavilion',
               type: 'indoor',
               isWeatherSafe: true,
-              swappedNote: 'Swapped from Outdoor Walk due to rain alert 🌧️',
+              swappedNote: 'Rescheduled from outdoor walk due to rain alert',
             };
           }
         }
@@ -168,7 +168,7 @@ export const applyWeatherSwap = (trip) => {
 
       return {
         ...day,
-        title: `${day.title} (Weather-Protected ☔)`,
+        title: `${day.title} (Weather-Protected)`,
         activities: swappedActivities,
         isWeatherAdjusted: true,
       };
@@ -179,6 +179,6 @@ export const applyWeatherSwap = (trip) => {
   return {
     ...trip,
     daysPlan: updatedDays,
-    weatherAlert: '✅ Weather adjustment applied: Outdoor attractions rescheduled to protected indoor experiences.',
+    weatherAlert: 'Weather adjustment active: Outdoor attractions rescheduled to sheltered cultural venues.',
   };
 };

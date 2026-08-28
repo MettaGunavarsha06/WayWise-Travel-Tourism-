@@ -17,23 +17,23 @@ import { Input } from '../../components/Input';
 import { formatCurrency } from '../../utils/helpers';
 
 const interestOptions = [
-  { id: 'Nature', label: 'Nature & Hills', icon: 'leaf' },
-  { id: 'History', label: 'History & Forts', icon: 'shield' },
-  { id: 'Adventure', label: 'Adventure Treks', icon: 'compass' },
-  { id: 'Beaches', label: 'Beaches & Ocean', icon: 'water' },
-  { id: 'Food', label: 'Local Food & Culinary', icon: 'restaurant' },
-  { id: 'Shopping', label: 'Artisans & Shopping', icon: 'bag-handle' },
-  { id: 'Culture', label: 'Tribal & Culture', icon: 'people' },
-  { id: 'Spiritual', label: 'Spiritual Temples', icon: 'star' },
-  { id: 'Photography', label: 'Scenic Photography', icon: 'camera' },
-  { id: 'Wildlife', label: 'Wildlife & Caves', icon: 'globe' },
+  { id: 'Nature', label: 'Nature & Hills', icon: 'leaf-outline' },
+  { id: 'History', label: 'History & Forts', icon: 'shield-outline' },
+  { id: 'Adventure', label: 'Adventure Treks', icon: 'compass-outline' },
+  { id: 'Beaches', label: 'Beaches & Ocean', icon: 'water-outline' },
+  { id: 'Food', label: 'Local Food & Culinary', icon: 'restaurant-outline' },
+  { id: 'Shopping', label: 'Artisans & Shopping', icon: 'bag-handle-outline' },
+  { id: 'Culture', label: 'Heritage & Culture', icon: 'people-outline' },
+  { id: 'Spiritual', label: 'Spiritual Temples', icon: 'star-outline' },
+  { id: 'Photography', label: 'Scenic Photography', icon: 'camera-outline' },
+  { id: 'Wildlife', label: 'Wildlife & Caves', icon: 'globe-outline' },
 ];
 
 const travelPreferences = [
-  { id: 'Comfortable', label: 'Comfortable', desc: 'Balanced AC travel & scenic stays', icon: 'happy' },
-  { id: 'Eco-friendly', label: 'Eco-friendly 🌱', desc: 'Electric rail, solar stays & zero plastic', icon: 'leaf' },
-  { id: 'Cheapest', label: 'Cheapest', desc: 'Budget community stays & bus transit', icon: 'wallet' },
-  { id: 'Fastest', label: 'Fastest', desc: 'Point-to-point express transit', icon: 'flash' },
+  { id: 'Comfortable', label: 'Comfortable', desc: 'Balanced AC travel & scenic stays', icon: 'happy-outline' },
+  { id: 'Eco-friendly', label: 'Eco-friendly', desc: 'Electric rail, solar stays & zero plastic', icon: 'leaf-outline' },
+  { id: 'Cheapest', label: 'Budget-Friendly', desc: 'Community stays & public transit', icon: 'wallet-outline' },
+  { id: 'Fastest', label: 'Express Transit', desc: 'Point-to-point express routes', icon: 'flash-outline' },
 ];
 
 const budgetPresets = [8000, 12000, 15000, 20000, 30000];
@@ -65,7 +65,6 @@ export const TripPlannerWizardScreen = ({ navigation }) => {
     if (step < 6) {
       setStep(step + 1);
     } else {
-      // Final step: generate AI itinerary
       setGenerating(true);
       setTimeout(() => {
         setGenerating(false);
@@ -79,7 +78,7 @@ export const TripPlannerWizardScreen = ({ navigation }) => {
           travelPreference: selectedPreference,
         });
         navigation.navigate('ItineraryDetail', { trip: newTrip });
-      }, 700);
+      }, 600);
     }
   };
 
@@ -99,7 +98,7 @@ export const TripPlannerWizardScreen = ({ navigation }) => {
           <Ionicons name="arrow-back" size={22} color={theme.text} />
         </TouchableOpacity>
         <View style={styles.headerTitleWrap}>
-          <Text style={[styles.wizardTitle, { color: theme.text }]}>AI Smart Trip Planner</Text>
+          <Text style={[styles.wizardTitle, { color: theme.text }]}>Trip Planner</Text>
           <Text style={[styles.stepIndicator, { color: theme.primary }]}>Step {step} of 6</Text>
         </View>
         <View style={{ width: 30 }} />
@@ -121,7 +120,7 @@ export const TripPlannerWizardScreen = ({ navigation }) => {
           <View style={styles.stepContainer}>
             <Text style={[styles.stepHeading, { color: theme.text }]}>Where do you want to explore?</Text>
             <Text style={[styles.stepSub, { color: theme.textSecondary }]}>
-              Choose from prime Indian destinations and protected eco-reserves.
+              Choose from prime destinations and certified eco-reserves across India.
             </Text>
 
             <View style={styles.destGrid}>
@@ -137,11 +136,11 @@ export const TripPlannerWizardScreen = ({ navigation }) => {
                       {
                         backgroundColor: theme.card,
                         borderColor: isSelected ? theme.primary : theme.border,
-                        borderWidth: isSelected ? 2.5 : 1,
+                        borderWidth: isSelected ? 2 : 1,
                       },
                     ]}
                   >
-                    <Image source={{ uri: dest.image }} style={styles.destImg} />
+                    <Image source={{ uri: dest.image }} style={styles.destImg} resizeMode="cover" />
                     {isSelected && (
                       <View style={[styles.checkCircle, { backgroundColor: theme.primary }]}>
                         <Ionicons name="checkmark" size={14} color="#FFFFFF" />
@@ -215,7 +214,7 @@ export const TripPlannerWizardScreen = ({ navigation }) => {
         {/* Step 3: Number of Travelers */}
         {step === 3 && (
           <View style={styles.stepContainer}>
-            <Text style={[styles.stepHeading, { color: theme.text }]}>How many travelers are in your group?</Text>
+            <Text style={[styles.stepHeading, { color: theme.text }]}>How many travelers in your group?</Text>
             <Text style={[styles.stepSub, { color: theme.textSecondary }]}>
               Hotel rooms and transport fare will scale automatically.
             </Text>
@@ -234,8 +233,8 @@ export const TripPlannerWizardScreen = ({ navigation }) => {
                   ]}
                 >
                   <Ionicons
-                    name={count === 1 ? 'person' : count === 2 ? 'people' : 'people-sharp'}
-                    size={24}
+                    name={count === 1 ? 'person-outline' : 'people-outline'}
+                    size={22}
                     color={travelers === count ? '#FFFFFF' : theme.primary}
                   />
                   <Text
@@ -255,39 +254,42 @@ export const TripPlannerWizardScreen = ({ navigation }) => {
         {/* Step 4: Budget */}
         {step === 4 && (
           <View style={styles.stepContainer}>
-            <Text style={[styles.stepHeading, { color: theme.text }]}>What is your total trip budget?</Text>
+            <Text style={[styles.stepHeading, { color: theme.text }]}>What is your target budget?</Text>
             <Text style={[styles.stepSub, { color: theme.textSecondary }]}>
-              AI will distribute funds across hotel, transport, meals, and crafts.
+              Total budget for lodging, travel, activities, and dining.
             </Text>
 
-            <View style={[styles.budgetDisplayCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
-              <Text style={[styles.budgetDisplayLabel, { color: theme.textSecondary }]}>Total Planned Budget</Text>
-              <Text style={[styles.budgetDisplayValue, { color: theme.primary }]}>
+            <View style={[styles.budgetDisplayCard, { backgroundColor: theme.primaryLight, borderColor: theme.primary }]}>
+              <Text style={[styles.budgetLabel, { color: theme.primaryDark }]}>Target Budget</Text>
+              <Text style={[styles.budgetValue, { color: theme.primaryDark }]}>
                 {formatCurrency(budget)}
+              </Text>
+              <Text style={[styles.budgetPerPerson, { color: theme.textSecondary }]}>
+                ≈ {formatCurrency(Math.round(budget / travelers))} per traveler
               </Text>
             </View>
 
-            <Text style={[styles.presetTitle, { color: theme.textSecondary }]}>Quick Budget Presets:</Text>
-            <View style={styles.presetRow}>
-              {budgetPresets.map((preset) => (
+            <Text style={[styles.subHeading, { color: theme.text }]}>Quick Select</Text>
+            <View style={styles.presetsRow}>
+              {budgetPresets.map((val) => (
                 <TouchableOpacity
-                  key={preset}
-                  onPress={() => setBudget(preset)}
+                  key={val}
+                  onPress={() => setBudget(val)}
                   style={[
                     styles.presetPill,
                     {
-                      backgroundColor: budget === preset ? theme.primary : theme.cardSecondary,
-                      borderColor: budget === preset ? theme.primary : theme.border,
+                      backgroundColor: budget === val ? theme.primary : theme.card,
+                      borderColor: budget === val ? theme.primary : theme.border,
                     },
                   ]}
                 >
                   <Text
                     style={[
                       styles.presetText,
-                      { color: budget === preset ? '#FFFFFF' : theme.text },
+                      { color: budget === val ? '#FFFFFF' : theme.text },
                     ]}
                   >
-                    {formatCurrency(preset)}
+                    {formatCurrency(val)}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -401,11 +403,11 @@ export const TripPlannerWizardScreen = ({ navigation }) => {
       {/* Bottom Sticky Next Button */}
       <View style={[styles.bottomBar, { backgroundColor: theme.card, borderTopColor: theme.border }]}>
         <Button
-          title={step === 6 ? '✨ Generate Smart AI Itinerary' : 'Continue'}
+          title={step === 6 ? 'Generate Itinerary' : 'Continue'}
           variant="primary"
           size="large"
           loading={generating}
-          iconRight={step === 6 ? 'sparkles' : 'arrow-forward'}
+          iconRight="arrow-forward"
           onPress={handleNext}
           style={styles.fullBtn}
         />
@@ -424,6 +426,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
+    borderBottomWidth: 1,
   },
   backBtn: {
     padding: 6,
@@ -433,11 +436,11 @@ const styles = StyleSheet.create({
   },
   wizardTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
   },
   stepIndicator: {
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
     marginTop: 2,
   },
   progressBarBg: {
@@ -451,157 +454,163 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   stepContainer: {
-    marginBottom: 20,
+    paddingBottom: 10,
   },
   stepHeading: {
-    fontSize: 20,
-    fontWeight: '700',
-    marginBottom: 6,
+    fontSize: 18,
+    fontFamily: 'Manrope_700Bold',
+    letterSpacing: -0.2,
+    marginBottom: 4,
   },
   stepSub: {
-    fontSize: 13,
+    fontSize: 12.5,
+    fontFamily: 'Manrope_400Regular',
     lineHeight: 18,
-    marginBottom: 20,
+    marginBottom: 16,
   },
   destGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: 12,
   },
   destCard: {
-    width: '48%',
+    flexDirection: 'row',
+    alignItems: 'center',
     borderRadius: 14,
-    overflow: 'hidden',
-    position: 'relative',
+    padding: 10,
+    gap: 12,
   },
   destImg: {
-    width: '100%',
-    height: 100,
-  },
-  checkCircle: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 60,
+    height: 60,
+    borderRadius: 10,
   },
   destTextWrap: {
-    padding: 8,
+    flex: 1,
   },
   destName: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 15,
+    fontFamily: 'Manrope_700Bold',
   },
   destState: {
-    fontSize: 11,
-    marginTop: 1,
+    fontSize: 12,
+    fontFamily: 'Manrope_400Regular',
+    marginTop: 2,
+  },
+  checkCircle: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   daysSelector: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 10,
-    marginBottom: 20,
+    marginBottom: 16,
   },
   dayPill: {
     width: '30%',
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1,
-    paddingVertical: 18,
+    paddingVertical: 14,
     alignItems: 'center',
-    justifyContent: 'center',
   },
   dayNum: {
     fontSize: 22,
-    fontWeight: '800',
+    fontFamily: 'Manrope_800ExtraBold',
   },
   dayLabel: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 11,
+    fontFamily: 'Manrope_500Medium',
     marginTop: 2,
   },
   infoBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 14,
-    borderRadius: 12,
     gap: 10,
+    padding: 12,
+    borderRadius: 10,
   },
   infoText: {
-    fontSize: 13,
-    flex: 1,
+    fontSize: 12.5,
+    fontFamily: 'Manrope_400Regular',
   },
   travelerRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 10,
   },
   travelerCard: {
-    width: '48%',
-    borderRadius: 14,
+    width: '30%',
+    borderRadius: 12,
     borderWidth: 1,
-    paddingVertical: 20,
-    paddingHorizontal: 12,
+    paddingVertical: 14,
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
   },
   travelerCount: {
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: 12,
+    fontFamily: 'Manrope_600SemiBold',
   },
   budgetDisplayCard: {
+    padding: 20,
     borderRadius: 16,
     borderWidth: 1,
-    padding: 20,
     alignItems: 'center',
     marginBottom: 20,
   },
-  budgetDisplayLabel: {
+  budgetLabel: {
     fontSize: 12,
+    fontFamily: 'Manrope_600SemiBold',
     textTransform: 'uppercase',
-    fontWeight: '600',
+    letterSpacing: 0.5,
   },
-  budgetDisplayValue: {
+  budgetValue: {
     fontSize: 32,
-    fontWeight: '800',
-    marginVertical: 6,
+    fontFamily: 'Manrope_800ExtraBold',
+    marginVertical: 4,
   },
-  presetTitle: {
-    fontSize: 13,
-    fontWeight: '600',
+  budgetPerPerson: {
+    fontSize: 12,
+    fontFamily: 'Manrope_400Regular',
+  },
+  subHeading: {
+    fontSize: 14,
+    fontFamily: 'Manrope_700Bold',
     marginBottom: 10,
   },
-  presetRow: {
+  presetsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
   },
   presetPill: {
     paddingHorizontal: 14,
-    paddingVertical: 10,
+    paddingVertical: 9,
     borderRadius: 10,
     borderWidth: 1,
   },
   presetText: {
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: 'Manrope_600SemiBold',
   },
   interestGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 10,
   },
   interestCard: {
+    width: '48%',
     flexDirection: 'row',
     alignItems: 'center',
+    padding: 12,
     borderRadius: 12,
     borderWidth: 1,
-    padding: 14,
-    gap: 12,
+    gap: 8,
   },
   interestLabel: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 12.5,
+    fontFamily: 'Manrope_600SemiBold',
     flex: 1,
   },
   prefList: {
@@ -610,9 +619,8 @@ const styles = StyleSheet.create({
   prefCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 14,
-    borderWidth: 1,
     padding: 14,
+    borderRadius: 14,
     gap: 12,
   },
   prefIcon: {
@@ -624,19 +632,15 @@ const styles = StyleSheet.create({
   },
   prefLabel: {
     fontSize: 15,
-    fontWeight: '700',
-    marginBottom: 2,
+    fontFamily: 'Manrope_700Bold',
   },
   prefDesc: {
-    fontSize: 12,
+    fontSize: 11.5,
+    fontFamily: 'Manrope_400Regular',
+    marginTop: 2,
   },
   bottomBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 20,
-    paddingVertical: 14,
+    padding: 16,
     borderTopWidth: 1,
   },
   fullBtn: {

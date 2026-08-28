@@ -9,7 +9,7 @@ export const weatherData = {
     rainProbability: 20,
     forecast: [
       { day: 'Today', temp: '29°C', condition: 'Sunny & Coastal Breeze', icon: 'sunny', rainProb: 10, alert: null },
-      { day: 'Tomorrow', temp: '25°C', condition: 'Heavy Coastal Rains', icon: 'rainy', rainProb: 85, alert: '🌧️ Heavy rain expected tomorrow from 11:00 AM. Outdoor beaches & hilltop parks may be slippery. SmartTour suggests switching to Submarine & Aircraft Museums.' },
+      { day: 'Tomorrow', temp: '25°C', condition: 'Heavy Coastal Rains', icon: 'rainy', rainProb: 85, alert: 'Heavy rain expected tomorrow from 11:00 AM. Outdoor beaches and hilltop parks may be slippery. Consider visiting the Submarine and Aircraft Museums.' },
       { day: 'Day 3', temp: '27°C', condition: 'Scattered Showers', icon: 'cloudy', rainProb: 40, alert: null },
       { day: 'Day 4', temp: '30°C', condition: 'Clear Sky', icon: 'sunny', rainProb: 15, alert: null },
     ]
@@ -24,7 +24,7 @@ export const weatherData = {
     rainProbability: 15,
     forecast: [
       { day: 'Today', temp: '22°C', condition: 'Cool Fog', icon: 'cloud', rainProb: 10, alert: null },
-      { day: 'Tomorrow', temp: '20°C', condition: 'Gentle Drizzle', icon: 'rainy', rainProb: 60, alert: '🌧️ Moderate mountain showers tomorrow. We suggest Borra Caves and Tribal Museum instead of Katiki trek.' },
+      { day: 'Tomorrow', temp: '20°C', condition: 'Gentle Drizzle', icon: 'rainy', rainProb: 60, alert: 'Moderate mountain showers tomorrow. We suggest Borra Caves and Tribal Museum instead of the Katiki trek.' },
       { day: 'Day 3', temp: '23°C', condition: 'Sunny & Crisp', icon: 'sunny', rainProb: 10, alert: null },
     ]
   },
@@ -52,9 +52,24 @@ export const weatherData = {
     rainProbability: 25,
     forecast: [
       { day: 'Today', temp: '28°C', condition: 'Sunny Beach Weather', icon: 'sunny', rainProb: 20, alert: null },
-      { day: 'Tomorrow', temp: '27°C', condition: 'Passing Showers', icon: 'rainy', rainProb: 70, alert: '🌧️ Afternoon downpour forecasted. Great day for Old Goa indoor cathedrals & Portuguese museums.' },
+      { day: 'Tomorrow', temp: '27°C', condition: 'Passing Showers', icon: 'rainy', rainProb: 70, alert: 'Afternoon downpour forecasted. Great day for Old Goa indoor cathedrals & Portuguese museums.' },
       { day: 'Day 3', temp: '29°C', condition: 'Clear', icon: 'sunny', rainProb: 15, alert: null },
       { day: 'Day 4', temp: '29°C', condition: 'Pleasant', icon: 'partly-sunny', rainProb: 20, alert: null },
+    ]
+  },
+  dest_jaipur: {
+    city: 'Jaipur',
+    temp: '26°C',
+    condition: 'Clear & Pleasant',
+    icon: 'sunny',
+    humidity: '42%',
+    wind: '12 km/h',
+    rainProbability: 5,
+    forecast: [
+      { day: 'Today', temp: '26°C', condition: 'Clear Skies', icon: 'sunny', rainProb: 5, alert: null },
+      { day: 'Tomorrow', temp: '27°C', condition: 'Sunny & Crisp', icon: 'sunny', rainProb: 5, alert: null },
+      { day: 'Day 3', temp: '28°C', condition: 'Mild Afternoon', icon: 'sunny', rainProb: 10, alert: null },
+      { day: 'Day 4', temp: '25°C', condition: 'Breezy Evening', icon: 'partly-sunny', rainProb: 5, alert: null },
     ]
   },
 };

@@ -32,17 +32,17 @@ export const WeatherAlertCard = ({ alertMessage, onApplyChanges, isApplied = fal
         </View>
         <View style={styles.textBlock}>
           <Text style={[styles.title, { color: isApplied ? theme.ecoGreen : '#1B5E20' }]}>
-            {isApplied ? '✓ Adjustment Applied' : '💡 Smart Travel Tip'}
+            {isApplied ? 'Weather Adjustment Active' : 'Live Weather Advisory'}
           </Text>
           <Text style={[styles.subtitle, { color: isApplied ? '#2E7D32' : '#33691E' }]}>
-            {alertMessage || '🌧️ Rain expected tomorrow. Outdoor activity → Indoor attraction'}
+            {alertMessage || 'Rain expected tomorrow. Reschedule outdoor stops to sheltered cultural museums.'}
           </Text>
         </View>
       </View>
 
       {!isApplied && onApplyChanges && (
         <Button
-          title="Apply Suggested Changes"
+          title="Apply Weather Adjustments"
           variant="primary"
           size="small"
           icon="refresh-outline"

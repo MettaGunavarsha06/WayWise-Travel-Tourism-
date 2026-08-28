@@ -42,11 +42,11 @@ export const LoginScreen = ({ navigation }) => {
           {/* Header */}
           <View style={styles.header}>
             <View style={[styles.logoIcon, { backgroundColor: theme.primaryLight }]}>
-              <Ionicons name="compass" size={32} color={theme.primary} />
+              <Ionicons name="leaf" size={32} color={theme.primary} />
             </View>
-            <Text style={[styles.title, { color: theme.text }]}>Welcome to SmartTour</Text>
+            <Text style={[styles.title, { color: theme.text }]}>Welcome to WayWise</Text>
             <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-              Smart India Hackathon 2026 • AI Tourism Ecosystem
+              Sustainable Tourism Platform · SIH 2026
             </Text>
           </View>
 
@@ -96,7 +96,7 @@ export const LoginScreen = ({ navigation }) => {
               style={styles.googleBtn}
             />
 
-            {/* Quick Guest & Admin Access for Hackathon Judges */}
+            {/* Quick Guest & Admin Access */}
             <View style={styles.demoButtonGroup}>
               <Button
                 title="Continue as Guest"
@@ -107,9 +107,10 @@ export const LoginScreen = ({ navigation }) => {
               />
 
               <Button
-                title="🏛️ Tourism Authority Admin Demo"
+                title="Tourism Authority Demo"
                 variant="secondary"
                 size="small"
+                icon="shield-checkmark-outline"
                 onPress={loginAsAdmin}
                 style={styles.adminBtn}
               />
@@ -154,21 +155,21 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 13,
+    fontFamily: 'Manrope_400Regular',
     textAlign: 'center',
   },
   card: {
     borderRadius: 20,
     borderWidth: 1,
     padding: 20,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
     elevation: 3,
   },
   signInBtn: {
@@ -186,7 +187,7 @@ const styles = StyleSheet.create({
   dividerText: {
     marginHorizontal: 12,
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
   },
   googleBtn: {
     marginBottom: 12,
@@ -199,9 +200,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E2E8F0',
   },
-  adminBtn: {
-    marginTop: 4,
-  },
+  adminBtn: {},
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -210,9 +209,10 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 13,
+    fontFamily: 'Manrope_400Regular',
   },
   signUpText: {
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
   },
 });

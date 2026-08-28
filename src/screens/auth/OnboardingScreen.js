@@ -18,24 +18,24 @@ const { width } = Dimensions.get('window');
 const slides = [
   {
     id: '1',
-    title: 'AI-Powered Smart Travel Planning',
-    subtitle: 'Generate tailored day-by-day itineraries, optimize travel budgets, and discover verified spots across India.',
+    title: 'Sustainable Tourism & Travel Planning',
+    subtitle: 'Curated day-by-day itineraries, balanced travel budgets, and verified cultural destinations across India.',
     image: 'https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?auto=format&fit=crop&w=800&q=80',
-    icon: 'sparkles',
+    icon: 'map-outline',
   },
   {
     id: '2',
-    title: 'Support Local Businesses & Hidden Gems',
-    subtitle: 'Directly connect with indigenous tribal artisans, homestay hosts, and explore peaceful offbeat destinations.',
+    title: 'Support Local Artisans & Hidden Gems',
+    subtitle: 'Connect directly with certified community craft guilds, homestay hosts, and explore peaceful offbeat destinations.',
     image: 'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=800&q=80',
-    icon: 'storefront',
+    icon: 'storefront-outline',
   },
   {
     id: '3',
-    title: 'Sustainable & Safe Tourism',
-    subtitle: 'Real-time crowd monitoring, adaptive rainy day rescheduling, eco-score tracking, and instant SOS emergency protection.',
+    title: 'Live Safety & Adaptive Travel',
+    subtitle: 'Real-time crowd monitoring, adaptive weather rescheduling, eco-score tracking, and instant safety assistance.',
     image: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=800&q=80',
-    icon: 'shield-checkmark',
+    icon: 'shield-checkmark-outline',
   },
 ];
 
@@ -58,19 +58,19 @@ export const OnboardingScreen = ({ navigation }) => {
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.topNav}>
         <View style={styles.logoRow}>
-          <Ionicons name="compass" size={24} color={theme.primary} />
-          <Text style={[styles.logoText, { color: theme.text }]}>SmartTour</Text>
+          <Ionicons name="leaf" size={22} color={theme.primary} />
+          <Text style={[styles.logoText, { color: theme.text }]}>WayWise</Text>
         </View>
         <TouchableOpacity onPress={loginAsGuest} style={styles.skipBtn}>
-          <Text style={[styles.skipText, { color: theme.textSecondary }]}>Skip to Demo</Text>
+          <Text style={[styles.skipText, { color: theme.textSecondary }]}>Skip to App</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.slideContainer}>
-        <Image source={{ uri: slide.image }} style={styles.image} />
+        <Image source={{ uri: slide.image }} style={styles.image} resizeMode="cover" />
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <View style={[styles.iconCircle, { backgroundColor: theme.primaryLight }]}>
-            <Ionicons name={slide.icon} size={28} color={theme.primary} />
+            <Ionicons name={slide.icon} size={26} color={theme.primary} />
           </View>
           <Text style={[styles.title, { color: theme.text }]}>{slide.title}</Text>
           <Text style={[styles.subtitle, { color: theme.textSecondary }]}>{slide.subtitle}</Text>
@@ -99,14 +99,6 @@ export const OnboardingScreen = ({ navigation }) => {
             onPress={handleNext}
             style={styles.primaryBtn}
           />
-
-          <View style={styles.authRow}>
-            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={[styles.authLink, { color: theme.textSecondary }]}>
-                Already have an account? <Text style={{ color: theme.primary, fontWeight: '700' }}>Login</Text>
-              </Text>
-            </TouchableOpacity>
-          </View>
         </View>
       </View>
     </SafeAreaView>
@@ -127,64 +119,65 @@ const styles = StyleSheet.create({
   logoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
   },
   logoText: {
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: 'Manrope_800ExtraBold',
+    letterSpacing: -0.3,
   },
   skipBtn: {
     padding: 6,
   },
   skipText: {
     fontSize: 13,
-    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
   },
   slideContainer: {
     flex: 1,
-    paddingHorizontal: 16,
-    paddingBottom: 20,
-    justifyContent: 'flex-end',
+    padding: 20,
+    justifyContent: 'space-between',
   },
   image: {
-    ...StyleSheet.absoluteFillObject,
     width: '100%',
-    height: '65%',
+    height: '42%',
+    borderRadius: 20,
+    backgroundColor: '#E2E8F0',
   },
   card: {
     borderRadius: 24,
     borderWidth: 1,
-    padding: 24,
+    padding: 20,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.15,
-    shadowRadius: 20,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 3,
   },
   iconCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: 14,
   },
   title: {
     fontSize: 20,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
     textAlign: 'center',
     marginBottom: 8,
+    lineHeight: 26,
   },
   subtitle: {
     fontSize: 13,
-    lineHeight: 19,
+    fontFamily: 'Manrope_400Regular',
     textAlign: 'center',
+    lineHeight: 19,
     marginBottom: 18,
   },
   dotsRow: {
     flexDirection: 'row',
-    alignItems: 'center',
     gap: 6,
     marginBottom: 20,
   },
@@ -194,12 +187,5 @@ const styles = StyleSheet.create({
   },
   primaryBtn: {
     width: '100%',
-    marginBottom: 14,
-  },
-  authRow: {
-    alignItems: 'center',
-  },
-  authLink: {
-    fontSize: 13,
   },
 });

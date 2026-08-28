@@ -12,30 +12,27 @@ import { useTheme } from '../../context/ThemeContext';
 import { hotels } from '../../data/hotels';
 import { HotelCard } from '../../components/HotelCard';
 
-const priceFilters = ['All Prices', 'Under ₹2,000', '₹2,000 - ₹4,000', 'Luxury ₹4,000+'];
+const priceRanges = ['All', 'Under ₹2,500', '₹2,500 - ₹4,000', 'Above ₹4,000'];
 
 export const HotelsScreen = ({ navigation }) => {
   const { theme } = useTheme();
-  const [selectedPrice, setSelectedPrice] = useState('All Prices');
+  const [selectedPrice, setSelectedPrice] = useState('All');
   const [ecoOnly, setEcoOnly] = useState(false);
   const [minRating45, setMinRating45] = useState(false);
 
   const filteredHotels = hotels.filter((h) => {
-    // Price filter
-    let matchPrice = true;
-    if (selectedPrice === 'Under ₹2,000') matchPrice = h.pricePerNight < 2000;
-    if (selectedPrice === '₹2,000 - ₹4,000') matchPrice = h.pricePerNight >= 2000 && h.pricePerNight <= 4000;
-    if (selectedPrice === 'Luxury ₹4,000+') matchPrice = h.pricePerNight > 4000;
+    let matchesPrice = true;
+    if (selectedPrice === 'Under ₹2,500') matchesPrice = h.pricePerNight < 2500;
+    if (selectedPrice === '₹2,500 - ₹4,000') matchesPrice = h.pricePerNight >= 2500 && h.pricePerNight <= 4000;
+    if (selectedPrice === 'Above ₹4,000') matchesPrice = h.pricePerNight > 4000;
 
-    // Eco filter
-    let matchEco = true;
-    if (ecoOnly) matchEco = h.sustainabilityScore >= 90;
+    let matchesEco = true;
+    if (ecoOnly) matchesEco = h.sustainabilityScore >= 90;
 
-    // Rating filter
-    let matchRating = true;
-    if (minRating45) matchRating = h.rating >= 4.7;
+    let matchesRating = true;
+    if (minRating45) matchesRating = h.rating >= 4.7;
 
-    return matchPrice && matchEco && matchRating;
+    return matchesPrice && matchesEco && matchesRating;
   });
 
   return (
@@ -45,27 +42,27 @@ export const HotelsScreen = ({ navigation }) => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color={theme.text} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.text }]}>Smart Hotel Discovery</Text>
+        <Text style={[styles.headerTitle, { color: theme.text }]}>Verified Eco-Stays &amp; Homestays</Text>
         <View style={{ width: 30 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Eco Sustainability Banner */}
-        <View style={[styles.ecoBanner, { backgroundColor: theme.ecoGreenLight, borderColor: theme.ecoGreen }]}>
-          <Ionicons name="leaf" size={22} color={theme.ecoGreen} style={{ marginRight: 8 }} />
+        {/* Eco Stays Guarantee Banner */}
+        <View style={[styles.ecoBanner, { backgroundColor: '#F0FDF4', borderColor: '#BBF7D0' }]}>
+          <Ionicons name="leaf-outline" size={22} color="#166534" style={{ marginRight: 10, marginTop: 2 }} />
           <View style={{ flex: 1 }}>
-            <Text style={[styles.ecoBannerTitle, { color: theme.ecoGreen }]}>
-              Verified Green Accommodations
+            <Text style={[styles.ecoBannerTitle, { color: '#166534' }]}>
+              Certified Green Tourism Partners
             </Text>
-            <Text style={[styles.ecoBannerSubtitle, { color: '#065F46' }]}>
-              Solar powered, plastic-free, and directly supporting local employment.
+            <Text style={[styles.ecoBannerDesc, { color: '#15803D' }]}>
+              All listed accommodations are audited for solar adoption, zero-plastic amenities, and local community profit-sharing.
             </Text>
           </View>
         </View>
 
-        {/* Filter Pills */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScroll}>
-          {priceFilters.map((p) => {
+        {/* Filters */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersScroll}>
+          {priceRanges.map((p) => {
             const isSelected = selectedPrice === p;
             return (
               <TouchableOpacity
@@ -107,7 +104,7 @@ export const HotelsScreen = ({ navigation }) => {
                 { color: ecoOnly ? '#FFFFFF' : theme.text },
               ]}
             >
-              🌱 Eco Score 90+
+              Eco Score 90+
             </Text>
           </TouchableOpacity>
 
@@ -127,7 +124,7 @@ export const HotelsScreen = ({ navigation }) => {
                 { color: minRating45 ? '#FFFFFF' : theme.text },
               ]}
             >
-              ⭐ 4.7+ Rating
+              4.7+ Rating
             </Text>
           </TouchableOpacity>
         </ScrollView>
@@ -170,48 +167,49 @@ const styles = StyleSheet.create({
     padding: 6,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 17,
+    fontFamily: 'Manrope_700Bold',
   },
   scrollContent: {
     padding: 16,
   },
   ecoBanner: {
     flexDirection: 'row',
-    alignItems: 'center',
-    padding: 14,
+    alignItems: 'flex-start',
     borderRadius: 14,
     borderWidth: 1,
+    padding: 14,
     marginBottom: 14,
   },
   ecoBannerTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    marginBottom: 2,
+    fontSize: 14,
+    fontFamily: 'Manrope_700Bold',
+    marginBottom: 3,
   },
-  ecoBannerSubtitle: {
-    fontSize: 11,
-    lineHeight: 15,
+  ecoBannerDesc: {
+    fontSize: 12,
+    fontFamily: 'Manrope_400Regular',
+    lineHeight: 18,
   },
-  filterScroll: {
+  filtersScroll: {
     gap: 8,
-    marginBottom: 16,
+    paddingBottom: 14,
   },
   filterPill: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     paddingVertical: 7,
-    borderRadius: 10,
+    borderRadius: 16,
     borderWidth: 1,
   },
   filterPillText: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 12.5,
+    fontFamily: 'Manrope_600SemiBold',
   },
   listHeadingRow: {
     marginBottom: 12,
   },
   listHeading: {
     fontSize: 15,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
   },
 });

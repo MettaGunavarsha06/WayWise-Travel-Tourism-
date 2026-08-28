@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const AUTH_STORAGE_KEY = '@smarttour_auth_user';
+const AUTH_STORAGE_KEY = '@waywise_auth_user';
 
 const defaultTouristUser = {
   id: 'usr_gunavarsha',
@@ -11,8 +11,8 @@ const defaultTouristUser = {
   avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
   role: 'tourist', // tourist | authority_admin
   ecoPoints: 520,
-  ecoBadge: 'Eco Champion 🌱',
-  savedDestinations: ['dest_vizag', 'dest_araku', 'dest_goa'],
+  ecoBadge: 'Eco Champion',
+  savedDestinations: ['dest_vizag', 'dest_araku', 'dest_goa', 'dest_jaipur'],
 };
 
 const AuthContext = createContext({

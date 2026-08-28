@@ -52,7 +52,7 @@ export const RegisterScreen = ({ navigation }) => {
           <View style={styles.header}>
             <Text style={[styles.title, { color: theme.text }]}>Create Your Account</Text>
             <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-              Join the Smart India Hackathon 2026 Tourism Ecosystem
+              Join the WayWise Sustainable Tourism Platform
             </Text>
           </View>
 
@@ -95,20 +95,20 @@ export const RegisterScreen = ({ navigation }) => {
             />
 
             <Button
-              title="Register & Start Exploring"
+              title="Register &amp; Start Exploring"
               variant="primary"
               size="large"
               onPress={handleRegister}
-              style={styles.regBtn}
+              style={styles.registerBtn}
             />
           </View>
 
           <View style={styles.footer}>
             <Text style={[styles.footerText, { color: theme.textSecondary }]}>
-              Already registered?{' '}
+              Already have an account?{' '}
             </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={[styles.loginText, { color: theme.primary }]}>Login</Text>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <Text style={[styles.loginText, { color: theme.primary }]}>Sign In</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -130,37 +130,36 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   header: {
     marginBottom: 20,
   },
   title: {
     fontSize: 24,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 13,
+    fontFamily: 'Manrope_400Regular',
   },
   card: {
     borderRadius: 20,
     borderWidth: 1,
     padding: 20,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
     elevation: 3,
   },
   errorText: {
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: 12,
+    fontFamily: 'Manrope_600SemiBold',
     marginBottom: 12,
-    textAlign: 'center',
   },
-  regBtn: {
-    marginTop: 8,
+  registerBtn: {
+    marginTop: 10,
   },
   footer: {
     flexDirection: 'row',
@@ -170,9 +169,10 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 13,
+    fontFamily: 'Manrope_400Regular',
   },
   loginText: {
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
   },
 });

@@ -14,7 +14,6 @@ import { useAuth } from '../../context/AuthContext';
 import { adminStatistics } from '../../data/adminStats';
 import { MetricCard } from '../../components/MetricCard';
 import { CrowdIndicator } from '../../components/CrowdIndicator';
-import { EcoScoreBadge } from '../../components/EcoScoreBadge';
 import { Button } from '../../components/Button';
 
 export const AdminDashboardScreen = ({ navigation }) => {
@@ -42,7 +41,7 @@ export const AdminDashboardScreen = ({ navigation }) => {
           <View>
             <Text style={[styles.headerTitle, { color: theme.text }]}>Tourism Authority</Text>
             <Text style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
-              State Analytics & Crowd Management Hub
+              State Analytics &amp; Crowd Management Hub
             </Text>
           </View>
         </View>
@@ -51,7 +50,7 @@ export const AdminDashboardScreen = ({ navigation }) => {
           onPress={toggleRole}
           style={[styles.touristSwitchPill, { backgroundColor: theme.primaryLight, borderColor: theme.primary }]}
         >
-          <Ionicons name="person" size={13} color={theme.primaryDark} />
+          <Ionicons name="person-outline" size={13} color={theme.primaryDark} />
           <Text style={[styles.switchText, { color: theme.primaryDark }]}>Tourist App</Text>
         </TouchableOpacity>
       </View>
@@ -68,40 +67,40 @@ export const AdminDashboardScreen = ({ navigation }) => {
             title="Total Tourists (FY26)"
             value={kpis.totalTourists}
             change="+8.2%"
-            icon="people"
+            icon="people-outline"
             color="#0D9488"
           />
           <MetricCard
             title="Today's Arrivals"
             value={kpis.todayTourists}
             change={kpis.todayGrowth}
-            icon="airplane"
+            icon="airplane-outline"
             color="#3B82F6"
           />
           <MetricCard
             title="Hotel Occupancy"
             value={kpis.hotelOccupancy}
             change="+4.1%"
-            icon="bed"
+            icon="bed-outline"
             color="#8B5CF6"
           />
           <MetricCard
             title="Registered Artisans"
             value={kpis.registeredBusinesses}
             change={kpis.newBizThisMonth}
-            icon="storefront"
+            icon="storefront-outline"
             color="#EC4899"
           />
           <MetricCard
             title="Avg Tourist Spend"
             value={kpis.avgTouristSpending}
-            icon="wallet"
+            icon="wallet-outline"
             color="#F59E0B"
           />
           <MetricCard
             title="Overall Eco Score"
             value={kpis.overallEcoScore}
-            icon="leaf"
+            icon="leaf-outline"
             color="#10B981"
           />
         </View>
@@ -110,7 +109,7 @@ export const AdminDashboardScreen = ({ navigation }) => {
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <View style={styles.cardHeaderRow}>
             <View>
-              <Text style={[styles.cardTitle, { color: theme.text }]}>📍 Destination Footfall & Crowd Distribution</Text>
+              <Text style={[styles.cardTitle, { color: theme.text }]}>Destination Footfall &amp; Crowd Distribution</Text>
               <Text style={[styles.cardSubtitle, { color: theme.textSecondary }]}>
                 Real-time capacity tracking to prevent over-tourism
               </Text>
@@ -162,7 +161,7 @@ export const AdminDashboardScreen = ({ navigation }) => {
 
         {/* Local Business Marketplace Economic Impact */}
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <Text style={[styles.cardTitle, { color: theme.text }]}>🏪 Local Economy & Direct Vendor Impact</Text>
+          <Text style={[styles.cardTitle, { color: theme.text }]}>Local Economy &amp; Direct Vendor Impact</Text>
           <Text style={[styles.revenueText, { color: theme.primary }]}>
             {adminStatistics.businessAnalytics.revenueGeneratedDirectly}{' '}
             <Text style={{ fontSize: 13, color: theme.textSecondary, fontWeight: '400' }}>
@@ -204,7 +203,7 @@ export const AdminDashboardScreen = ({ navigation }) => {
               <Text style={styles.ecoStatVal}>
                 {adminStatistics.sustainabilityMetrics.publicAndEVTransportUsagePercent}%
               </Text>
-              <Text style={styles.ecoStatLbl}>Public & EV Transit Use</Text>
+              <Text style={styles.ecoStatLbl}>Public &amp; EV Transit Use</Text>
             </View>
 
             <View style={styles.ecoStatCol}>
@@ -219,7 +218,7 @@ export const AdminDashboardScreen = ({ navigation }) => {
         {/* Tourist Grievances & Feedback Resolution Desk */}
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <Text style={[styles.cardTitle, { color: theme.text }]}>
-            📬 Tourist Feedback & Grievance Resolution Desk
+            Tourist Feedback &amp; Grievance Resolution Desk
           </Text>
           <Text style={[styles.cardSubtitle, { color: theme.textSecondary }]}>
             Direct feedback from app users with action routing
@@ -232,7 +231,7 @@ export const AdminDashboardScreen = ({ navigation }) => {
                   <View>
                     <Text style={[styles.fbName, { color: theme.text }]}>{fb.touristName}</Text>
                     <Text style={[styles.fbMeta, { color: theme.textSecondary }]}>
-                      {fb.destination} • {fb.category} • {fb.date}
+                      {fb.destination} · {fb.category} · {fb.date}
                     </Text>
                   </View>
                   <View
@@ -304,10 +303,11 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 16,
-    fontWeight: '800',
+    fontFamily: 'Manrope_800ExtraBold',
   },
   headerSubtitle: {
     fontSize: 11,
+    fontFamily: 'Manrope_400Regular',
   },
   touristSwitchPill: {
     flexDirection: 'row',
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
   },
   switchText: {
     fontSize: 11,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
   },
   scrollContent: {
     padding: 16,
@@ -333,11 +333,11 @@ const styles = StyleSheet.create({
   },
   sectionHeading: {
     fontSize: 17,
-    fontWeight: '800',
+    fontFamily: 'Manrope_800ExtraBold',
   },
   liveTag: {
     fontSize: 12,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
   },
   kpiGrid: {
     flexDirection: 'row',
@@ -346,7 +346,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   card: {
-    borderRadius: 18,
+    borderRadius: 16,
     borderWidth: 1,
     padding: 16,
     marginBottom: 16,
@@ -356,59 +356,59 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 15,
-    fontWeight: '800',
+    fontFamily: 'Manrope_700Bold',
     marginBottom: 2,
   },
   cardSubtitle: {
-    fontSize: 11,
+    fontSize: 12,
+    fontFamily: 'Manrope_400Regular',
   },
   destList: {
     gap: 12,
   },
   destItem: {
-    paddingVertical: 6,
+    gap: 6,
   },
   destTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 6,
   },
   destName: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 14,
+    fontFamily: 'Manrope_600SemiBold',
   },
   barBg: {
-    height: 8,
-    borderRadius: 4,
+    height: 6,
+    borderRadius: 3,
     overflow: 'hidden',
-    marginBottom: 6,
   },
   barFill: {
     height: '100%',
-    borderRadius: 4,
+    borderRadius: 3,
   },
   destBottom: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   visitorText: {
-    fontSize: 11,
+    fontSize: 11.5,
+    fontFamily: 'Manrope_400Regular',
   },
   capText: {
-    fontSize: 11,
-    fontWeight: '700',
+    fontSize: 11.5,
+    fontFamily: 'Manrope_700Bold',
   },
   revenueText: {
     fontSize: 22,
-    fontWeight: '800',
-    marginVertical: 8,
+    fontFamily: 'Manrope_800ExtraBold',
+    marginVertical: 6,
   },
   bizGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-    marginTop: 6,
+    marginTop: 10,
   },
   bizItem: {
     width: '48%',
@@ -417,16 +417,16 @@ const styles = StyleSheet.create({
   },
   bizCat: {
     fontSize: 11,
-    fontWeight: '600',
+    fontFamily: 'Manrope_500Medium',
   },
   bizCount: {
-    fontSize: 14,
-    fontWeight: '800',
+    fontSize: 15,
+    fontFamily: 'Manrope_700Bold',
     marginTop: 2,
   },
   bizPercent: {
     fontSize: 11,
-    fontWeight: '400',
+    fontFamily: 'Manrope_400Regular',
   },
   ecoHeaderRow: {
     flexDirection: 'row',
@@ -436,7 +436,7 @@ const styles = StyleSheet.create({
   },
   ecoMainTitle: {
     fontSize: 15,
-    fontWeight: '800',
+    fontFamily: 'Manrope_700Bold',
   },
   ecoStatsGrid: {
     flexDirection: 'row',
@@ -444,23 +444,22 @@ const styles = StyleSheet.create({
   },
   ecoStatCol: {
     alignItems: 'center',
-    flex: 1,
   },
   ecoStatVal: {
-    fontSize: 20,
-    fontWeight: '800',
+    fontSize: 18,
+    fontFamily: 'Manrope_800ExtraBold',
     color: '#065F46',
   },
   ecoStatLbl: {
-    fontSize: 10,
+    fontSize: 10.5,
+    fontFamily: 'Manrope_500Medium',
     color: '#047857',
-    textAlign: 'center',
     marginTop: 2,
-    fontWeight: '600',
+    textAlign: 'center',
   },
   feedbackList: {
-    gap: 12,
     marginTop: 10,
+    gap: 12,
   },
   fbItem: {
     paddingVertical: 10,
@@ -473,29 +472,31 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   fbName: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 13.5,
+    fontFamily: 'Manrope_700Bold',
   },
   fbMeta: {
-    fontSize: 10,
+    fontSize: 11,
+    fontFamily: 'Manrope_400Regular',
     marginTop: 1,
   },
   statusBadge: {
-    paddingHorizontal: 8,
+    paddingHorizontal: 7,
     paddingVertical: 3,
     borderRadius: 6,
   },
   statusText: {
     fontSize: 10,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
   },
   fbComment: {
-    fontSize: 12,
-    lineHeight: 16,
+    fontSize: 12.5,
+    fontFamily: 'Manrope_400Regular',
     fontStyle: 'italic',
+    lineHeight: 18,
+    marginBottom: 8,
   },
   resolveBtn: {
-    marginTop: 8,
     alignSelf: 'flex-start',
   },
 });

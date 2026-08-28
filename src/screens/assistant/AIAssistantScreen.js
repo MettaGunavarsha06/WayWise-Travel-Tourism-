@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -38,7 +39,7 @@ export const AIAssistantScreen = ({ navigation }) => {
     {
       id: '1',
       sender: 'ai',
-      text: `Namaste! I am **SmartTour Gemma AI** 🤖 (powered by Google Gemma architecture).\n\nHow can I help you explore destinations, optimize budgets, or dynamically adapt your travel itinerary today?`,
+      text: `Namaste! I am your WayWise Travel Assistant.\n\nHow can I help you explore destinations, optimize budgets, or adapt your travel itinerary today?`,
       time: '10:00 AM',
     },
   ]);
@@ -105,10 +106,10 @@ export const AIAssistantScreen = ({ navigation }) => {
     if (!action) return;
     if (action.type === 'APPLY_WEATHER_SWAP') {
       applyWeatherAdjustment();
-      alert('🌧️ Weather adjustment applied to your itinerary!');
+      Alert.alert('Weather Adjustment Applied', 'Your itinerary has been adapted to weather-sheltered indoor sites.');
     } else if (action.type === 'OPTIMIZE_BUDGET') {
       optimizeBudget();
-      alert('💰 Budget optimization applied!');
+      Alert.alert('Budget Optimized', 'Your lodging and transit have been optimized for sustainability and savings.');
     } else if (action.type === 'EXPLORE_GEMS') {
       navigation.navigate('HiddenGems');
     } else if (action.type === 'VIEW_BUSINESSES') {
@@ -122,25 +123,22 @@ export const AIAssistantScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      {/* Header */}
+      {/* Top Header */}
       <View style={[styles.header, { borderBottomColor: theme.border, backgroundColor: theme.card }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={22} color={theme.text} />
-        </TouchableOpacity>
-        <View style={styles.headerTitleWrap}>
-          <View style={styles.botRow}>
-            <View style={[styles.botDot, { backgroundColor: theme.ecoGreen }]} />
-            <Text style={[styles.headerTitle, { color: theme.text }]}>SmartTour Gemma AI</Text>
-            <View style={styles.gemmaBadge}>
-              <Text style={styles.gemmaBadgeText}>Google Gemma</Text>
-            </View>
+        <View style={styles.headerLeft}>
+          <View style={[styles.avatarBox, { backgroundColor: theme.primaryLight }]}>
+            <Ionicons name="chatbubble-ellipses-outline" size={20} color={theme.primary} />
           </View>
-          <Text style={[styles.headerSub, { color: theme.textSecondary }]}>
-            {GEMMA_MODEL_VERSION} • Multilingual & Voice
-          </Text>
+          <View>
+            <Text style={[styles.headerTitle, { color: theme.text }]}>Travel Assistant</Text>
+            <Text style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
+              WayWise Smart Concierge
+            </Text>
+          </View>
         </View>
+
         <TouchableOpacity
-          onPress={() => speakText(messages[messages.length - 1]?.text || 'Hello')}
+          onPress={() => speakText(messages[messages.length - 1]?.text || 'Assistant ready')}
           style={[styles.voiceBtn, { backgroundColor: isSpeaking ? theme.primary : theme.cardSecondary }]}
         >
           <Ionicons
@@ -152,134 +150,116 @@ export const AIAssistantScreen = ({ navigation }) => {
       </View>
 
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
+        {/* Quick Prompts */}
+        <View style={[styles.quickPromptsWrap, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.quickPromptsScroll}>
+            {quickPrompts.map((item, index) => (
+              <TouchableOpacity
+                key={index}
+                onPress={() => handleSend(item)}
+                style={[styles.quickPromptPill, { backgroundColor: theme.cardSecondary, borderColor: theme.border }]}
+              >
+                <Text style={[styles.quickPromptText, { color: theme.primary }]}>{item}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* Message Log */}
         <ScrollView
           ref={scrollViewRef}
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={styles.chatScroll}
           showsVerticalScrollIndicator={false}
           onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
         >
-          {/* Quick Prompt Chips */}
-          <View style={styles.promptsSection}>
-            <Text style={[styles.promptsHeading, { color: theme.textMuted }]}>
-              Quick Travel Questions:
-            </Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipsScroll}>
-              {quickPrompts.map((prompt, idx) => (
-                <TouchableOpacity
-                  key={idx}
-                  onPress={() => handleSend(prompt)}
-                  style={[styles.promptChip, { backgroundColor: theme.card, borderColor: theme.border }]}
-                >
-                  <Text style={[styles.promptChipText, { color: theme.primary }]}>{prompt}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
+          {messages.map((msg) => {
+            const isUser = msg.sender === 'user';
+            return (
+              <View
+                key={msg.id}
+                style={[
+                  styles.msgRow,
+                  isUser ? styles.userRow : styles.aiRow,
+                ]}
+              >
+                {!isUser && (
+                  <View style={[styles.msgAvatar, { backgroundColor: theme.primaryLight }]}>
+                    <Ionicons name="compass-outline" size={14} color={theme.primary} />
+                  </View>
+                )}
 
-          {/* Messages Timeline */}
-          <View style={styles.messagesList}>
-            {messages.map((msg) => {
-              const isUser = msg.sender === 'user';
-              return (
                 <View
-                  key={msg.id}
                   style={[
-                    styles.messageBubbleWrap,
-                    isUser ? styles.userBubbleWrap : styles.aiBubbleWrap,
+                    styles.bubble,
+                    isUser
+                      ? [styles.userBubble, { backgroundColor: theme.primary }]
+                      : [styles.aiBubble, { backgroundColor: theme.card, borderColor: theme.border }],
                   ]}
                 >
-                  {!isUser && (
-                    <View style={[styles.avatarBox, { backgroundColor: theme.primaryLight }]}>
-                      <Ionicons name="sparkles" size={14} color={theme.primary} />
-                    </View>
-                  )}
-                  <View
+                  <Text
                     style={[
-                      styles.bubble,
-                      isUser
-                        ? [styles.userBubble, { backgroundColor: theme.primary }]
-                        : [styles.aiBubble, { backgroundColor: theme.card, borderColor: theme.border }],
+                      styles.bubbleText,
+                      { color: isUser ? '#FFFFFF' : theme.text },
                     ]}
                   >
-                    <Text
-                      style={[
-                        styles.bubbleText,
-                        { color: isUser ? '#FFFFFF' : theme.text },
-                      ]}
+                    {msg.text}
+                  </Text>
+
+                  {/* Suggestion Action CTA */}
+                  {msg.actionSuggestion && (
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      onPress={() => handleAction(msg.actionSuggestion)}
+                      style={[styles.actionBtn, { backgroundColor: theme.primary }]}
                     >
-                      {msg.text}
-                    </Text>
+                      <Ionicons name="arrow-forward-circle-outline" size={14} color="#FFFFFF" />
+                      <Text style={styles.actionBtnText}>{msg.actionSuggestion.label}</Text>
+                    </TouchableOpacity>
+                  )}
 
-                    {/* Action Suggestion Button */}
-                    {msg.actionSuggestion && (
-                      <TouchableOpacity
-                        activeOpacity={0.8}
-                        onPress={() => handleAction(msg.actionSuggestion)}
-                        style={[styles.actionCta, { backgroundColor: theme.primary }]}
-                      >
-                        <Ionicons name="flash" size={13} color="#FFFFFF" />
-                        <Text style={styles.actionCtaText}>{msg.actionSuggestion.label}</Text>
-                      </TouchableOpacity>
-                    )}
-
-                    <Text
-                      style={[
-                        styles.timeText,
-                        { color: isUser ? 'rgba(255,255,255,0.7)' : theme.textMuted },
-                      ]}
-                    >
-                      {msg.time}
-                    </Text>
-                  </View>
-                </View>
-              );
-            })}
-
-            {loading && (
-              <View style={styles.loadingRow}>
-                <View style={[styles.avatarBox, { backgroundColor: theme.primaryLight }]}>
-                  <Ionicons name="sparkles" size={14} color={theme.primary} />
-                </View>
-                <View style={[styles.bubble, styles.aiBubble, { backgroundColor: theme.card, borderColor: theme.border }]}>
-                  <Text style={[styles.bubbleText, { color: theme.textSecondary, fontStyle: 'italic' }]}>
-                    Gemma AI is analyzing travel parameters...
+                  <Text
+                    style={[
+                      styles.msgTime,
+                      { color: isUser ? 'rgba(255,255,255,0.7)' : theme.textMuted },
+                    ]}
+                  >
+                    {msg.time}
                   </Text>
                 </View>
               </View>
-            )}
-          </View>
+            );
+          })}
         </ScrollView>
 
-        {/* Input Bar */}
-        <View style={[styles.inputBar, { backgroundColor: theme.card, borderTopColor: theme.border }]}>
-          <TouchableOpacity
-            onPress={() => handleSend('Suggest places near me')}
-            style={[styles.micBtn, { backgroundColor: theme.cardSecondary }]}
-          >
-            <Ionicons name="mic-outline" size={20} color={theme.primary} />
-          </TouchableOpacity>
-
+        {/* Input Row */}
+        <View style={[styles.inputRow, { backgroundColor: theme.card, borderTopColor: theme.border }]}>
           <TextInput
             value={inputMessage}
             onChangeText={setInputMessage}
-            placeholder="Ask Gemma about budget, rain, hidden gems..."
+            placeholder="Type your travel inquiry..."
             placeholderTextColor={theme.textMuted}
-            style={[styles.inputField, { color: theme.text, backgroundColor: theme.cardSecondary }]}
+            style={[
+              styles.textInput,
+              {
+                backgroundColor: theme.cardSecondary,
+                color: theme.text,
+                borderColor: theme.border,
+              },
+            ]}
             onSubmitEditing={() => handleSend()}
           />
-
           <TouchableOpacity
             onPress={() => handleSend()}
-            disabled={!inputMessage.trim()}
             style={[
               styles.sendBtn,
               { backgroundColor: inputMessage.trim() ? theme.primary : theme.border },
             ]}
+            disabled={!inputMessage.trim()}
           >
-            <Ionicons name="send" size={16} color="#FFFFFF" />
+            <Ionicons name="arrow-up" size={20} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -299,60 +279,26 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
   },
-  backBtn: {
-    padding: 6,
-  },
-  headerTitleWrap: {
-    flex: 1,
-    marginHorizontal: 10,
-  },
-  botRow: {
+  headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 10,
   },
-  botDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+  avatarBox: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: 15,
-    fontWeight: '700',
+    fontSize: 16,
+    fontFamily: 'Manrope_700Bold',
   },
-  gemmaBadge: {
-    backgroundColor: '#CCFBF1',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
-  gemmaBadgeText: {
-    color: '#0F766E',
-    fontSize: 10,
-    fontWeight: '800',
-  },
-  headerSub: {
-    fontSize: 11,
+  headerSubtitle: {
+    fontSize: 11.5,
+    fontFamily: 'Manrope_400Regular',
     marginTop: 1,
-  },
-  actionCta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    marginTop: 8,
-  },
-  actionCtaText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  loadingRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: 8,
   },
   voiceBtn: {
     width: 36,
@@ -361,58 +307,50 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  scrollContent: {
-    padding: 16,
-    paddingBottom: 20,
+  quickPromptsWrap: {
+    paddingVertical: 8,
+    borderBottomWidth: 1,
   },
-  promptsSection: {
-    marginBottom: 16,
-  },
-  promptsHeading: {
-    fontSize: 11,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 8,
-  },
-  chipsScroll: {
+  quickPromptsScroll: {
+    paddingHorizontal: 16,
     gap: 8,
   },
-  promptChip: {
+  quickPromptPill: {
     paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 14,
+    paddingVertical: 6,
+    borderRadius: 16,
     borderWidth: 1,
   },
-  promptChipText: {
+  quickPromptText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
   },
-  messagesList: {
-    gap: 14,
+  chatScroll: {
+    padding: 16,
+    gap: 12,
   },
-  messageBubbleWrap: {
+  msgRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     gap: 8,
   },
-  userBubbleWrap: {
+  userRow: {
     justifyContent: 'flex-end',
   },
-  aiBubbleWrap: {
+  aiRow: {
     justifyContent: 'flex-start',
   },
-  avatarBox: {
+  msgAvatar: {
     width: 28,
     height: 28,
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 4,
   },
   bubble: {
     maxWidth: '82%',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    padding: 12,
     borderRadius: 16,
   },
   userBubble: {
@@ -423,35 +361,46 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   bubbleText: {
-    fontSize: 14,
+    fontSize: 13.5,
+    fontFamily: 'Manrope_400Regular',
     lineHeight: 20,
   },
-  timeText: {
+  msgTime: {
     fontSize: 10,
+    fontFamily: 'Manrope_400Regular',
+    alignSelf: 'flex-end',
     marginTop: 4,
-    textAlign: 'right',
   },
-  inputBar: {
+  actionBtn: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 8,
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    borderRadius: 8,
+    marginTop: 10,
+  },
+  actionBtnText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontFamily: 'Manrope_700Bold',
+  },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
     borderTopWidth: 1,
     gap: 8,
   },
-  micBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  inputField: {
+  textInput: {
     flex: 1,
-    height: 40,
-    borderRadius: 20,
+    height: 42,
+    borderRadius: 21,
+    borderWidth: 1,
     paddingHorizontal: 16,
-    fontSize: 14,
+    fontSize: 13,
+    fontFamily: 'Manrope_400Regular',
   },
   sendBtn: {
     width: 40,

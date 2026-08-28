@@ -19,17 +19,17 @@ export const NotificationsScreen = ({ navigation }) => {
   const getIcon = (type) => {
     switch (type) {
       case 'hotel':
-        return { name: 'bed', color: '#3B82F6', bg: '#EFF6FF' };
+        return { name: 'bed-outline', color: '#3B82F6', bg: '#EFF6FF' };
       case 'weather':
-        return { name: 'rainy', color: '#D97706', bg: '#FEF3C7' };
+        return { name: 'rainy-outline', color: '#D97706', bg: '#FEF3C7' };
       case 'crowd':
-        return { name: 'people', color: '#EF4444', bg: '#FEE2E2' };
+        return { name: 'people-outline', color: '#EF4444', bg: '#FEE2E2' };
       case 'budget':
-        return { name: 'wallet', color: '#10B981', bg: '#D1FAE5' };
+        return { name: 'wallet-outline', color: '#10B981', bg: '#D1FAE5' };
       case 'eco':
-        return { name: 'leaf', color: '#059669', bg: '#ECFDF5' };
+        return { name: 'leaf-outline', color: '#059669', bg: '#ECFDF5' };
       default:
-        return { name: 'notifications', color: '#6366F1', bg: '#EEF2FF' };
+        return { name: 'notifications-outline', color: '#6366F1', bg: '#EEF2FF' };
     }
   };
 
@@ -47,21 +47,21 @@ export const NotificationsScreen = ({ navigation }) => {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Judge Simulation Trigger Box */}
+        {/* Simulation Trigger Box */}
         <View style={[styles.demoBox, { backgroundColor: theme.cardSecondary, borderColor: theme.border }]}>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.demoTitle, { color: theme.text }]}>⚡ Trigger Live Notifications</Text>
+            <Text style={[styles.demoTitle, { color: theme.text }]}>Live Notifications Feed</Text>
             <Text style={[styles.demoSub, { color: theme.textSecondary }]}>
-              Simulate push alerts for hotel check-ins, weather alerts, or crowd warnings.
+              Simulate real-time push alerts for hotel reservations, weather advisories, or crowd warnings.
             </Text>
           </View>
           <Button
-            title="+ Trigger Alert"
+            title="Trigger Alert"
             variant="secondary"
             size="small"
             onPress={() =>
               triggerDemoNotification({
-                title: '🌧️ Sudden Coastal Rain Alert',
+                title: 'Coastal Rain Advisory',
                 message: 'Rainfall intensity increasing near RK Beach. Swap outdoor walk to Aircraft Museum simulator now.',
                 type: 'weather',
               })
@@ -100,14 +100,13 @@ export const NotificationsScreen = ({ navigation }) => {
               </View>
             );
           })}
-
-          {notifications.length === 0 && (
-            <View style={styles.emptyWrap}>
-              <Ionicons name="notifications-off-outline" size={40} color={theme.textMuted} />
-              <Text style={[styles.emptyText, { color: theme.textSecondary }]}>No notifications right now</Text>
-            </View>
-          )}
         </View>
+
+        {notifications.length > 0 && (
+          <TouchableOpacity onPress={clearAll} style={styles.clearBtn}>
+            <Text style={[styles.clearBtnText, { color: theme.textMuted }]}>Clear All Notifications</Text>
+          </TouchableOpacity>
+        )}
 
         <View style={{ height: 40 }} />
       </ScrollView>
@@ -131,15 +130,15 @@ const styles = StyleSheet.create({
     padding: 6,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 17,
+    fontFamily: 'Manrope_700Bold',
   },
   actionBtn: {
     padding: 6,
   },
   actionText: {
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
   },
   scrollContent: {
     padding: 16,
@@ -147,33 +146,35 @@ const styles = StyleSheet.create({
   demoBox: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 12,
+    padding: 14,
     borderRadius: 14,
     borderWidth: 1,
-    padding: 12,
     marginBottom: 16,
-    gap: 10,
   },
   demoTitle: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 14,
+    fontFamily: 'Manrope_700Bold',
+    marginBottom: 2,
   },
   demoSub: {
-    fontSize: 11,
-    marginTop: 2,
+    fontSize: 11.5,
+    fontFamily: 'Manrope_400Regular',
+    lineHeight: 16,
   },
   notifList: {
-    gap: 12,
+    gap: 10,
   },
   notifCard: {
     flexDirection: 'row',
     padding: 14,
-    borderRadius: 16,
+    borderRadius: 14,
     gap: 12,
   },
   iconBox: {
     width: 40,
     height: 40,
-    borderRadius: 12,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -185,8 +186,7 @@ const styles = StyleSheet.create({
   },
   notifTitle: {
     fontSize: 14,
-    fontWeight: '700',
-    flex: 1,
+    fontFamily: 'Manrope_700Bold',
   },
   unreadDot: {
     width: 8,
@@ -194,19 +194,22 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   notifMsg: {
-    fontSize: 12,
-    lineHeight: 17,
+    fontSize: 12.5,
+    fontFamily: 'Manrope_400Regular',
+    lineHeight: 18,
+    marginBottom: 6,
   },
   timeText: {
-    fontSize: 10,
-    marginTop: 6,
+    fontSize: 11,
+    fontFamily: 'Manrope_400Regular',
   },
-  emptyWrap: {
+  clearBtn: {
     alignItems: 'center',
-    paddingVertical: 40,
-    gap: 8,
+    paddingVertical: 14,
+    marginTop: 10,
   },
-  emptyText: {
-    fontSize: 13,
+  clearBtnText: {
+    fontSize: 12.5,
+    fontFamily: 'Manrope_500Medium',
   },
 });
