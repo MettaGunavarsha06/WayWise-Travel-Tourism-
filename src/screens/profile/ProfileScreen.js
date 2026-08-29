@@ -226,9 +226,9 @@ export const ProfileScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      {/* Header */}
+      {/* Top Header */}
       <View style={[styles.header, { borderBottomColor: theme.border, backgroundColor: theme.card }]}>
-        <Text style={[styles.headerTitle, { color: theme.text }]}>Profile &amp; Settings</Text>
+        <Text style={[styles.headerTitle, { color: theme.text }]}>{t('profile') || 'Profile & Settings'}</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -260,7 +260,7 @@ export const ProfileScreen = ({ navigation }) => {
             activeOpacity={0.8}
           >
             <Ionicons name="create-outline" size={16} color={theme.primaryDark} />
-            <Text style={[styles.editBtnText, { color: theme.primaryDark }]}>Edit</Text>
+            <Text style={[styles.editBtnText, { color: theme.primaryDark }]}>{t('edit') || 'Edit'}</Text>
           </TouchableOpacity>
         </View>
 
@@ -271,7 +271,7 @@ export const ProfileScreen = ({ navigation }) => {
               <View style={[styles.aiIconBadge, { backgroundColor: theme.primaryLight }]}>
                 <Ionicons name="sparkles" size={16} color={theme.primary} />
               </View>
-              <Text style={[styles.cardTitle, { color: theme.text, marginBottom: 0 }]}>AI Travel Assistant</Text>
+              <Text style={[styles.cardTitle, { color: theme.text, marginBottom: 0 }]}>{t('aiAssistant') || 'AI Travel Assistant'}</Text>
             </View>
             <TouchableOpacity onPress={() => navigation.navigate('AIAssistant')}>
               <Text style={[styles.linkText, { color: theme.primary }]}>Open Chat</Text>
@@ -330,7 +330,7 @@ export const ProfileScreen = ({ navigation }) => {
               activeOpacity={0.8}
             >
               <Ionicons name="mic-circle" size={24} color="#2563EB" />
-              <Text style={[styles.aiToolTitle, { color: theme.text }]}>Voice AI Translator</Text>
+              <Text style={[styles.aiToolTitle, { color: theme.text }]}>{t('voiceTranslator') || 'Voice AI Translator'}</Text>
               <Text style={[styles.aiToolSub, { color: theme.textMuted }]}>Voice record → 9+ languages</Text>
             </TouchableOpacity>
 
@@ -351,7 +351,7 @@ export const ProfileScreen = ({ navigation }) => {
             >
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <Ionicons name="bulb-outline" size={20} color={theme.primaryDark} />
-                <Text style={[styles.aiToolTitle, { color: theme.primaryDark }]}>Smart Recommendations</Text>
+                <Text style={[styles.aiToolTitle, { color: theme.primaryDark }]}>{t('aiSmartRecommendations') || 'Smart Recommendations'}</Text>
               </View>
               <Text style={[styles.aiToolSub, { color: theme.primaryDark }]}>Personalized suggestions based on preferences</Text>
             </TouchableOpacity>
@@ -360,7 +360,7 @@ export const ProfileScreen = ({ navigation }) => {
 
         {/* Preferred Language Selection */}
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <Text style={[styles.cardTitle, { color: theme.text }]}>Preferred Language</Text>
+          <Text style={[styles.cardTitle, { color: theme.text }]}>{t('preferredLanguage') || 'Preferred Language'}</Text>
           <View style={styles.langGrid}>
             {languages.map((lang) => {
               const isSelected = currentLanguage === lang.code;
@@ -391,7 +391,7 @@ export const ProfileScreen = ({ navigation }) => {
 
         {/* Preferences & Settings */}
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <Text style={[styles.cardTitle, { color: theme.text }]}>App Settings &amp; Permissions</Text>
+          <Text style={[styles.cardTitle, { color: theme.text }]}>{t('appSettings') || 'App Settings & Permissions'}</Text>
 
           {/* App Theme & Visual Experience Selector */}
           <TouchableOpacity
@@ -404,7 +404,7 @@ export const ProfileScreen = ({ navigation }) => {
                 <Ionicons name="color-palette-outline" size={20} color={theme.primary} />
               </View>
               <View>
-                <Text style={[styles.settingLabel, { color: theme.text }]}>App Theme &amp; Experience</Text>
+                <Text style={[styles.settingLabel, { color: theme.text }]}>{t('appTheme') || 'App Theme & Experience'}</Text>
                 <Text style={[styles.settingSub, { color: theme.textSecondary }]}>
                   {themesList?.find((t) => t.id === themeName)?.name || 'Glass Horizon'} · {themesList?.find((t) => t.id === themeName)?.badge || 'Luxury'}
                 </Text>
@@ -424,7 +424,7 @@ export const ProfileScreen = ({ navigation }) => {
           <View style={[styles.settingRow, { borderTopWidth: 1, borderTopColor: theme.borderLight }]}>
             <View style={styles.settingLeft}>
               <Ionicons name="moon-outline" size={20} color={theme.text} />
-              <Text style={[styles.settingLabel, { color: theme.text }]}>Dark Mode</Text>
+              <Text style={[styles.settingLabel, { color: theme.text }]}>{t('darkMode') || 'Dark Mode'}</Text>
             </View>
             <Switch
               value={isDark}
@@ -438,7 +438,7 @@ export const ProfileScreen = ({ navigation }) => {
           <View style={[styles.settingRow, { borderTopWidth: 1, borderTopColor: theme.borderLight }]}>
             <View style={styles.settingLeft}>
               <Ionicons name="notifications-outline" size={20} color={theme.text} />
-              <Text style={[styles.settingLabel, { color: theme.text }]}>Push Notifications</Text>
+              <Text style={[styles.settingLabel, { color: theme.text }]}>{t('pushNotifications') || 'Push Notifications'}</Text>
             </View>
             <Switch
               value={userSettings.notifications !== false}
@@ -452,7 +452,7 @@ export const ProfileScreen = ({ navigation }) => {
           <View style={[styles.settingRow, { borderTopWidth: 1, borderTopColor: theme.borderLight }]}>
             <View style={styles.settingLeft}>
               <Ionicons name="location-outline" size={20} color={theme.text} />
-              <Text style={[styles.settingLabel, { color: theme.text }]}>Location Access</Text>
+              <Text style={[styles.settingLabel, { color: theme.text }]}>{t('locationAccess') || 'Location Access'}</Text>
             </View>
             <Switch
               value={userSettings.locationPermission !== false}
@@ -466,7 +466,7 @@ export const ProfileScreen = ({ navigation }) => {
           <View style={[styles.settingRow, { borderTopWidth: 1, borderTopColor: theme.borderLight }]}>
             <View style={styles.settingLeft}>
               <Ionicons name="sparkles-outline" size={20} color={theme.text} />
-              <Text style={[styles.settingLabel, { color: theme.text }]}>AI Smart Recommendations</Text>
+              <Text style={[styles.settingLabel, { color: theme.text }]}>{t('aiSmartRecommendations') || 'AI Smart Recommendations'}</Text>
             </View>
             <Switch
               value={userSettings.aiRecommendations !== false}
@@ -480,7 +480,7 @@ export const ProfileScreen = ({ navigation }) => {
           <View style={[styles.settingRow, { borderTopWidth: 1, borderTopColor: theme.borderLight }]}>
             <View style={styles.settingLeft}>
               <Ionicons name="leaf-outline" size={20} color={theme.ecoGreen} />
-              <Text style={[styles.settingLabel, { color: theme.text }]}>Eco-Friendly Tourism Mode</Text>
+              <Text style={[styles.settingLabel, { color: theme.text }]}>{t('ecoTourismMode') || 'Eco-Friendly Tourism Mode'}</Text>
             </View>
             <Switch
               value={userSettings.ecoRecommendations !== false}
@@ -497,7 +497,7 @@ export const ProfileScreen = ({ navigation }) => {
           >
             <View style={styles.settingLeft}>
               <Ionicons name="star-outline" size={20} color={theme.text} />
-              <Text style={[styles.settingLabel, { color: theme.text }]}>Tourist Feedback &amp; Ratings</Text>
+              <Text style={[styles.settingLabel, { color: theme.text }]}>{t('touristFeedback') || 'Tourist Feedback & Ratings'}</Text>
             </View>
             <Ionicons name="chevron-forward" size={18} color={theme.textMuted} />
           </TouchableOpacity>
@@ -509,7 +509,7 @@ export const ProfileScreen = ({ navigation }) => {
           >
             <View style={styles.settingLeft}>
               <Ionicons name="warning-outline" size={20} color={theme.error} />
-              <Text style={[styles.settingLabel, { color: theme.error }]}>Emergency Safety Hub</Text>
+              <Text style={[styles.settingLabel, { color: theme.error }]}>{t('emergencySafetyHub') || 'Emergency Safety Hub'}</Text>
             </View>
             <Ionicons name="chevron-forward" size={18} color={theme.error} />
           </TouchableOpacity>
@@ -517,7 +517,7 @@ export const ProfileScreen = ({ navigation }) => {
 
         {/* Sign Out Button */}
         <Button
-          title="Sign Out"
+          title={t('signOut') || 'Sign Out'}
           variant="outline"
           size="medium"
           icon="log-out-outline"
@@ -535,7 +535,7 @@ export const ProfileScreen = ({ navigation }) => {
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: theme.card, borderColor: theme.border }]}>
             <View style={[styles.modalHeader, { borderBottomColor: theme.border }]}>
-              <Text style={[styles.modalTitle, { color: theme.text }]}>Edit Profile Information</Text>
+              <Text style={[styles.modalTitle, { color: theme.text }]}>{t('editProfile') || 'Edit Profile Information'}</Text>
               <TouchableOpacity onPress={() => setIsEditModalOpen(false)}>
                 <Ionicons name="close" size={24} color={theme.textMuted} />
               </TouchableOpacity>
@@ -606,7 +606,7 @@ export const ProfileScreen = ({ navigation }) => {
 
               {/* Full Name */}
               <View style={styles.inputGroup}>
-                <Text style={[styles.fieldLabel, { color: theme.text }]}>Full Name *</Text>
+                <Text style={[styles.fieldLabel, { color: theme.text }]}>{t('fullName') || 'Full Name'} *</Text>
                 <TextInput
                   value={editName}
                   onChangeText={setEditName}
@@ -626,7 +626,7 @@ export const ProfileScreen = ({ navigation }) => {
 
               {/* Email Address */}
               <View style={styles.inputGroup}>
-                <Text style={[styles.fieldLabel, { color: theme.text }]}>Email Address *</Text>
+                <Text style={[styles.fieldLabel, { color: theme.text }]}>{t('emailAddress') || 'Email Address'} *</Text>
                 <TextInput
                   value={editEmail}
                   onChangeText={setEditEmail}
@@ -648,7 +648,7 @@ export const ProfileScreen = ({ navigation }) => {
 
               {/* Phone Number */}
               <View style={styles.inputGroup}>
-                <Text style={[styles.fieldLabel, { color: theme.text }]}>Phone Number *</Text>
+                <Text style={[styles.fieldLabel, { color: theme.text }]}>{t('phoneNumber') || 'Phone Number'} *</Text>
                 <TextInput
                   value={editPhone}
                   onChangeText={setEditPhone}
@@ -669,7 +669,7 @@ export const ProfileScreen = ({ navigation }) => {
 
               {/* Complete Address */}
               <View style={styles.inputGroup}>
-                <Text style={[styles.fieldLabel, { color: theme.text }]}>Home / Tourist Address *</Text>
+                <Text style={[styles.fieldLabel, { color: theme.text }]}>{t('address') || 'Home / Tourist Address'} *</Text>
                 <TextInput
                   value={editAddress}
                   onChangeText={setEditAddress}
@@ -693,14 +693,14 @@ export const ProfileScreen = ({ navigation }) => {
               {/* Action Buttons */}
               <View style={styles.modalBtnRow}>
                 <Button
-                  title="Cancel"
+                  title={t('cancel') || 'Cancel'}
                   variant="outline"
                   size="medium"
                   onPress={() => setIsEditModalOpen(false)}
                   style={{ flex: 1 }}
                 />
                 <Button
-                  title="Save Changes"
+                  title={t('saveChanges') || 'Save Changes'}
                   variant="primary"
                   size="medium"
                   onPress={handleSaveProfile}

@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { useTrips } from '../../context/TripContext';
 import { EcoScoreBadge } from '../../components/EcoScoreBadge';
 import { CrowdIndicator } from '../../components/CrowdIndicator';
@@ -19,6 +20,7 @@ import { formatCurrency } from '../../utils/helpers';
 
 export const MyTripsScreen = ({ navigation, route }) => {
   const { theme } = useTheme();
+  const { t } = useLanguage();
   const {
     pastMemories,
     savedPlaces,
@@ -58,9 +60,9 @@ export const MyTripsScreen = ({ navigation, route }) => {
       {/* Top Header */}
       <View style={[styles.header, { borderBottomColor: theme.border }]}>
         <View>
-          <Text style={[styles.headerTitle, { color: theme.text }]}>Memories & Saved</Text>
+          <Text style={[styles.headerTitle, { color: theme.text }]}>{t('pastMemories') || 'Memories & Saved'}</Text>
           <Text style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
-            Completed Journeys & Wishlist
+            {t('completedJourneys') || 'Completed Journeys & Wishlist'}
           </Text>
         </View>
         <Button
@@ -94,7 +96,7 @@ export const MyTripsScreen = ({ navigation, route }) => {
                 { color: activeTab === 'past' ? theme.primary : theme.textSecondary },
               ]}
             >
-              Past Memories ({pastMemories.length})
+              {t('pastMemories') || 'Past Memories'} ({pastMemories.length})
             </Text>
           </View>
         </TouchableOpacity>
@@ -119,7 +121,7 @@ export const MyTripsScreen = ({ navigation, route }) => {
                 { color: activeTab === 'saved' ? theme.primary : theme.textSecondary },
               ]}
             >
-              Saved ({savedPlaces.length})
+              {t('savedPlaces') || 'Saved'} ({savedPlaces.length})
             </Text>
           </View>
         </TouchableOpacity>

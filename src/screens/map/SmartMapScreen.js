@@ -18,6 +18,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { useTrips } from '../../context/TripContext';
 import {
   requestAndGetUserLocation,
@@ -64,8 +65,23 @@ const TRAVEL_MODES = [
 
 export const SmartMapScreen = ({ navigation, route }) => {
   const { theme, isDark } = useTheme();
+  const { t } = useLanguage();
   const { toggleSavePlace, isPlaceSaved } = useTrips();
   const carouselRef = useRef(null);
+
+  const getCategoryLabel = (catId, defaultLabel) => {
+    switch (catId) {
+      case 'all': return t('allPlaces') || defaultLabel;
+      case 'famous': return t('famousPlaces') || defaultLabel;
+      case 'hospital': return t('hospitals') || defaultLabel;
+      case 'restaurant': return t('restaurants') || defaultLabel;
+      case 'hotel': return t('ecoStays') || defaultLabel;
+      case 'artisan': return t('artisans') || defaultLabel;
+      case 'transit': return t('transitEV') || defaultLabel;
+      case 'emergency': return t('emergencyPolice') || defaultLabel;
+      default: return defaultLabel;
+    }
+  };
   
   // Location States
   const [userCoords, setUserCoords] = useState(DEFAULT_COORDINATES);
@@ -452,7 +468,7 @@ export const SmartMapScreen = ({ navigation, route }) => {
           <View style={[styles.searchBox, { backgroundColor: theme.cardSecondary, borderColor: theme.border }]}>
             <Ionicons name="search-outline" size={16} color={theme.textSecondary} />
             <TextInput
-              placeholder="Search restaurants, hospitals, forts, cafes..."
+              placeholder={t('searchPlaceholder') || 'Search restaurants, hospitals, forts, cafes...'}
               placeholderTextColor={theme.textMuted}
               value={searchQuery}
               onChangeText={setSearchQuery}
@@ -527,7 +543,7 @@ export const SmartMapScreen = ({ navigation, route }) => {
                       { color: isSelected ? '#FFFFFF' : theme.text },
                     ]}
                   >
-                    {cat.label}
+                    {getCategoryLabel(cat.id, cat.label)}
                   </Text>
                   <View
                     style={[

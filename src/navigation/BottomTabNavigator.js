@@ -70,7 +70,7 @@ export const BottomTabNavigator = () => {
       <Tab.Screen
         name="HomeTab"
         component={HomeScreen}
-        options={{ tabBarLabel: 'Home' }}
+        options={{ tabBarLabel: t('home') || 'Home' }}
       />
       <Tab.Screen
         name="WeatherTab"
@@ -90,7 +90,7 @@ export const BottomTabNavigator = () => {
       <Tab.Screen
         name="ProfileTab"
         component={ProfileScreen}
-        options={{ tabBarLabel: 'Profile' }}
+        options={{ tabBarLabel: t('profile') || 'Profile' }}
       />
     </Tab.Navigator>
   );
