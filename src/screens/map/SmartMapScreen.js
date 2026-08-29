@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -8,288 +8,299 @@ import {
   Image,
   Dimensions,
   Alert,
+  TextInput,
+  Modal,
+  Linking,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
-import { getCurrentUserLocation, DEFAULT_COORDINATES } from '../../utils/locationService';
+import {
+  requestAndGetUserLocation,
+  checkLocationPermission,
+  DEFAULT_COORDINATES,
+  PRESET_CITIES,
+} from '../../utils/locationService';
+import {
+  PLACE_CATEGORIES,
+  SUB_CATEGORY_SYMBOLS,
+  getPlacesAroundLocation,
+} from '../../utils/placesEngine';
+import { RealLeafletMap } from '../../components/RealLeafletMap';
 import { CrowdIndicator } from '../../components/CrowdIndicator';
 import { EcoScoreBadge } from '../../components/EcoScoreBadge';
 import { Button } from '../../components/Button';
-import { formatCurrency, calculateDistance } from '../../utils/helpers';
+import { formatCurrency } from '../../utils/helpers';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
-const mapCategories = [
-  { id: 'all', label: 'All Markers', icon: 'map-outline' },
-  { id: 'attraction', label: 'Attractions', icon: 'location-outline' },
-  { id: 'hotel', label: 'Hotels', icon: 'bed-outline' },
-  { id: 'food', label: 'Dining', icon: 'restaurant-outline' },
-  { id: 'transport', label: 'Transit', icon: 'train-outline' },
-  { id: 'business', label: 'Artisans', icon: 'storefront-outline' },
-  { id: 'gem', label: 'Hidden Gems', icon: 'compass-outline' },
-  { id: 'eco', label: 'Eco-Tourism', icon: 'leaf-outline' },
-  { id: 'emergency', label: 'Emergency Care', icon: 'shield-outline' },
+const RADIUS_OPTIONS = [
+  { label: 'All', value: 30 },
+  { label: '1 km', value: 1.5 },
+  { label: '3 km', value: 3.5 },
+  { label: '5 km', value: 5.5 },
+  { label: '10 km', value: 10.5 },
 ];
 
-const allMarkers = [
-  {
-    id: 'm_amer_fort',
-    name: 'Amer Fort',
-    category: 'attraction',
-    subCategory: 'UNESCO World Heritage',
-    crowdLevel: 'moderate',
-    ecoScore: 92,
-    coords: { latitude: 26.9855, longitude: 75.8513 },
-    image: 'https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=400&q=80',
-    description: 'A historic hilltop fort known for its grand courtyards, architecture and views.',
-    fee: 200,
-    openHours: '08:00 AM - 05:30 PM',
-  },
-  {
-    id: 'm_hawa_mahal',
-    name: 'Hawa Mahal',
-    category: 'attraction',
-    subCategory: 'Palace of Winds',
-    crowdLevel: 'high',
-    ecoScore: 90,
-    coords: { latitude: 26.9239, longitude: 75.8267 },
-    image: 'https://images.unsplash.com/photo-1603289984181-42b781e64030?auto=format&fit=crop&w=400&q=80',
-    description: 'Iconic five-story pink sandstone palace with 953 ornate honeycomb jharokhas.',
-    fee: 50,
-    openHours: '09:00 AM - 05:00 PM',
-  },
-  {
-    id: 'm_rk_beach',
-    name: 'RK Beach & Promenade',
-    category: 'attraction',
-    subCategory: 'Beach Viewpoint',
-    crowdLevel: 'high',
-    ecoScore: 84,
-    coords: { latitude: 17.7120, longitude: 83.3240 },
-    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=400&q=80',
-    description: 'Iconic golden shoreline with memorial parks and coastal promenade.',
-    fee: 0,
-    openHours: 'Open 24/7',
-  },
-  {
-    id: 'm_submarine',
-    name: 'INS Kursura Submarine Museum',
-    category: 'attraction',
-    subCategory: 'Naval Museum',
-    crowdLevel: 'moderate',
-    ecoScore: 90,
-    coords: { latitude: 17.7180, longitude: 83.3320 },
-    image: 'https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?auto=format&fit=crop&w=400&q=80',
-    description: 'Decommissioned naval submarine preserved on beach sands with guided tours.',
-    fee: 70,
-    openHours: '02:00 PM - 08:30 PM',
-  },
-  {
-    id: 'm_hotel_bay',
-    name: 'Bay Breeze Eco-Luxury Resort',
-    category: 'hotel',
-    subCategory: 'Solar Eco Resort',
-    crowdLevel: 'low',
-    ecoScore: 92,
-    coords: { latitude: 17.7150, longitude: 83.3280 },
-    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=400&q=80',
-    description: '100% Solar-powered beachfront resort with organic zero-plastic dining.',
-    fee: 4200,
-    openHours: '24/7 Front Desk',
-  },
-  {
-    id: 'm_craft_guild',
-    name: 'Etikoppaka Lacquer Craft Artisans',
-    category: 'business',
-    subCategory: 'Local Handicrafts',
-    crowdLevel: 'low',
-    ecoScore: 98,
-    coords: { latitude: 17.7050, longitude: 83.3100 },
-    image: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=400&q=80',
-    description: 'Certified master wood-turners carving chemical-free vegetable lacquer toys.',
-    fee: 200,
-    openHours: '10:00 AM - 07:00 PM',
-  },
-  {
-    id: 'm_food_andhra',
-    name: 'Andhra Ruchulu Organic Dining',
-    category: 'food',
-    subCategory: 'Regional Coastal Cuisine',
-    crowdLevel: 'moderate',
-    ecoScore: 88,
-    coords: { latitude: 17.7200, longitude: 83.3150 },
-    image: 'https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?auto=format&fit=crop&w=400&q=80',
-    description: 'Traditional banana leaf meals and fresh coastal seasonal curries.',
-    fee: 350,
-    openHours: '11:30 AM - 10:30 PM',
-  },
-  {
-    id: 'm_ev_hub',
-    name: 'Beach Road EV Shuttle Hub',
-    category: 'transport',
-    subCategory: 'Electric Transit',
-    crowdLevel: 'low',
-    ecoScore: 96,
-    coords: { latitude: 17.7100, longitude: 83.3200 },
-    image: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=400&q=80',
-    description: 'Zero emission electric transit station and hop-on electric tourist shuttle.',
-    fee: 20,
-    openHours: '06:00 AM - 10:00 PM',
-  },
-  {
-    id: 'm_yarada_gem',
-    name: 'Yarada Secluded Golden Coast',
-    category: 'gem',
-    subCategory: 'Hidden Coastal Gem',
-    crowdLevel: 'low',
-    ecoScore: 94,
-    coords: { latitude: 17.6540, longitude: 83.2700 },
-    image: 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=400&q=80',
-    description: 'Peaceful alternative to crowded city beaches, flanked by dolphin hills.',
-    fee: 0,
-    openHours: 'Open 24/7',
-  },
-  {
-    id: 'm_kailasagiri_eco',
-    name: 'Kailasagiri Hilltop Eco-Park',
-    category: 'eco',
-    subCategory: 'Biodiversity Reserve',
-    crowdLevel: 'moderate',
-    ecoScore: 92,
-    coords: { latitude: 17.7490, longitude: 83.3420 },
-    image: 'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=400&q=80',
-    description: 'Hilltop garden featuring panoramic sea views, solar tram, and floral clock.',
-    fee: 150,
-    openHours: '06:00 AM - 08:00 PM',
-  },
-  {
-    id: 'm_hospital_care',
-    name: 'Government Hospital & Emergency',
-    category: 'emergency',
-    subCategory: '24/7 Medical Care',
-    crowdLevel: 'moderate',
-    ecoScore: 80,
-    coords: { latitude: 17.7080, longitude: 83.3050 },
-    image: 'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=400&q=80',
-    description: '24-hour emergency hospital with trauma center and tourist assistance.',
-    fee: 0,
-    openHours: 'Emergency Helpline 108',
-  },
-  {
-    id: 'm_police_tourist',
-    name: 'Tourist Police Assistance Desk',
-    category: 'emergency',
-    subCategory: 'Safety & Assistance',
-    crowdLevel: 'low',
-    ecoScore: 85,
-    coords: { latitude: 17.7140, longitude: 83.3220 },
-    image: 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=400&q=80',
-    description: 'Dedicated multilingual tourist safety police assistance desk.',
-    fee: 0,
-    openHours: 'Helpline 112',
-  },
+const MAP_LAYERS = [
+  { id: 'standard', label: 'Street', icon: 'map-outline' },
+  { id: 'satellite', label: 'Satellite', icon: 'earth-outline' },
+  { id: 'dark', label: 'Dark Neon', icon: 'moon-outline' },
+  { id: 'terrain', label: 'Terrain', icon: 'triangle-outline' },
 ];
 
-export const SmartMapScreen = ({ navigation }) => {
-  const { theme } = useTheme();
+export const SmartMapScreen = ({ navigation, route }) => {
+  const { theme, isDark } = useTheme();
+  
+  // Location States
+  const [userCoords, setUserCoords] = useState(DEFAULT_COORDINATES);
+  const [cityName, setCityName] = useState('Visakhapatnam (Demo)');
+  const [gpsStatus, setGpsStatus] = useState('demo'); // 'loading' | 'live' | 'denied' | 'demo'
+  const [permissionGranted, setPermissionGranted] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
+  const [showCityPicker, setShowCityPicker] = useState(false);
+
+  // Filter & Search States
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedMarker, setSelectedMarker] = useState(allMarkers[0]);
-  const [userLocation, setUserLocation] = useState(DEFAULT_COORDINATES);
-  const [locationStatus, setLocationStatus] = useState('Locating...');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedRadius, setSelectedRadius] = useState(30);
+  const [mapLayer, setMapLayer] = useState('standard');
+  const [viewMode, setViewMode] = useState('map'); // 'map' | 'list'
 
+  // Selection & Details
+  const [selectedPlace, setSelectedPlace] = useState(null);
+  const [showLayerMenu, setShowLayerMenu] = useState(false);
+  const [navigationActive, setNavigationActive] = useState(false);
+
+  // Compute Places around user coordinates
+  const { places, allPlaces, categoryCounts } = useMemo(() => {
+    return getPlacesAroundLocation(userCoords, selectedCategory, selectedRadius, searchQuery);
+  }, [userCoords, selectedCategory, selectedRadius, searchQuery]);
+
+  // Initial check & auto-select first place
   useEffect(() => {
-    fetchLiveLocation();
+    checkInitialPermissions();
   }, []);
 
-  const fetchLiveLocation = async () => {
-    const res = await getCurrentUserLocation();
-    setUserLocation(res.coords);
-    setLocationStatus(res.success ? 'GPS Connected' : 'Demo Location');
-  };
+  useEffect(() => {
+    if (places && places.length > 0) {
+      if (!selectedPlace || !places.some((p) => p.id === selectedPlace.id)) {
+        setSelectedPlace(places[0]);
+      }
+    } else {
+      setSelectedPlace(null);
+    }
+  }, [places]);
 
-  const filteredMarkers = allMarkers.filter((m) => {
-    if (selectedCategory === 'all') return true;
-    return m.category === selectedCategory;
-  });
-
-  const getMarkerIcon = (category) => {
-    switch (category) {
-      case 'attraction':
-        return { name: 'location', color: '#0D9488', bg: '#CCFBF1' };
-      case 'hotel':
-        return { name: 'bed', color: '#2563EB', bg: '#EFF6FF' };
-      case 'food':
-        return { name: 'restaurant', color: '#D97706', bg: '#FEF3C7' };
-      case 'transport':
-        return { name: 'train', color: '#16A34A', bg: '#DCFCE7' };
-      case 'business':
-        return { name: 'storefront', color: '#9333EA', bg: '#F3E8FF' };
-      case 'gem':
-        return { name: 'compass', color: '#059669', bg: '#D1FAE5' };
-      case 'eco':
-        return { name: 'leaf', color: '#15803D', bg: '#BBF7D0' };
-      case 'emergency':
-        return { name: 'shield', color: '#DC2626', bg: '#FEE2E2' };
-      default:
-        return { name: 'pin', color: theme.primary, bg: theme.primaryLight };
+  const checkInitialPermissions = async () => {
+    const { granted } = await checkLocationPermission();
+    setPermissionGranted(granted);
+    if (granted) {
+      handleRequestLocation();
     }
   };
 
-  const distFromUser = calculateDistance(
-    userLocation.latitude,
-    userLocation.longitude,
-    selectedMarker.coords.latitude,
-    selectedMarker.coords.longitude
-  );
+  // Location Permission Request Action
+  const handleRequestLocation = async () => {
+    setIsLocating(true);
+    setGpsStatus('loading');
+    
+    const result = await requestAndGetUserLocation();
+    setIsLocating(false);
+
+    if (result.success && !result.isDemo) {
+      setUserCoords(result.coords);
+      setCityName(result.cityName || 'Live GPS Location');
+      setGpsStatus('live');
+      setPermissionGranted(true);
+    } else if (result.permissionDenied) {
+      setGpsStatus('denied');
+      setPermissionGranted(false);
+      Alert.alert(
+        'Location Permission Needed',
+        'Location access helps locate authentic restaurants, hospitals, and sights right around you. You can enable GPS anytime or select a city below.',
+        [
+          { text: 'Choose City', onPress: () => setShowCityPicker(true) },
+          { text: 'OK', style: 'cancel' },
+        ]
+      );
+    } else {
+      setGpsStatus('demo');
+      setCityName(DEFAULT_COORDINATES.city);
+    }
+  };
+
+  const handleSelectPresetCity = (city) => {
+    setUserCoords({
+      latitude: city.latitude,
+      longitude: city.longitude,
+    });
+    setCityName(`${city.name}`);
+    setGpsStatus('demo');
+    setShowCityPicker(false);
+    setNavigationActive(false);
+  };
+
+  const handleCallEmergency = (phone) => {
+    if (!phone) {
+      Alert.alert('Emergency Helpline', 'Connecting to National Emergency 112 / 108.');
+      return;
+    }
+    const cleanNumber = phone.replace(/[^0-9+]/g, '');
+    Linking.openURL(`tel:${cleanNumber}`).catch(() => {
+      Alert.alert('Helpline', `Please dial: ${phone}`);
+    });
+  };
+
+  const handleStartNavigation = (place) => {
+    setNavigationActive(true);
+    Alert.alert(
+      'Turn-by-Turn Navigation Active',
+      `Live routing to ${place.name} (${place.distanceKm} km · ~${place.driveMinutes} mins drive / ${place.walkMinutes} mins walk). Blue path is highlighted on the map!`,
+      [{ text: 'Got it', style: 'default' }]
+    );
+  };
+
+  const currentSymbol = selectedPlace?.symbolConfig || {
+    icon: 'location',
+    symbol: '📍',
+    color: theme.primary,
+    bg: theme.primaryLight,
+  };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      {/* Top Map Header */}
+      {/* Top Header Bar */}
       <View style={[styles.topBar, { borderBottomColor: theme.border, backgroundColor: theme.card }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
           <Ionicons name="arrow-back" size={22} color={theme.text} />
         </TouchableOpacity>
-        <View style={styles.titleWrap}>
-          <Text style={[styles.topTitle, { color: theme.text }]}>Smart Tourism Map</Text>
-          <Text style={[styles.locationStatus, { color: theme.primary }]}>
-            {locationStatus}
-          </Text>
-        </View>
-        <TouchableOpacity onPress={fetchLiveLocation} style={[styles.locateBtn, { backgroundColor: theme.primaryLight }]}>
-          <Ionicons name="navigate-outline" size={18} color={theme.primary} />
+
+        <TouchableOpacity onPress={() => setShowCityPicker(true)} style={styles.cityTitleWrap} activeOpacity={0.7}>
+          <View style={styles.cityRow}>
+            <Ionicons
+              name={gpsStatus === 'live' ? 'navigate-circle' : 'location-sharp'}
+              size={16}
+              color={gpsStatus === 'live' ? '#16A34A' : theme.primary}
+            />
+            <Text style={[styles.cityText, { color: theme.text }]} numberOfLines={1}>
+              {cityName}
+            </Text>
+            <Ionicons name="chevron-down" size={14} color={theme.textSecondary} />
+          </View>
+
+          <View style={styles.statusBadgeRow}>
+            <View
+              style={[
+                styles.statusDot,
+                { backgroundColor: gpsStatus === 'live' ? '#16A34A' : gpsStatus === 'loading' ? '#EAB308' : '#3B82F6' },
+              ]}
+            />
+            <Text style={[styles.statusText, { color: theme.textSecondary }]}>
+              {gpsStatus === 'live'
+                ? '🟢 Live GPS Connected'
+                : gpsStatus === 'loading'
+                ? '🟡 Locating GPS...'
+                : gpsStatus === 'denied'
+                ? '🔴 GPS Denied (Demo Mode)'
+                : '🔵 Demo Location'}
+            </Text>
+          </View>
         </TouchableOpacity>
+
+        {/* View Mode & Locate Action */}
+        <View style={styles.topRightActions}>
+          <TouchableOpacity
+            onPress={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
+            style={[styles.actionBtn, { backgroundColor: theme.cardSecondary, borderColor: theme.border }]}
+          >
+            <Ionicons name={viewMode === 'map' ? 'list-outline' : 'map-outline'} size={18} color={theme.text} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={handleRequestLocation}
+            style={[
+              styles.actionBtn,
+              {
+                backgroundColor: gpsStatus === 'live' ? '#DCFCE7' : theme.primaryLight,
+                borderColor: gpsStatus === 'live' ? '#16A34A' : theme.primary,
+              },
+            ]}
+          >
+            {isLocating ? (
+              <ActivityIndicator size="small" color={theme.primary} />
+            ) : (
+              <Ionicons
+                name={gpsStatus === 'live' ? 'locate' : 'navigate-outline'}
+                size={18}
+                color={gpsStatus === 'live' ? '#16A34A' : theme.primary}
+              />
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
 
-      {/* Category Scroll Filter */}
-      <View style={[styles.filterBar, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScroll}>
-          {mapCategories.map((cat) => {
-            const isSelected = selectedCategory === cat.id;
+      {/* Permission Request Banner (when not yet granted) */}
+      {!permissionGranted && gpsStatus !== 'loading' && (
+        <View style={[styles.permissionBanner, { backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }]}>
+          <View style={styles.permissionIconCircle}>
+            <Ionicons name="location-outline" size={18} color="#2563EB" />
+          </View>
+          <View style={styles.permissionInfo}>
+            <Text style={styles.permissionTitle}>Enable Live GPS Access</Text>
+            <Text style={styles.permissionDesc}>
+              Discover authentic dining, emergency hospitals & top sights right around your live location.
+            </Text>
+          </View>
+          <TouchableOpacity onPress={handleRequestLocation} style={styles.permissionGrantBtn}>
+            <Text style={styles.permissionGrantText}>Grant GPS</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Search Bar & Radius Filter */}
+      <View style={[styles.searchSection, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
+        <View style={[styles.searchBox, { backgroundColor: theme.cardSecondary, borderColor: theme.border }]}>
+          <Ionicons name="search-outline" size={16} color={theme.textSecondary} />
+          <TextInput
+            placeholder="Search restaurants, hospitals, forts, cafes..."
+            placeholderTextColor={theme.textMuted}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            style={[styles.searchInput, { color: theme.text }]}
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery('')}>
+              <Ionicons name="close-circle" size={16} color={theme.textSecondary} />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Radius Chips */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.radiusRow}>
+          <Text style={[styles.radiusLabel, { color: theme.textSecondary }]}>Radius:</Text>
+          {RADIUS_OPTIONS.map((r) => {
+            const isSelected = selectedRadius === r.value;
             return (
               <TouchableOpacity
-                key={cat.id}
-                onPress={() => setSelectedCategory(cat.id)}
+                key={r.label}
+                onPress={() => setSelectedRadius(r.value)}
                 style={[
-                  styles.filterChip,
+                  styles.radiusChip,
                   {
                     backgroundColor: isSelected ? theme.primary : theme.cardSecondary,
                     borderColor: isSelected ? theme.primary : theme.border,
                   },
                 ]}
               >
-                <Ionicons
-                  name={cat.icon}
-                  size={14}
-                  color={isSelected ? '#FFFFFF' : theme.textSecondary}
-                />
                 <Text
                   style={[
-                    styles.filterChipText,
-                    { color: isSelected ? '#FFFFFF' : theme.text },
+                    styles.radiusChipText,
+                    { color: isSelected ? '#FFFFFF' : theme.textSecondary },
                   ]}
                 >
-                  {cat.label}
+                  {r.label}
                 </Text>
               </TouchableOpacity>
             );
@@ -297,116 +308,389 @@ export const SmartMapScreen = ({ navigation }) => {
         </ScrollView>
       </View>
 
-      {/* Interactive Simulated Map Canvas */}
-      <View style={[styles.mapCanvas, { backgroundColor: '#E2E8F0' }]}>
-        {/* Decorative Grid Lines */}
-        <View style={styles.mapGridPattern} />
-
-        {/* User Location Marker */}
-        <View style={[styles.userDotRing, { top: '48%', left: '50%' }]}>
-          <View style={styles.userDotCenter} />
-        </View>
-
-        {/* Pin Markers */}
-        {filteredMarkers.map((marker, index) => {
-          const isSelected = selectedMarker.id === marker.id;
-          const iconConf = getMarkerIcon(marker.category);
-
-          const topPercent = 20 + ((index * 23) % 60);
-          const leftPercent = 15 + ((index * 31) % 70);
-
-          return (
-            <TouchableOpacity
-              key={marker.id}
-              activeOpacity={0.8}
-              onPress={() => setSelectedMarker(marker)}
-              style={[
-                styles.mapMarker,
-                {
-                  top: `${topPercent}%`,
-                  left: `${leftPercent}%`,
-                  zIndex: isSelected ? 99 : 10,
-                },
-              ]}
-            >
-              <View
+      {/* Category Filter Chips with Unique Icons & Counts */}
+      <View style={[styles.categoriesBar, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoriesScroll}>
+          {PLACE_CATEGORIES.map((cat) => {
+            const isSelected = selectedCategory === cat.id;
+            const count = categoryCounts[cat.id] || 0;
+            return (
+              <TouchableOpacity
+                key={cat.id}
+                onPress={() => setSelectedCategory(cat.id)}
                 style={[
-                  styles.markerPin,
+                  styles.catChip,
                   {
-                    backgroundColor: isSelected ? theme.primary : iconConf.bg,
-                    borderColor: isSelected ? '#FFFFFF' : iconConf.color,
-                    transform: [{ scale: isSelected ? 1.25 : 1 }],
+                    backgroundColor: isSelected ? cat.color : theme.cardSecondary,
+                    borderColor: isSelected ? cat.color : theme.border,
                   },
                 ]}
               >
                 <Ionicons
-                  name={iconConf.name}
-                  size={isSelected ? 16 : 14}
-                  color={isSelected ? '#FFFFFF' : iconConf.color}
+                  name={cat.icon}
+                  size={15}
+                  color={isSelected ? '#FFFFFF' : cat.color}
                 />
-              </View>
-              {isSelected && (
-                <View style={[styles.markerCallout, { backgroundColor: theme.card, shadowColor: theme.shadow }]}>
-                  <Text style={[styles.calloutText, { color: theme.text }]} numberOfLines={1}>
-                    {marker.name}
+                <Text
+                  style={[
+                    styles.catChipText,
+                    { color: isSelected ? '#FFFFFF' : theme.text },
+                  ]}
+                >
+                  {cat.label}
+                </Text>
+                <View
+                  style={[
+                    styles.countBadge,
+                    {
+                      backgroundColor: isSelected ? 'rgba(255,255,255,0.25)' : cat.bg,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.countBadgeText,
+                      { color: isSelected ? '#FFFFFF' : cat.color },
+                    ]}
+                  >
+                    {count}
                   </Text>
                 </View>
-              )}
-            </TouchableOpacity>
-          );
-        })}
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
       </View>
 
-      {/* Bottom Selected Marker Sheet */}
-      {selectedMarker && (
-        <View style={[styles.markerSheet, { backgroundColor: theme.card, borderTopColor: theme.border }]}>
-          <View style={styles.sheetHandle} />
+      {/* Main Map View or List View */}
+      {viewMode === 'map' ? (
+        <View style={styles.mapArea}>
+          {/* Real Leaflet Map Engine */}
+          <RealLeafletMap
+            userLocation={userCoords}
+            places={places}
+            selectedPlace={selectedPlace}
+            onSelectPlace={(place) => {
+              setSelectedPlace(place);
+            }}
+            mapType={mapLayer}
+            showRoute={navigationActive}
+            isDarkMode={isDark}
+          />
 
-          <View style={styles.sheetContent}>
-            <Image source={{ uri: selectedMarker.image }} style={styles.sheetImage} resizeMode="cover" />
+          {/* Floating Map Controls (Layers, Recenter, Places Count) */}
+          <View style={styles.floatingControls}>
+            {/* Map Layer Switcher Button */}
+            <TouchableOpacity
+              onPress={() => setShowLayerMenu(!showLayerMenu)}
+              style={[styles.fabBtn, { backgroundColor: theme.card, shadowColor: theme.shadow }]}
+            >
+              <Ionicons name="layers-outline" size={20} color={theme.text} />
+            </TouchableOpacity>
 
-            <View style={styles.sheetInfo}>
-              <View style={styles.sheetTitleRow}>
-                <Text style={[styles.sheetName, { color: theme.text }]} numberOfLines={1}>
-                  {selectedMarker.name}
+            {/* Recenter on User Location */}
+            <TouchableOpacity
+              onPress={handleRequestLocation}
+              style={[styles.fabBtn, { backgroundColor: theme.card, shadowColor: theme.shadow }]}
+            >
+              <Ionicons name="locate-outline" size={20} color="#2563EB" />
+            </TouchableOpacity>
+          </View>
+
+          {/* Layer Menu Popup */}
+          {showLayerMenu && (
+            <View style={[styles.layerMenu, { backgroundColor: theme.card, borderColor: theme.border }]}>
+              <Text style={[styles.layerMenuTitle, { color: theme.textSecondary }]}>Map Style</Text>
+              {MAP_LAYERS.map((layer) => (
+                <TouchableOpacity
+                  key={layer.id}
+                  onPress={() => {
+                    setMapLayer(layer.id);
+                    setShowLayerMenu(false);
+                  }}
+                  style={[
+                    styles.layerOption,
+                    mapLayer === layer.id && { backgroundColor: theme.primaryLight },
+                  ]}
+                >
+                  <Ionicons
+                    name={layer.icon}
+                    size={16}
+                    color={mapLayer === layer.id ? theme.primary : theme.text}
+                  />
+                  <Text
+                    style={[
+                      styles.layerOptionText,
+                      { color: mapLayer === layer.id ? theme.primary : theme.text },
+                    ]}
+                  >
+                    {layer.label}
+                  </Text>
+                  {mapLayer === layer.id && (
+                    <Ionicons name="checkmark" size={16} color={theme.primary} />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+
+          {/* Bottom Interactive Place Details Card */}
+          {selectedPlace && (
+            <View style={[styles.bottomSheet, { backgroundColor: theme.card, borderTopColor: theme.border }]}>
+              <View style={styles.sheetHandle} />
+
+              <View style={styles.sheetMainRow}>
+                <Image
+                  source={{ uri: selectedPlace.image }}
+                  style={styles.sheetPlaceImage}
+                  resizeMode="cover"
+                />
+
+                <View style={styles.sheetDetails}>
+                  {/* Category Symbol & Subcategory */}
+                  <View style={styles.subCategoryRow}>
+                    <View
+                      style={[
+                        styles.symbolBadge,
+                        {
+                          backgroundColor: currentSymbol.bg,
+                          borderColor: currentSymbol.color,
+                        },
+                      ]}
+                    >
+                      <Text style={styles.symbolEmoji}>{currentSymbol.symbol}</Text>
+                      <Text style={[styles.symbolLabel, { color: currentSymbol.color }]}>
+                        {selectedPlace.subCategory}
+                      </Text>
+                    </View>
+
+                    <Text style={[styles.distanceText, { color: theme.primary }]}>
+                      {selectedPlace.distanceKm} km away
+                    </Text>
+                  </View>
+
+                  {/* Name */}
+                  <Text style={[styles.sheetPlaceName, { color: theme.text }]} numberOfLines={1}>
+                    {selectedPlace.name}
+                  </Text>
+
+                  {/* ETA & Rating */}
+                  <View style={styles.etaRow}>
+                    <View style={styles.ratingBadge}>
+                      <Ionicons name="star" size={12} color="#F59E0B" />
+                      <Text style={styles.ratingText}>{selectedPlace.rating}</Text>
+                      <Text style={[styles.reviewsText, { color: theme.textMuted }]}>
+                        ({selectedPlace.reviews})
+                      </Text>
+                    </View>
+
+                    <Text style={[styles.etaDot, { color: theme.textMuted }]}>•</Text>
+                    <Text style={[styles.etaText, { color: theme.textSecondary }]}>
+                      🚶 {selectedPlace.walkMinutes} min walk · 🚗 {selectedPlace.driveMinutes} min drive
+                    </Text>
+                  </View>
+
+                  {/* Crowd & Eco Badges */}
+                  <View style={styles.badgesRow}>
+                    {selectedPlace.crowdLevel && (
+                      <CrowdIndicator level={selectedPlace.crowdLevel} compact />
+                    )}
+                    {selectedPlace.ecoScore && (
+                      <EcoScoreBadge score={selectedPlace.ecoScore} size="small" />
+                    )}
+                  </View>
+                </View>
+              </View>
+
+              {/* Special Info (Cuisine / Specialty / Emergency / Entry Fee) */}
+              <View style={[styles.infoSnippet, { backgroundColor: theme.cardSecondary }]}>
+                {selectedPlace.category === 'restaurant' && (
+                  <Text style={[styles.snippetText, { color: theme.text }]} numberOfLines={1}>
+                    🍴 <Text style={{ fontFamily: 'Manrope_700Bold' }}>Cuisine:</Text> {selectedPlace.cuisine} ({selectedPlace.priceRange})
+                  </Text>
+                )}
+                {selectedPlace.category === 'hospital' && (
+                  <Text style={[styles.snippetText, { color: '#DC2626' }]} numberOfLines={1}>
+                    🚨 <Text style={{ fontFamily: 'Manrope_700Bold' }}>Emergency Hotline:</Text> {selectedPlace.emergencyHelpline || '108 / 112'}
+                  </Text>
+                )}
+                {selectedPlace.category === 'famous' && (
+                  <Text style={[styles.snippetText, { color: theme.text }]} numberOfLines={1}>
+                    🎟️ <Text style={{ fontFamily: 'Manrope_700Bold' }}>Entry:</Text> {selectedPlace.entryFee > 0 ? `₹${selectedPlace.entryFee}` : 'Free Entry'} · {selectedPlace.openHours}
+                  </Text>
+                )}
+                {selectedPlace.category === 'hotel' && (
+                  <Text style={[styles.snippetText, { color: theme.text }]} numberOfLines={1}>
+                    🏨 <Text style={{ fontFamily: 'Manrope_700Bold' }}>Stay:</Text> ₹{selectedPlace.pricePerNight} / night · {selectedPlace.openHours}
+                  </Text>
+                )}
+                {selectedPlace.category === 'artisan' && (
+                  <Text style={[styles.snippetText, { color: theme.text }]} numberOfLines={1}>
+                    🎨 <Text style={{ fontFamily: 'Manrope_700Bold' }}>Crafts:</Text> {selectedPlace.crafts ? selectedPlace.crafts.join(', ') : 'Traditional Handicrafts'}
+                  </Text>
+                )}
+                {selectedPlace.category === 'transit' && (
+                  <Text style={[styles.snippetText, { color: theme.text }]} numberOfLines={1}>
+                    🚆 <Text style={{ fontFamily: 'Manrope_700Bold' }}>Transit:</Text> {selectedPlace.fare || 'Standard Transit Tariff'}
+                  </Text>
+                )}
+                {selectedPlace.category === 'emergency' && (
+                  <Text style={[styles.snippetText, { color: theme.text }]} numberOfLines={1}>
+                    👮 <Text style={{ fontFamily: 'Manrope_700Bold' }}>Police:</Text> Dial 112 for immediate assistance
+                  </Text>
+                )}
+              </View>
+
+              {/* Action Buttons */}
+              <View style={styles.sheetActionRow}>
+                {selectedPlace.phone ? (
+                  <TouchableOpacity
+                    onPress={() => handleCallEmergency(selectedPlace.phone)}
+                    style={[styles.actionIconBtn, { backgroundColor: '#FEE2E2', borderColor: '#DC2626' }]}
+                  >
+                    <Ionicons name="call" size={18} color="#DC2626" />
+                  </TouchableOpacity>
+                ) : null}
+
+                <Button
+                  title={navigationActive ? 'Directions Active' : 'Start Directions'}
+                  variant={navigationActive ? 'secondary' : 'primary'}
+                  size="small"
+                  icon="navigate"
+                  onPress={() => handleStartNavigation(selectedPlace)}
+                  style={styles.sheetBtnPrimary}
+                />
+
+                <Button
+                  title="Add to Trip"
+                  variant="outline"
+                  size="small"
+                  icon="add-circle-outline"
+                  onPress={() =>
+                    Alert.alert(
+                      'Added to Travel Plan',
+                      `${selectedPlace.name} has been added to your smart itinerary.`
+                    )
+                  }
+                  style={styles.sheetBtnOutline}
+                />
+              </View>
+            </View>
+          )}
+        </View>
+      ) : (
+        /* List View Mode */
+        <ScrollView style={styles.listView} contentContainerStyle={styles.listContent}>
+          <Text style={[styles.listHeader, { color: theme.textSecondary }]}>
+            Found {places.length} places around {cityName} ({selectedRadius} km radius)
+          </Text>
+
+          {places.map((place) => {
+            const sym = place.symbolConfig || { symbol: '📍', color: theme.primary, bg: theme.primaryLight };
+            return (
+              <TouchableOpacity
+                key={place.id}
+                onPress={() => {
+                  setSelectedPlace(place);
+                  setViewMode('map');
+                }}
+                style={[styles.placeCard, { backgroundColor: theme.card, borderColor: theme.border }]}
+              >
+                <Image source={{ uri: place.image }} style={styles.cardImage} resizeMode="cover" />
+
+                <View style={styles.cardBody}>
+                  <View style={styles.cardTopRow}>
+                    <View style={[styles.symbolBadgeSmall, { backgroundColor: sym.bg, borderColor: sym.color }]}>
+                      <Text style={styles.symbolEmojiSmall}>{sym.symbol}</Text>
+                      <Text style={[styles.symbolLabelSmall, { color: sym.color }]}>
+                        {place.subCategory}
+                      </Text>
+                    </View>
+
+                    <Text style={[styles.cardDistance, { color: theme.primary }]}>
+                      {place.distanceKm} km
+                    </Text>
+                  </View>
+
+                  <Text style={[styles.cardName, { color: theme.text }]} numberOfLines={1}>
+                    {place.name}
+                  </Text>
+
+                  <Text style={[styles.cardDesc, { color: theme.textSecondary }]} numberOfLines={2}>
+                    {place.description}
+                  </Text>
+
+                  <View style={styles.cardFooter}>
+                    <View style={styles.ratingBadge}>
+                      <Ionicons name="star" size={12} color="#F59E0B" />
+                      <Text style={styles.ratingText}>{place.rating}</Text>
+                    </View>
+
+                    <Text style={[styles.cardEta, { color: theme.textMuted }]}>
+                      🚶 {place.walkMinutes}m · 🚗 {place.driveMinutes}m
+                    </Text>
+
+                    {place.crowdLevel && <CrowdIndicator level={place.crowdLevel} compact />}
+                  </View>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      )}
+
+      {/* Preset City Switcher Modal */}
+      <Modal visible={showCityPicker} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalBox, { backgroundColor: theme.card }]}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, { color: theme.text }]}>Select City / Live GPS</Text>
+              <TouchableOpacity onPress={() => setShowCityPicker(false)}>
+                <Ionicons name="close" size={22} color={theme.text} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Current GPS Option */}
+            <TouchableOpacity
+              onPress={() => {
+                setShowCityPicker(false);
+                handleRequestLocation();
+              }}
+              style={[styles.cityItem, { backgroundColor: theme.primaryLight, borderColor: theme.primary }]}
+            >
+              <Ionicons name="navigate-circle" size={22} color={theme.primary} />
+              <View style={styles.cityItemTextWrap}>
+                <Text style={[styles.cityNameBold, { color: theme.primary }]}>Use My Real Live GPS</Text>
+                <Text style={[styles.cityStateText, { color: theme.textSecondary }]}>
+                  Detect location using device GPS
                 </Text>
               </View>
+              <Ionicons name="chevron-forward" size={18} color={theme.primary} />
+            </TouchableOpacity>
 
-              <Text style={[styles.sheetSubCat, { color: theme.textSecondary }]}>
-                {selectedMarker.subCategory} · {distFromUser} km away
-              </Text>
+            <Text style={[styles.modalSectionLabel, { color: theme.textSecondary }]}>
+              Popular Tourism Destinations in India
+            </Text>
 
-              <View style={styles.sheetBadges}>
-                <CrowdIndicator level={selectedMarker.crowdLevel} compact />
-                <EcoScoreBadge score={selectedMarker.ecoScore} size="small" />
-              </View>
-
-              <Text style={[styles.sheetHours, { color: theme.textMuted }]}>
-                {selectedMarker.openHours}
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.sheetActions}>
-            <Button
-              title="Directions"
-              variant="outline"
-              size="small"
-              icon="navigate-outline"
-              onPress={() => Alert.alert('Routing Active', `Navigating to ${selectedMarker.name}.`)}
-              style={styles.sheetBtn}
-            />
-            <Button
-              title="Add to Itinerary"
-              variant="primary"
-              size="small"
-              icon="add-outline"
-              onPress={() => Alert.alert('Added', `${selectedMarker.name} added to your active travel plan.`)}
-              style={styles.sheetBtn}
-            />
+            <ScrollView style={{ maxHeight: 320 }}>
+              {PRESET_CITIES.map((c) => (
+                <TouchableOpacity
+                  key={c.id}
+                  onPress={() => handleSelectPresetCity(c)}
+                  style={[styles.cityItem, { borderColor: theme.border }]}
+                >
+                  <Ionicons name="location-outline" size={18} color={theme.textSecondary} />
+                  <View style={styles.cityItemTextWrap}>
+                    <Text style={[styles.cityNameText, { color: theme.text }]}>{c.name}</Text>
+                    <Text style={[styles.cityStateText, { color: theme.textMuted }]}>{c.state}</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={16} color={theme.textMuted} />
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           </View>
         </View>
-      )}
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -419,172 +703,477 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     paddingVertical: 10,
     borderBottomWidth: 1,
   },
   iconBtn: {
     padding: 6,
   },
-  titleWrap: {
+  cityTitleWrap: {
     alignItems: 'center',
+    maxWidth: width * 0.58,
   },
-  topTitle: {
-    fontSize: 16,
+  cityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  cityText: {
+    fontSize: 15,
     fontFamily: 'Manrope_700Bold',
   },
-  locationStatus: {
-    fontSize: 11,
-    fontFamily: 'Manrope_600SemiBold',
-    marginTop: 1,
-  },
-  locateBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  filterBar: {
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-  },
-  filterScroll: {
-    paddingHorizontal: 16,
-    gap: 8,
-  },
-  filterChip: {
+  statusBadgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    paddingHorizontal: 11,
-    paddingVertical: 6,
-    borderRadius: 16,
-    borderWidth: 1,
+    marginTop: 2,
   },
-  filterChipText: {
-    fontSize: 12,
+  statusDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+  },
+  statusText: {
+    fontSize: 10.5,
     fontFamily: 'Manrope_600SemiBold',
   },
-  mapCanvas: {
-    flex: 1,
-    position: 'relative',
-    overflow: 'hidden',
+  topRightActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
-  mapGridPattern: {
-    ...StyleSheet.absoluteFillObject,
-    opacity: 0.12,
-  },
-  userDotRing: {
-    position: 'absolute',
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: 'rgba(37, 99, 235, 0.25)',
+  actionBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: -11,
-    marginTop: -11,
   },
-  userDotCenter: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#2563EB',
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-  },
-  mapMarker: {
-    position: 'absolute',
+  permissionBanner: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: -15,
-    marginTop: -15,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginHorizontal: 12,
+    marginTop: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: 10,
   },
-  markerPin: {
+  permissionIconCircle: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    borderWidth: 2,
+    backgroundColor: '#DBEAFE',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 3,
   },
-  markerCallout: {
-    position: 'absolute',
-    bottom: 36,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.1)',
-    minWidth: 90,
+  permissionInfo: {
+    flex: 1,
+  },
+  permissionTitle: {
+    fontSize: 13,
+    fontFamily: 'Manrope_700Bold',
+    color: '#1E40AF',
+  },
+  permissionDesc: {
+    fontSize: 11,
+    fontFamily: 'Manrope_500Medium',
+    color: '#3B82F6',
+    marginTop: 1,
+  },
+  permissionGrantBtn: {
+    backgroundColor: '#2563EB',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  permissionGrantText: {
+    color: '#FFFFFF',
+    fontSize: 11.5,
+    fontFamily: 'Manrope_700Bold',
+  },
+  searchSection: {
+    paddingHorizontal: 12,
+    paddingTop: 8,
+    paddingBottom: 6,
+    borderBottomWidth: 1,
+  },
+  searchBox: {
+    flexDirection: 'row',
     alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
+    borderWidth: 1,
+    gap: 8,
   },
-  calloutText: {
+  searchInput: {
+    flex: 1,
+    fontSize: 13,
+    fontFamily: 'Manrope_500Medium',
+    paddingVertical: 0,
+  },
+  radiusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 8,
+    paddingBottom: 2,
+  },
+  radiusLabel: {
+    fontSize: 11,
+    fontFamily: 'Manrope_600SemiBold',
+    marginRight: 2,
+  },
+  radiusChip: {
+    paddingHorizontal: 9,
+    paddingVertical: 3,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  radiusChipText: {
+    fontSize: 11,
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  categoriesBar: {
+    paddingVertical: 6,
+    borderBottomWidth: 1,
+  },
+  categoriesScroll: {
+    paddingHorizontal: 12,
+    gap: 8,
+  },
+  catChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 11,
+    paddingVertical: 6,
+    borderRadius: 18,
+    borderWidth: 1,
+  },
+  catChipText: {
+    fontSize: 12,
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  countBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 10,
+  },
+  countBadgeText: {
     fontSize: 10.5,
     fontFamily: 'Manrope_700Bold',
   },
-  markerSheet: {
-    padding: 14,
+  mapArea: {
+    flex: 1,
+    position: 'relative',
+  },
+  floatingControls: {
+    position: 'absolute',
+    top: 14,
+    right: 14,
+    gap: 10,
+    zIndex: 100,
+  },
+  fabBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  layerMenu: {
+    position: 'absolute',
+    top: 60,
+    right: 14,
+    width: 140,
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 6,
+    zIndex: 110,
+    elevation: 6,
+  },
+  layerMenuTitle: {
+    fontSize: 10.5,
+    fontFamily: 'Manrope_700Bold',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    textTransform: 'uppercase',
+  },
+  layerOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  layerOptionText: {
+    fontSize: 12,
+    fontFamily: 'Manrope_600SemiBold',
+    flex: 1,
+  },
+  bottomSheet: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     borderTopWidth: 1,
+    padding: 14,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
   },
   sheetHandle: {
-    width: 36,
+    width: 38,
     height: 4,
     borderRadius: 2,
     backgroundColor: 'rgba(0,0,0,0.15)',
     alignSelf: 'center',
     marginBottom: 10,
   },
-  sheetContent: {
+  sheetMainRow: {
     flexDirection: 'row',
     gap: 12,
-    marginBottom: 12,
   },
-  sheetImage: {
-    width: 76,
-    height: 76,
-    borderRadius: 12,
+  sheetPlaceImage: {
+    width: 82,
+    height: 82,
+    borderRadius: 14,
   },
-  sheetInfo: {
+  sheetDetails: {
     flex: 1,
   },
-  sheetTitleRow: {
+  subCategoryRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 2,
   },
-  sheetName: {
+  symbolBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  symbolEmoji: {
+    fontSize: 12,
+  },
+  symbolLabel: {
+    fontSize: 10.5,
+    fontFamily: 'Manrope_700Bold',
+  },
+  distanceText: {
+    fontSize: 11,
+    fontFamily: 'Manrope_700Bold',
+  },
+  sheetPlaceName: {
     fontSize: 15,
     fontFamily: 'Manrope_700Bold',
-    flex: 1,
+    marginVertical: 2,
   },
-  sheetSubCat: {
-    fontSize: 11.5,
+  etaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+  },
+  ratingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  ratingText: {
+    fontSize: 11,
+    fontFamily: 'Manrope_700Bold',
+    color: '#D97706',
+  },
+  reviewsText: {
+    fontSize: 10,
     fontFamily: 'Manrope_500Medium',
-    marginBottom: 6,
   },
-  sheetBadges: {
+  etaDot: {
+    fontSize: 10,
+  },
+  etaText: {
+    fontSize: 10.5,
+    fontFamily: 'Manrope_500Medium',
+  },
+  badgesRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+  },
+  infoSnippet: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginTop: 8,
+    marginBottom: 10,
+  },
+  snippetText: {
+    fontSize: 11.5,
+    fontFamily: 'Manrope_500Medium',
+  },
+  sheetActionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  actionIconBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sheetBtnPrimary: {
+    flex: 1.2,
+  },
+  sheetBtnOutline: {
+    flex: 1,
+  },
+  listView: {
+    flex: 1,
+  },
+  listContent: {
+    padding: 14,
+    gap: 12,
+  },
+  listHeader: {
+    fontSize: 12,
+    fontFamily: 'Manrope_600SemiBold',
     marginBottom: 4,
   },
-  sheetHours: {
-    fontSize: 10.5,
-    fontFamily: 'Manrope_400Regular',
-  },
-  sheetActions: {
+  placeCard: {
     flexDirection: 'row',
+    borderRadius: 14,
+    borderWidth: 1,
+    overflow: 'hidden',
     gap: 10,
+    padding: 8,
   },
-  sheetBtn: {
+  cardImage: {
+    width: 90,
+    height: 90,
+    borderRadius: 10,
+  },
+  cardBody: {
     flex: 1,
+    justifyContent: 'center',
+  },
+  cardTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 3,
+  },
+  symbolBadgeSmall: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  symbolEmojiSmall: {
+    fontSize: 10,
+  },
+  symbolLabelSmall: {
+    fontSize: 9.5,
+    fontFamily: 'Manrope_700Bold',
+  },
+  cardDistance: {
+    fontSize: 11,
+    fontFamily: 'Manrope_700Bold',
+  },
+  cardName: {
+    fontSize: 14,
+    fontFamily: 'Manrope_700Bold',
+    marginBottom: 2,
+  },
+  cardDesc: {
+    fontSize: 11,
+    fontFamily: 'Manrope_400Regular',
+    lineHeight: 15,
+    marginBottom: 4,
+  },
+  cardFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  cardEta: {
+    fontSize: 10,
+    fontFamily: 'Manrope_500Medium',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'flex-end',
+  },
+  modalBox: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 18,
+    maxHeight: height * 0.7,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 14,
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontFamily: 'Manrope_700Bold',
+  },
+  modalSectionLabel: {
+    fontSize: 11,
+    fontFamily: 'Manrope_700Bold',
+    textTransform: 'uppercase',
+    marginTop: 14,
+    marginBottom: 8,
+  },
+  cityItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 8,
+  },
+  cityItemTextWrap: {
+    flex: 1,
+  },
+  cityNameBold: {
+    fontSize: 13.5,
+    fontFamily: 'Manrope_700Bold',
+  },
+  cityNameText: {
+    fontSize: 13,
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  cityStateText: {
+    fontSize: 11,
+    fontFamily: 'Manrope_500Medium',
   },
 });
