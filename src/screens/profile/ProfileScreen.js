@@ -258,42 +258,6 @@ export const ProfileScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
-        {/* Tourist Mode Section */}
-        <View
-          style={[
-            styles.roleSwitchCard,
-            {
-              backgroundColor: role === 'authority_admin' ? theme.accentLight : theme.primaryLight,
-              borderColor: role === 'authority_admin' ? theme.accent : theme.primary,
-            },
-          ]}
-        >
-          <View style={styles.roleHeader}>
-            <Ionicons
-              name={role === 'authority_admin' ? 'shield-checkmark-outline' : 'person-outline'}
-              size={22}
-              color={role === 'authority_admin' ? '#92400E' : theme.primaryDark}
-            />
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.roleTitle, { color: role === 'authority_admin' ? '#92400E' : theme.primaryDark }]}>
-                {role === 'authority_admin' ? 'Tourism Authority Mode' : 'Tourist Mode Active'}
-              </Text>
-              <Text style={[styles.roleSub, { color: role === 'authority_admin' ? '#92400E' : theme.primaryDark }]}>
-                {role === 'authority_admin'
-                  ? 'Access state-level analytics, crowd heatmaps and tourist grievance resolution.'
-                  : 'Plan trips, discover verified eco-stays, optimize budgets, explore local attractions and support local artisans.'}
-              </Text>
-            </View>
-          </View>
-          <Button
-            title={role === 'authority_admin' ? 'Switch to Tourist Mode' : 'Switch to Authority Dashboard'}
-            variant={role === 'authority_admin' ? 'secondary' : 'primary'}
-            size="small"
-            onPress={toggleRole}
-            style={{ marginTop: 10 }}
-          />
-        </View>
-
         {/* AI TRAVEL ASSISTANT FEATURES SECTION */}
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <View style={styles.sectionHeaderRow}>
