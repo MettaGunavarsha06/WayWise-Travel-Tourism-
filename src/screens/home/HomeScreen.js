@@ -463,7 +463,14 @@ export const HomeScreen = ({ navigation }) => {
       <TouchableOpacity
         activeOpacity={0.9}
         onPress={() => navigation.navigate('EmergencySOS')}
-        style={styles.floatingSOS}
+        style={[
+          styles.floatingSOS,
+          {
+            backgroundColor: theme.mode === 'glass_horizon' ? 'rgba(239, 68, 68, 0.90)' : '#EF4444',
+            borderColor: theme.mode === 'glass_horizon' ? 'rgba(255, 255, 255, 0.85)' : 'transparent',
+            borderWidth: theme.mode === 'glass_horizon' ? 1.5 : 0,
+          },
+        ]}
       >
         <Ionicons name="warning" size={16} color="#FFFFFF" />
         <Text style={styles.floatingSOSText}>SOS</Text>

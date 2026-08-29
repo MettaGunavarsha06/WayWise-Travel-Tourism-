@@ -1,76 +1,84 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
-  GlassHorizonTheme,
-  VintageVoyagerTheme,
-  DarkTheme,
-  LightTheme,
+  resolveTheme,
+  GlassmorphismLightTheme,
   THEMES_LIST,
 } from '../constants/colors';
 
-const THEME_STORAGE_KEY = '@waywise_active_theme_name';
-
-const THEME_MAP = {
-  glass_horizon: GlassHorizonTheme,
-  vintage_voyager: VintageVoyagerTheme,
-  dark: DarkTheme,
-  light: LightTheme,
-};
+const THEME_NAME_STORAGE_KEY = '@waywise_active_theme_name';
+const DARK_MODE_STORAGE_KEY = '@waywise_theme_dark_mode';
 
 const ThemeContext = createContext({
-  theme: GlassHorizonTheme,
+  theme: GlassmorphismLightTheme,
   themeName: 'glass_horizon',
   isDark: false,
   setThemeName: () => {},
   toggleTheme: () => {},
+  setIsDark: () => {},
   themesList: THEMES_LIST,
 });
 
 export const ThemeProvider = ({ children }) => {
   const [themeName, setThemeNameState] = useState('glass_horizon');
+  const [isDark, setIsDarkState] = useState(false);
 
   useEffect(() => {
-    loadSavedTheme();
+    loadSavedSettings();
   }, []);
 
-  const loadSavedTheme = async () => {
+  const loadSavedSettings = async () => {
     try {
-      const saved = await AsyncStorage.getItem(THEME_STORAGE_KEY);
-      if (saved && THEME_MAP[saved]) {
-        setThemeNameState(saved);
-      } else if (saved === 'dark') {
-        setThemeNameState('dark');
-      } else if (saved === 'light') {
-        setThemeNameState('light');
+      const savedTheme = await AsyncStorage.getItem(THEME_NAME_STORAGE_KEY);
+      if (savedTheme) {
+        if (savedTheme === 'light') {
+          setThemeNameState('emerald_nature');
+        } else if (savedTheme === 'dark') {
+          setThemeNameState('emerald_nature');
+          setIsDarkState(true);
+        } else {
+          setThemeNameState(savedTheme);
+        }
+      }
+
+      const savedDarkMode = await AsyncStorage.getItem(DARK_MODE_STORAGE_KEY);
+      if (savedDarkMode !== null) {
+        setIsDarkState(savedDarkMode === 'true');
       }
     } catch (e) {
-      console.warn('Error loading theme preference', e);
+      console.warn('Error loading theme settings', e);
     }
   };
 
   const setThemeName = async (name) => {
-    if (THEME_MAP[name]) {
-      setThemeNameState(name);
-      try {
-        await AsyncStorage.setItem(THEME_STORAGE_KEY, name);
-      } catch (e) {
-        console.warn('Error saving theme preference', e);
-      }
+    setThemeNameState(name);
+    try {
+      await AsyncStorage.setItem(THEME_NAME_STORAGE_KEY, name);
+    } catch (e) {
+      console.warn('Error saving theme preference', e);
     }
   };
 
   const toggleTheme = async () => {
     try {
-      const nextTheme = themeName === 'dark' ? 'glass_horizon' : 'dark';
-      setThemeNameState(nextTheme);
-      await AsyncStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+      const nextDark = !isDark;
+      setIsDarkState(nextDark);
+      await AsyncStorage.setItem(DARK_MODE_STORAGE_KEY, nextDark ? 'true' : 'false');
     } catch (e) {
-      console.warn('Error toggling theme', e);
+      console.warn('Error toggling dark mode', e);
     }
   };
 
-  const currentTheme = THEME_MAP[themeName] || GlassHorizonTheme;
-  const isDark = currentTheme.isDark;
+  const setIsDark = async (value) => {
+    try {
+      setIsDarkState(value);
+      await AsyncStorage.setItem(DARK_MODE_STORAGE_KEY, value ? 'true' : 'false');
+    } catch (e) {
+      console.warn('Error setting dark mode', e);
+    }
+  };
+
+  const currentTheme = resolveTheme(themeName, isDark);
 
   return (
     <ThemeContext.Provider
@@ -80,6 +88,7 @@ export const ThemeProvider = ({ children }) => {
         isDark,
         setThemeName,
         toggleTheme,
+        setIsDark,
         themesList: THEMES_LIST,
       }}
     >

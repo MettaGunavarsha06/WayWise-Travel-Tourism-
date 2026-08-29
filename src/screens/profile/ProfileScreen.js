@@ -454,20 +454,6 @@ export const ProfileScreen = ({ navigation }) => {
             </View>
           </TouchableOpacity>
 
-          {/* Quick Dark Mode Toggle */}
-          <View style={[styles.settingRow, { borderTopWidth: 1, borderTopColor: theme.borderLight }]}>
-            <View style={styles.settingLeft}>
-              <Ionicons name="moon-outline" size={20} color={theme.text} />
-              <Text style={[styles.settingLabel, { color: theme.text }]}>Dark Mode</Text>
-            </View>
-            <Switch
-              value={isDark}
-              onValueChange={toggleTheme}
-              trackColor={{ false: theme.border, true: theme.primary }}
-              thumbColor="#FFFFFF"
-            />
-          </View>
-
           {/* Notifications Toggle */}
           <View style={[styles.settingRow, { borderTopWidth: 1, borderTopColor: theme.borderLight }]}>
             <View style={styles.settingLeft}>
@@ -524,10 +510,29 @@ export const ProfileScreen = ({ navigation }) => {
             />
           </View>
 
+          {/* Universal Dark Mode Toggle (Adapts dynamically to the chosen theme) */}
+          <View style={[styles.settingRow, { borderTopWidth: 1, borderTopColor: theme.borderLight }]}>
+            <View style={styles.settingLeft}>
+              <Ionicons name="moon-outline" size={20} color={theme.text} />
+              <View>
+                <Text style={[styles.settingLabel, { color: theme.text }]}>Dark Mode</Text>
+                <Text style={[styles.settingSub, { color: theme.textSecondary }]}>
+                  {isDark ? `Active (${themesList?.find((t) => t.id === themeName)?.name || 'Theme'} Dark)` : 'Off (Light Mode)'}
+                </Text>
+              </View>
+            </View>
+            <Switch
+              value={isDark}
+              onValueChange={toggleTheme}
+              trackColor={{ false: theme.border, true: theme.primary }}
+              thumbColor="#FFFFFF"
+            />
+          </View>
+
           {/* Feedback */}
           <TouchableOpacity
             onPress={() => navigation.navigate('Feedback')}
-            style={[styles.menuRow, { borderTopColor: theme.borderLight }]}
+            style={[styles.menuRow, { borderTopColor: theme.borderLight, borderTopWidth: 1 }]}
           >
             <View style={styles.settingLeft}>
               <Ionicons name="star-outline" size={20} color={theme.text} />

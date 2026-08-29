@@ -1,45 +1,47 @@
-// WayWise Design System — Multi-Theme Visual Tokens
-// Includes: Premium Glassmorphism (Deep Navy, Soft Blue, Frosted White, Warm Gold),
-// Vintage Voyager (Heritage Maps + Modern Luxury), Obsidian Dark, and Emerald Nature
+// WayWise Design System — Multi-Theme Visual Tokens with Dynamic Dark/Light Matrix
+// Themes: Glassmorphism Luxe, Vintage Voyager, and Emerald Nature
 
-export const GlassHorizonTheme = {
+// ==========================================
+// 1. GLASSMORPHISM LUXE THEME (Light & Dark)
+// ==========================================
+export const GlassmorphismLightTheme = {
   name: 'glass_horizon',
   displayName: 'Glassmorphism Luxe',
   subtitle: 'Frosted Glass · Deep Navy, Soft Blue & Warm Gold',
   mode: 'glass_horizon',
   isDark: false,
 
-  // === Primary Brand: Deep Classic Navy ===
-  primary: '#1E3A5F',        // Deep classic navy — elegant luxury buttons & active states
-  primaryDark: '#0A192F',    // Deepest navy
-  primaryLight: 'rgba(30, 58, 95, 0.08)', // Subtle luxury navy wash
-  primaryMid: '#2C5282',     // Medium navy
+  // Primary: Deep Classic Navy
+  primary: '#1E3A5F',
+  primaryDark: '#0A192F',
+  primaryLight: 'rgba(30, 58, 95, 0.08)',
+  primaryMid: '#2C5282',
 
-  // === Secondary: Soft Atmospheric Blue ===
-  secondary: '#4A7BB0',      // Soft classic blue
+  // Secondary: Soft Atmospheric Blue
+  secondary: '#4A7BB0',
   secondaryLight: 'rgba(74, 123, 176, 0.10)',
 
-  // === Accent: Subtle Warm Gold ===
-  accent: '#C5A059',        // Subtle warm gold — classic luxury accent
+  // Accent: Subtle Warm Gold
+  accent: '#C5A059',
   accentLight: 'rgba(197, 160, 89, 0.14)',
 
-  // === Backgrounds & Surfaces (Frosted Glass & Semi-Transparent Surfaces) ===
-  background: '#E8F0F7',     // Soft atmospheric mist background for deep layered glass depth
-  card: 'rgba(255, 255, 255, 0.76)',          // Frosted glass card with subtle transparency
-  cardSecondary: 'rgba(255, 255, 255, 0.52)', // Translucent layered glass card
-  surface: 'rgba(255, 255, 255, 0.78)',
-  surfaceElevated: 'rgba(255, 255, 255, 0.90)',
+  // Surfaces: Frosted Semi-Transparent Glass
+  background: '#E8F0F7',
+  card: 'rgba(255, 255, 255, 0.78)',
+  cardSecondary: 'rgba(255, 255, 255, 0.54)',
+  surface: 'rgba(255, 255, 255, 0.80)',
+  surfaceElevated: 'rgba(255, 255, 255, 0.92)',
 
-  // === Text: Deep Navy & Slate ===
-  text: '#0A192F',           // Deep luxury navy — rich readability
-  textSecondary: '#334E68',  // Refined slate navy
-  textMuted: '#627D98',      // Muted atmospheric blue-gray
+  // Text
+  text: '#0A192F',
+  textSecondary: '#334E68',
+  textMuted: '#627D98',
 
-  // === Borders: Thin White Specular Glass Rims ===
-  border: 'rgba(255, 255, 255, 0.85)',        // Thin crisp white frosted glass border
-  borderLight: 'rgba(255, 255, 255, 0.50)',
+  // Borders: Thin White Specular Glass Rims
+  border: 'rgba(255, 255, 255, 0.88)',
+  borderLight: 'rgba(255, 255, 255, 0.55)',
 
-  // === Semantic Colors ===
+  // Semantic
   error: '#D32F2F',
   errorLight: 'rgba(211, 47, 47, 0.10)',
   success: '#1E3A5F',
@@ -49,60 +51,117 @@ export const GlassHorizonTheme = {
   info: '#4A7BB0',
   infoLight: 'rgba(74, 123, 176, 0.12)',
 
-  // === Eco / Sustainability / Accents ===
   ecoGreen: '#1E3A5F',
   ecoGreenLight: 'rgba(30, 58, 95, 0.08)',
   ecoGreenMid: '#4A7BB0',
   gold: '#C5A059',
   goldLight: 'rgba(197, 160, 89, 0.14)',
 
-  // === UI Chrome: Frosted Glass Elements ===
-  glassBg: 'rgba(255, 255, 255, 0.76)',
-  glassBorder: 'rgba(255, 255, 255, 0.90)',
-  shadow: 'rgba(10, 25, 47, 0.10)',
+  // UI Chrome: Glass
+  glassBg: 'rgba(255, 255, 255, 0.78)',
+  glassBorder: 'rgba(255, 255, 255, 0.92)',
+  shadow: 'rgba(10, 25, 47, 0.12)',
   tabBar: 'rgba(255, 255, 255, 0.88)',
   tabBarInactive: '#627D98',
   statusBar: 'dark',
 };
 
-export const VintageVoyagerTheme = {
+export const GlassmorphismDarkTheme = {
+  name: 'glass_horizon',
+  displayName: 'Glassmorphism Luxe (Dark)',
+  subtitle: 'Dark Frosted Glass · Midnight Navy, Sky & Gold',
+  mode: 'glass_horizon',
+  isDark: true,
+
+  // Primary: Luminous Sky Blue / Azure in Dark Mode
+  primary: '#38BDF8',
+  primaryDark: '#0284C7',
+  primaryLight: 'rgba(56, 189, 248, 0.15)',
+  primaryMid: '#0EA5E9',
+
+  // Secondary: Soft Slate Blue
+  secondary: '#7DD3FC',
+  secondaryLight: 'rgba(125, 211, 252, 0.12)',
+
+  // Accent: Warm Gold
+  accent: '#F59E0B',
+  accentLight: 'rgba(245, 158, 11, 0.16)',
+
+  // Surfaces: Dark Frosted Glass
+  background: '#070D15',
+  card: 'rgba(15, 26, 44, 0.82)',
+  cardSecondary: 'rgba(23, 37, 60, 0.65)',
+  surface: 'rgba(15, 26, 44, 0.85)',
+  surfaceElevated: 'rgba(28, 45, 72, 0.88)',
+
+  // Text
+  text: '#F1F5F9',
+  textSecondary: '#94A3B8',
+  textMuted: '#64748B',
+
+  // Borders: Luminous Glass Rim
+  border: 'rgba(255, 255, 255, 0.14)',
+  borderLight: 'rgba(255, 255, 255, 0.08)',
+
+  // Semantic
+  error: '#EF4444',
+  errorLight: 'rgba(239, 68, 68, 0.16)',
+  success: '#38BDF8',
+  successLight: 'rgba(56, 189, 248, 0.15)',
+  warning: '#F59E0B',
+  warningLight: 'rgba(245, 158, 11, 0.16)',
+  info: '#38BDF8',
+  infoLight: 'rgba(56, 189, 248, 0.15)',
+
+  ecoGreen: '#38BDF8',
+  ecoGreenLight: 'rgba(56, 189, 248, 0.15)',
+  ecoGreenMid: '#0EA5E9',
+  gold: '#F59E0B',
+  goldLight: 'rgba(245, 158, 11, 0.16)',
+
+  // UI Chrome: Dark Glass
+  glassBg: 'rgba(15, 26, 44, 0.82)',
+  glassBorder: 'rgba(255, 255, 255, 0.16)',
+  shadow: '#000000',
+  tabBar: 'rgba(10, 18, 30, 0.92)',
+  tabBarInactive: '#64748B',
+  statusBar: 'light',
+};
+
+// ==========================================
+// 2. VINTAGE VOYAGER THEME (Light & Dark)
+// ==========================================
+export const VintageVoyagerLightTheme = {
   name: 'vintage_voyager',
   displayName: 'Vintage Voyager',
   subtitle: 'Heritage Cartography · Antique Maps & Modern Luxury',
   mode: 'vintage_voyager',
   isDark: false,
 
-  // === Primary Brand: Burnished Brass & Antique Terracotta ===
-  primary: '#B45309',        // Burnished antique brass
-  primaryDark: '#78350F',    // Deep saddle leather amber
-  primaryLight: '#FEF3C7',   // Warm golden parchment tint
-  primaryMid: '#D97706',     // Warm amber
+  primary: '#B45309',
+  primaryDark: '#78350F',
+  primaryLight: '#FEF3C7',
+  primaryMid: '#D97706',
 
-  // === Secondary ===
-  secondary: '#C2410C',      // Aged terracotta
+  secondary: '#C2410C',
   secondaryLight: '#FFEDD5',
 
-  // === Accent ===
-  accent: '#CA8A04',        // Antique gold
+  accent: '#CA8A04',
   accentLight: '#FEF9C3',
 
-  // === Backgrounds & Surfaces (Aged Map Parchment) ===
-  background: '#FAF6ED',     // Warm aged antique parchment
-  card: '#FFFFFF',           // Crisp parchment surface
-  cardSecondary: '#F3EBDD',  // Sepia-tinted secondary card
+  background: '#FAF6ED',
+  card: '#FFFFFF',
+  cardSecondary: '#F3EBDD',
   surface: '#FFFFFF',
   surfaceElevated: '#FFFDF9',
 
-  // === Text (Sepia & Espresso Leather) ===
-  text: '#2C1E14',           // Deep sepia espresso
-  textSecondary: '#78563B',  // Warm antique leather brown
-  textMuted: '#A8907A',      // Muted cartography tan
+  text: '#2C1E14',
+  textSecondary: '#78563B',
+  textMuted: '#A8907A',
 
-  // === Borders (Antique Map Line Contours) ===
-  border: '#E5D9C3',         // Aged parchment contour border
+  border: '#E5D9C3',
   borderLight: '#F1E9DB',
 
-  // === Semantic Colors ===
   error: '#DC2626',
   errorLight: '#FEE2E2',
   success: '#854D0E',
@@ -112,12 +171,12 @@ export const VintageVoyagerTheme = {
   info: '#1E293B',
   infoLight: '#F1F5F9',
 
-  // === Eco / Sustainability ===
   ecoGreen: '#854D0E',
   ecoGreenLight: '#FEF3C7',
   ecoGreenMid: '#B45309',
+  gold: '#CA8A04',
+  goldLight: '#FEF9C3',
 
-  // === UI Chrome ===
   glassBg: 'rgba(250, 246, 237, 0.94)',
   glassBorder: 'rgba(202, 138, 4, 0.35)',
   shadow: '#2C1E14',
@@ -126,105 +185,94 @@ export const VintageVoyagerTheme = {
   statusBar: 'dark',
 };
 
-export const DarkTheme = {
-  name: 'dark',
-  displayName: 'Obsidian Dark',
-  subtitle: 'Pure Deep Black · OLED Charcoal & Emerald',
-  mode: 'dark',
+export const VintageVoyagerDarkTheme = {
+  name: 'vintage_voyager',
+  displayName: 'Vintage Voyager (Dark)',
+  subtitle: 'Aged Espresso Leather · Antique Brass & Parchment',
+  mode: 'vintage_voyager',
   isDark: true,
 
-  // === Primary Brand: Vibrant Emerald ===
-  primary: '#10B981',        // Vibrant emerald green
-  primaryDark: '#059669',    // Deep emerald
-  primaryLight: 'rgba(16, 185, 129, 0.16)', // Subtle emerald tint
-  primaryMid: '#34D399',     // Mid emerald
+  primary: '#D97706',
+  primaryDark: '#B45309',
+  primaryLight: 'rgba(217, 119, 6, 0.16)',
+  primaryMid: '#F59E0B',
 
-  // === Secondary ===
-  secondary: '#34D399',
-  secondaryLight: 'rgba(52, 211, 153, 0.16)',
+  secondary: '#EA580C',
+  secondaryLight: 'rgba(234, 88, 12, 0.16)',
 
-  // === Accent ===
-  accent: '#F59E0B',
-  accentLight: 'rgba(245, 158, 11, 0.16)',
+  accent: '#FBBF24',
+  accentLight: 'rgba(251, 191, 36, 0.16)',
 
-  // === Backgrounds & Surfaces (Obsidian Black) ===
-  background: '#09090B',     // Deep obsidian black
-  card: '#121215',           // Dark neutral card
-  cardSecondary: '#18181C',  // Secondary charcoal
-  surface: '#121215',
-  surfaceElevated: '#1E1E24',
+  background: '#16110D',
+  card: '#221B15',
+  cardSecondary: '#2C221A',
+  surface: '#221B15',
+  surfaceElevated: '#362B21',
 
-  // === Text (Clean Slate & Neutral) ===
-  text: '#F4F4F5',           // Crisp near-white
-  textSecondary: '#A1A1AA',  // Clean neutral light gray
-  textMuted: '#71717A',      // Muted neutral gray
+  text: '#FDF8F0',
+  textSecondary: '#D4C4B5',
+  textMuted: '#968172',
 
-  // === Borders ===
-  border: '#27272A',         // Clean subtle border
-  borderLight: '#1E1E24',
+  border: '#3D2F24',
+  borderLight: '#2C221A',
 
-  // === Semantic Colors ===
   error: '#EF4444',
   errorLight: 'rgba(239, 68, 68, 0.16)',
-  success: '#10B981',
-  successLight: 'rgba(16, 185, 129, 0.16)',
+  success: '#D97706',
+  successLight: 'rgba(217, 119, 6, 0.16)',
   warning: '#F59E0B',
   warningLight: 'rgba(245, 158, 11, 0.16)',
-  info: '#3B82F6',
-  infoLight: 'rgba(59, 130, 246, 0.16)',
+  info: '#93C5FD',
+  infoLight: 'rgba(147, 197, 253, 0.16)',
 
-  // === Eco / Sustainability ===
-  ecoGreen: '#10B981',
-  ecoGreenLight: 'rgba(16, 185, 129, 0.16)',
-  ecoGreenMid: '#059669',
+  ecoGreen: '#D97706',
+  ecoGreenLight: 'rgba(217, 119, 6, 0.16)',
+  ecoGreenMid: '#F59E0B',
+  gold: '#FBBF24',
+  goldLight: 'rgba(251, 191, 36, 0.16)',
 
-  // === UI Chrome ===
-  glassBg: 'rgba(18, 18, 21, 0.92)',
-  glassBorder: 'rgba(39, 39, 42, 0.8)',
+  glassBg: 'rgba(34, 27, 21, 0.94)',
+  glassBorder: 'rgba(217, 119, 6, 0.35)',
   shadow: '#000000',
-  tabBar: '#09090B',
-  tabBarInactive: '#71717A',
+  tabBar: '#16110D',
+  tabBarInactive: '#968172',
   statusBar: 'light',
 };
 
-export const LightTheme = {
-  name: 'light',
+// ==========================================
+// 3. EMERALD NATURE THEME (Light & Dark)
+// ==========================================
+export const EmeraldNatureLightTheme = {
+  name: 'emerald_nature',
   displayName: 'Emerald Nature',
   subtitle: 'Sustainable Tourism · Forest Mint & Warm Slate',
-  mode: 'light',
+  mode: 'emerald_nature',
   isDark: false,
 
-  // === Primary Brand: Forest Green ===
-  primary: '#2E7D32',        // Medium forest green
-  primaryDark: '#1B5E20',    // Deep forest green
-  primaryLight: '#E8F5E9',   // Soft mint
-  primaryMid: '#388E3C',     // Mid green
+  primary: '#2E7D32',
+  primaryDark: '#1B5E20',
+  primaryLight: '#E8F5E9',
+  primaryMid: '#388E3C',
 
-  // === Secondary ===
   secondary: '#43A047',
   secondaryLight: '#C8E6C9',
 
-  // === Accent ===
   accent: '#F59E0B',
   accentLight: '#FEF3C7',
 
-  // === Backgrounds & Surfaces ===
-  background: '#F7F9F4',     // Warm off-white
+  background: '#F7F9F4',
   card: '#FFFFFF',
-  cardSecondary: '#F1F7EF',  // Very light green-tinted surface
+  cardSecondary: '#F1F7EF',
   surface: '#FFFFFF',
   surfaceElevated: '#FAFCF8',
 
-  // === Text ===
-  text: '#1A2E1A',           // Dark charcoal-green
-  textSecondary: '#4A6741',  // Muted gray-green
-  textMuted: '#8FAF8A',      // Very muted green-gray
+  text: '#1A2E1A',
+  textSecondary: '#4A6741',
+  textMuted: '#8FAF8A',
 
-  // === Borders ===
-  border: '#D5E8D0',         // Soft green border
+  border: '#D5E8D0',
   borderLight: '#EAF4E7',
 
-  // === Semantic Colors ===
   error: '#D32F2F',
   errorLight: '#FFEBEE',
   success: '#2E7D32',
@@ -234,12 +282,12 @@ export const LightTheme = {
   info: '#1565C0',
   infoLight: '#E3F2FD',
 
-  // === Eco / Sustainability ===
   ecoGreen: '#2E7D32',
   ecoGreenLight: '#E8F5E9',
   ecoGreenMid: '#A5D6A7',
+  gold: '#F59E0B',
+  goldLight: '#FEF3C7',
 
-  // === UI Chrome ===
   glassBg: 'rgba(255, 255, 255, 0.88)',
   glassBorder: 'rgba(213, 232, 208, 0.8)',
   shadow: '#1A2E1A',
@@ -248,17 +296,93 @@ export const LightTheme = {
   statusBar: 'dark',
 };
 
+export const EmeraldNatureDarkTheme = {
+  name: 'emerald_nature',
+  displayName: 'Emerald Nature (Dark)',
+  subtitle: 'Obsidian OLED · Deep Black & Vibrant Emerald',
+  mode: 'emerald_nature',
+  isDark: true,
+
+  primary: '#10B981',
+  primaryDark: '#059669',
+  primaryLight: 'rgba(16, 185, 129, 0.16)',
+  primaryMid: '#34D399',
+
+  secondary: '#34D399',
+  secondaryLight: 'rgba(52, 211, 153, 0.16)',
+
+  accent: '#F59E0B',
+  accentLight: 'rgba(245, 158, 11, 0.16)',
+
+  background: '#09090B',
+  card: '#121215',
+  cardSecondary: '#18181C',
+  surface: '#121215',
+  surfaceElevated: '#1E1E24',
+
+  text: '#F4F4F5',
+  textSecondary: '#A1A1AA',
+  textMuted: '#71717A',
+
+  border: '#27272A',
+  borderLight: '#1E1E24',
+
+  error: '#EF4444',
+  errorLight: 'rgba(239, 68, 68, 0.16)',
+  success: '#10B981',
+  successLight: 'rgba(16, 185, 129, 0.16)',
+  warning: '#F59E0B',
+  warningLight: 'rgba(245, 158, 11, 0.16)',
+  info: '#3B82F6',
+  infoLight: 'rgba(59, 130, 246, 0.16)',
+
+  ecoGreen: '#10B981',
+  ecoGreenLight: 'rgba(16, 185, 129, 0.16)',
+  ecoGreenMid: '#059669',
+  gold: '#F59E0B',
+  goldLight: 'rgba(245, 158, 11, 0.16)',
+
+  glassBg: 'rgba(18, 18, 21, 0.92)',
+  glassBorder: 'rgba(39, 39, 42, 0.8)',
+  shadow: '#000000',
+  tabBar: '#09090B',
+  tabBarInactive: '#71717A',
+  statusBar: 'light',
+};
+
+// Aliases for compatibility
+export const GlassHorizonTheme = GlassmorphismLightTheme;
+export const VintageVoyagerTheme = VintageVoyagerLightTheme;
+export const LightTheme = EmeraldNatureLightTheme;
+export const DarkTheme = EmeraldNatureDarkTheme;
+
+// Resolver function for Theme + Dark Mode Matrix
+export const resolveTheme = (themeKey, isDark) => {
+  switch (themeKey) {
+    case 'vintage_voyager':
+      return isDark ? VintageVoyagerDarkTheme : VintageVoyagerLightTheme;
+    case 'emerald_nature':
+    case 'light':
+    case 'dark':
+      return isDark ? EmeraldNatureDarkTheme : EmeraldNatureLightTheme;
+    case 'glass_horizon':
+    default:
+      return isDark ? GlassmorphismDarkTheme : GlassmorphismLightTheme;
+  }
+};
+
+// Curated 3 Design Themes for Theme Selection Modal
 export const THEMES_LIST = [
   {
     id: 'glass_horizon',
     name: 'Glassmorphism Luxe',
     tagline: 'Frosted Glass · Deep Navy, Soft Blue & Warm Gold',
     badge: 'Premium Glass',
-    theme: GlassHorizonTheme,
+    theme: GlassmorphismLightTheme,
     primaryColor: '#1E3A5F',
     bgColor: '#E8F0F7',
     accentColor: '#C5A059',
-    cardColor: 'rgba(255, 255, 255, 0.76)',
+    cardColor: 'rgba(255, 255, 255, 0.78)',
     icon: 'diamond-outline',
     description: 'Classic luxury frosted glass cards with thin white specular borders, deep navy typography, soft blue surfaces, and subtle warm gold accents.',
   },
@@ -267,7 +391,7 @@ export const THEMES_LIST = [
     name: 'Vintage Voyager',
     tagline: 'Heritage Cartography · Antique Maps & Modern Luxury',
     badge: 'Heritage Map',
-    theme: VintageVoyagerTheme,
+    theme: VintageVoyagerLightTheme,
     primaryColor: '#B45309',
     bgColor: '#FAF6ED',
     accentColor: '#CA8A04',
@@ -276,24 +400,11 @@ export const THEMES_LIST = [
     description: 'Warm aged parchment, old-world navigation brass, antique leather tones, and refined luxury travel typography.',
   },
   {
-    id: 'dark',
-    name: 'Obsidian Dark',
-    tagline: 'Pure Deep Black · OLED Charcoal & Emerald',
-    badge: 'Obsidian OLED',
-    theme: DarkTheme,
-    primaryColor: '#10B981',
-    bgColor: '#09090B',
-    accentColor: '#F59E0B',
-    cardColor: '#121215',
-    icon: 'moon-outline',
-    description: 'Deep neutral black surfaces with luminous emerald accents tailored for low-light night exploration.',
-  },
-  {
-    id: 'light',
+    id: 'emerald_nature',
     name: 'Emerald Nature',
     tagline: 'Sustainable Tourism · Forest Mint & Warm Slate',
     badge: 'Classic Nature',
-    theme: LightTheme,
+    theme: EmeraldNatureLightTheme,
     primaryColor: '#2E7D32',
     bgColor: '#F7F9F4',
     accentColor: '#F59E0B',

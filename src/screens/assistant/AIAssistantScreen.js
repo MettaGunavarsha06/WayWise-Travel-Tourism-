@@ -195,8 +195,22 @@ export const AIAssistantScreen = ({ navigation }) => {
                   style={[
                     styles.bubble,
                     isUser
-                      ? [styles.userBubble, { backgroundColor: theme.primary }]
-                      : [styles.aiBubble, { backgroundColor: theme.card, borderColor: theme.border }],
+                      ? [
+                          styles.userBubble,
+                          {
+                            backgroundColor: theme.primary,
+                            borderColor: theme.mode === 'glass_horizon' ? 'rgba(255, 255, 255, 0.40)' : 'transparent',
+                            borderWidth: theme.mode === 'glass_horizon' ? 1 : 0,
+                          },
+                        ]
+                      : [
+                          styles.aiBubble,
+                          {
+                            backgroundColor: theme.card,
+                            borderColor: theme.border,
+                            borderWidth: 1,
+                          },
+                        ],
                   ]}
                 >
                   <Text
