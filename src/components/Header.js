@@ -36,9 +36,9 @@ export const Header = ({ onSOSPress, onNotificationsPress, onWeatherPress }) => 
         setLoadingWeather(true);
         let coords = { lat: 17.6868, lon: 83.2185 }; // Default Vizag
         try {
-          const { status } = await Location.requestForegroundPermissionsAsync();
-          if (status === 'granted') {
-            const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Low });
+          const perm = await Location.getForegroundPermissionsAsync().catch(() => null);
+          if (perm && perm.status === 'granted') {
+            const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Low }).catch(() => null);
             if (loc && loc.coords) {
               coords = { lat: loc.coords.latitude, lon: loc.coords.longitude };
             }
