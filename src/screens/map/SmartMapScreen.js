@@ -72,8 +72,9 @@ export const SmartMapScreen = ({ navigation, route }) => {
   const [isLocating, setIsLocating] = useState(false);
   const [showCityPicker, setShowCityPicker] = useState(false);
 
-  // Filter & Search States
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  // Filter & Search States: Defaults to 'famous' so opening map immediately shows all famous places!
+  const initialCategory = route?.params?.category || route?.params?.initialCategory || 'famous';
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRadius, setSelectedRadius] = useState(30);
   const [mapLayer, setMapLayer] = useState('standard');
@@ -98,6 +99,7 @@ export const SmartMapScreen = ({ navigation, route }) => {
     checkInitialPermissions();
   }, []);
 
+  // When category changes, auto-select the nearest place in that category
   useEffect(() => {
     if (places && places.length > 0) {
       if (!selectedPlace || !places.some((p) => p.id === selectedPlace.id)) {
@@ -106,7 +108,7 @@ export const SmartMapScreen = ({ navigation, route }) => {
     } else {
       setSelectedPlace(null);
     }
-  }, [places]);
+  }, [places, selectedCategory]);
 
   const checkInitialPermissions = async () => {
     const { granted } = await checkLocationPermission();
@@ -252,6 +254,68 @@ export const SmartMapScreen = ({ navigation, route }) => {
   };
 
   const isCurrentSaved = selectedPlace ? isPlaceSaved(selectedPlace.id) : false;
+
+  // Dynamic category title & banner info
+  const categoryHeaderInfo = useMemo(() => {
+    switch (selectedCategory) {
+      case 'famous':
+        return {
+          title: `🏛️ Famous Places & Sights (${places.length} around you)`,
+          subtitle: 'Historical monuments, hilltop viewpoints, beaches & museums',
+          color: '#0D9488',
+          bg: '#CCFBF1',
+        };
+      case 'hospital':
+        return {
+          title: `🏥 Hospitals & Emergency Care (${places.length} around you)`,
+          subtitle: '24/7 Multi-specialty trauma, government hospitals & ambulances',
+          color: '#DC2626',
+          bg: '#FEE2E2',
+        };
+      case 'restaurant':
+        return {
+          title: `🍽️ Restaurants & Cafes (${places.length} around you)`,
+          subtitle: 'Authentic coastal dining, thalis, biryanis & organic cafes',
+          color: '#EA580C',
+          bg: '#FFEDD5',
+        };
+      case 'hotel':
+        return {
+          title: `🏨 Hotels & Eco-Stays (${places.length} around you)`,
+          subtitle: 'Verified sustainable eco-resorts, beach villas & homestays',
+          color: '#2563EB',
+          bg: '#EFF6FF',
+        };
+      case 'artisan':
+        return {
+          title: `🎨 Artisans & Handicrafts (${places.length} around you)`,
+          subtitle: 'Traditional wooden lacquer, handloom silk & tribal craft studios',
+          color: '#9333EA',
+          bg: '#F3E8FF',
+        };
+      case 'transit':
+        return {
+          title: `🚆 Transit & Clean EV Hubs (${places.length} around you)`,
+          subtitle: 'Electric shuttles, railway terminals & supercharging hubs',
+          color: '#16A34A',
+          bg: '#DCFCE7',
+        };
+      case 'emergency':
+        return {
+          title: `👮 Police & Safety Patrols (${places.length} around you)`,
+          subtitle: 'Tourist police assistance & coastal safety helpdesks',
+          color: '#1E293B',
+          bg: '#F1F5F9',
+        };
+      default:
+        return {
+          title: `📍 All Nearby Places (${places.length} total)`,
+          subtitle: `Showing all places within ${selectedRadius} km`,
+          color: theme.primary,
+          bg: theme.primaryLight,
+        };
+    }
+  }, [selectedCategory, places.length, selectedRadius, theme]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
@@ -426,7 +490,7 @@ export const SmartMapScreen = ({ navigation, route }) => {
         </View>
       )}
 
-      {/* Category Filter Chips with Unique Icons & Counts (Hidden during navigation) */}
+      {/* Category Filter Chips with Unique Icons & Counts (Famous Places, Hospitals, Restaurants, Hotels, etc.) */}
       {!navigationActive && (
         <View style={[styles.categoriesBar, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoriesScroll}>
@@ -479,13 +543,23 @@ export const SmartMapScreen = ({ navigation, route }) => {
               );
             })}
           </ScrollView>
+
+          {/* Active Category Status Banner */}
+          <View style={[styles.activeCategoryInfoRow, { backgroundColor: categoryHeaderInfo.bg }]}>
+            <Text style={[styles.activeCategoryTitle, { color: categoryHeaderInfo.color }]}>
+              {categoryHeaderInfo.title}
+            </Text>
+            <Text style={[styles.activeCategorySub, { color: categoryHeaderInfo.color }]} numberOfLines={1}>
+              {categoryHeaderInfo.subtitle}
+            </Text>
+          </View>
         </View>
       )}
 
       {/* Main Map View or List View */}
       {viewMode === 'map' ? (
         <View style={styles.mapArea}>
-          {/* Real Leaflet Map Engine with Google Maps Navigation Route */}
+          {/* Real Leaflet Map Engine with Category Filtering & Route */}
           <RealLeafletMap
             userLocation={userCoords}
             places={places}
@@ -721,7 +795,7 @@ export const SmartMapScreen = ({ navigation, route }) => {
                   )}
                   {selectedPlace.category === 'hospital' && (
                     <Text style={[styles.snippetText, { color: '#DC2626' }]} numberOfLines={1}>
-                      🚨 <Text style={{ fontFamily: 'Manrope_700Bold' }}>Emergency Hotline:</Text> {selectedPlace.emergencyHelpline || '108 / 112'}
+                      🚨 <Text style={{ fontFamily: 'Manrope_700Bold' }}>24/7 Emergency:</Text> {selectedPlace.specialty} · Helpline: {selectedPlace.emergencyHelpline || '108 / 112'}
                     </Text>
                   )}
                   {selectedPlace.category === 'famous' && (
@@ -1390,12 +1464,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope_600SemiBold',
   },
   categoriesBar: {
-    paddingVertical: 6,
+    paddingTop: 6,
     borderBottomWidth: 1,
   },
   categoriesScroll: {
     paddingHorizontal: 12,
     gap: 8,
+    paddingBottom: 6,
   },
   catChip: {
     flexDirection: 'row',
@@ -1418,6 +1493,22 @@ const styles = StyleSheet.create({
   countBadgeText: {
     fontSize: 10.5,
     fontFamily: 'Manrope_700Bold',
+  },
+  activeCategoryInfoRow: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  activeCategoryTitle: {
+    fontSize: 12,
+    fontFamily: 'Manrope_700Bold',
+  },
+  activeCategorySub: {
+    fontSize: 11,
+    fontFamily: 'Manrope_500Medium',
+    maxWidth: width * 0.45,
   },
   mapArea: {
     flex: 1,

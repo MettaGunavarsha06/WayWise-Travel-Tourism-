@@ -4,7 +4,7 @@ import { WebView } from 'react-native-webview';
 
 /**
  * RealLeafletMap - State-of-the-Art Interactive Real Map & Google Maps Navigation Engine
- * Renders real OpenStreetMap, CartoDB, and Satellite tiles with Google Maps-style navigation routing
+ * Renders real OpenStreetMap, CartoDB, and Satellite tiles with dynamic category filtering and routing
  */
 export const RealLeafletMap = ({
   userLocation,
@@ -18,7 +18,7 @@ export const RealLeafletMap = ({
 }) => {
   const webViewRef = useRef(null);
 
-  // Generate HTML for the Leaflet Map with Google Maps Navigation Style
+  // Generate HTML for the Leaflet Map with Google Maps Navigation Style & Category Bounds
   const generateMapHtml = () => {
     const placesJson = JSON.stringify(places);
     const userLocationJson = JSON.stringify(userLocation || { latitude: 17.7120, longitude: 83.3240 });
@@ -101,60 +101,59 @@ export const RealLeafletMap = ({
     .place-pin-tip {
       width: 0;
       height: 0;
-      border-left: 7px solid transparent;
-      border-right: 7px solid transparent;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
       border-top: 8px solid #2563EB;
-      margin-top: -1px;
+      margin-top: -2px;
     }
     .place-distance-tag {
-      background: rgba(15, 23, 42, 0.9);
+      background: rgba(15, 23, 42, 0.85);
       color: #FFFFFF;
-      font-size: 9.5px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 10px;
       font-weight: 700;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      padding: 1.5px 6px;
-      border-radius: 8px;
+      padding: 1px 5px;
+      border-radius: 4px;
       margin-top: 2px;
       white-space: nowrap;
-      border: 1px solid rgba(255,255,255,0.25);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
 
-    /* Destination Finish Flag Marker */
-    .dest-finish-flag {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 38px;
-      height: 38px;
-      border-radius: 19px;
-      background: #DC2626;
-      border: 3px solid #FFFFFF;
-      box-shadow: 0 0 0 3px #DC2626, 0 6px 16px rgba(0,0,0,0.4);
-      font-size: 18px;
-      transform: translate(-50%, -50%);
-    }
-
-    /* Navigation Turn Arrow on Map */
+    /* Google Maps Route Waypoint Dots & Finish Pin */
     .nav-waypoint-dot {
       width: 10px;
       height: 10px;
       border-radius: 50%;
       background: #FFFFFF;
-      border: 2px solid #2563EB;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+      border: 2.5px solid #1E3A8A;
+      box-shadow: 0 0 4px rgba(0,0,0,0.4);
+    }
+    .dest-finish-flag {
+      font-size: 26px;
+      filter: drop-shadow(0 3px 6px rgba(0,0,0,0.4));
+      transform: translate(-10px, -24px);
     }
 
-    /* Custom Map Controls */
+    /* Custom Leaflet Controls */
     .leaflet-bar {
-      border: none !important;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.25) !important;
       border-radius: 12px !important;
       overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25) !important;
+      border: none !important;
     }
     .leaflet-bar a {
-      background: rgba(255, 255, 255, 0.95) !important;
-      color: #0F172A !important;
-      border-bottom: 1px solid #E2E8F0 !important;
+      background-color: #1E293B !important;
+      color: #F8FAFC !important;
+      border-bottom: 1px solid #334155 !important;
+      width: 34px !important;
+      height: 34px !important;
+      line-height: 34px !important;
+    }
+    .leaflet-bar a:hover {
+      background-color: #334155 !important;
+    }
+    .leaflet-control-attribution {
+      display: none !important;
     }
   </style>
 </head>
@@ -165,38 +164,39 @@ export const RealLeafletMap = ({
     var currentPlaces = ${placesJson};
     var currentUserLocation = ${userLocationJson};
     var currentSelectedPlace = ${selectedPlaceJson};
-    var mapType = '${mapType}';
     var showRoute = ${showRoute ? 'true' : 'false'};
     var travelMode = '${travelMode}';
-    var isDarkMode = ${isDarkMode ? 'true' : 'false'};
+    var mapType = '${mapType}';
 
-    // Map Tile URL Definitions
+    // Tile Layer Definitions
     var tileLayers = {
-      standard: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-      satellite: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-      dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-      terrain: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png'
+      standard: {
+        url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+        options: { maxZoom: 19, subdomains: 'abcd' }
+      },
+      satellite: {
+        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        options: { maxZoom: 19 }
+      },
+      dark: {
+        url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+        options: { maxZoom: 19, subdomains: 'abcd' }
+      },
+      terrain: {
+        url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+        options: { maxZoom: 17 }
+      }
     };
 
-    var chosenTile = tileLayers[mapType] || (isDarkMode ? tileLayers.dark : tileLayers.standard);
+    var selectedTile = tileLayers[mapType] || tileLayers.standard;
 
     // Initialize Leaflet Map
-    var initialLat = currentSelectedPlace ? currentSelectedPlace.coords.latitude : currentUserLocation.latitude;
-    var initialLng = currentSelectedPlace ? currentSelectedPlace.coords.longitude : currentUserLocation.longitude;
-
     var map = L.map('map', {
       zoomControl: false,
       attributionControl: false
-    }).setView([initialLat, initialLng], 14);
+    });
 
-    // Add Tiles
-    var activeTileLayer = L.tileLayer(chosenTile, {
-      maxZoom: 19,
-      subdomains: 'abcd',
-      crossOrigin: true
-    }).addTo(map);
-
-    // Add Zoom Control at top right
+    L.tileLayer(selectedTile.url, selectedTile.options).addTo(map);
     L.control.zoom({ position: 'topright' }).addTo(map);
 
     // Layers
@@ -230,7 +230,7 @@ export const RealLeafletMap = ({
 
       // Accuracy circle
       L.circle([currentUserLocation.latitude, currentUserLocation.longitude], {
-        radius: 120,
+        radius: 140,
         color: '#2563EB',
         fillColor: '#3B82F6',
         fillOpacity: 0.14,
@@ -239,7 +239,7 @@ export const RealLeafletMap = ({
       }).addTo(map);
     }
 
-    // Render Place Markers
+    // Render Place Markers for Current Filtered Places
     function renderPlaceMarkers() {
       markersGroup.clearLayers();
 
@@ -281,7 +281,7 @@ export const RealLeafletMap = ({
       var dLat = end[0] - start[0];
       var dLng = end[1] - start[1];
 
-      // Segment 1: Head along primary arterial road (60% latitude first)
+      // Segment 1: Head along primary arterial road (45% latitude first)
       var wp1 = [start[0] + dLat * 0.45, start[1] + dLng * 0.1];
       // Segment 2: Turn onto main connecting highway / avenue
       var wp2 = [start[0] + dLat * 0.7, start[1] + dLng * 0.55];
@@ -347,18 +347,35 @@ export const RealLeafletMap = ({
       });
       var finishMarker = L.marker(end, { icon: finishIcon, zIndexOffset: 950 });
       routeGroup.addLayer(finishMarker);
+    }
 
-      // Auto-fit route bounds with smooth Google Maps padding
-      if (showRoute) {
+    // Auto-fit bounds logic
+    function adjustMapBounds() {
+      if (showRoute && currentSelectedPlace && currentUserLocation) {
+        var start = [currentUserLocation.latitude, currentUserLocation.longitude];
+        var end = [currentSelectedPlace.coords.latitude, currentSelectedPlace.coords.longitude];
+        var routePoints = generateRealisticRoadPath(start, end);
         var bounds = L.latLngBounds(routePoints);
         map.fitBounds(bounds, { padding: [80, 80], maxZoom: 16 });
+      } else if (currentPlaces && currentPlaces.length > 0) {
+        var points = currentPlaces.map(function(p) { return [p.coords.latitude, p.coords.longitude]; });
+        if (currentUserLocation) {
+          points.push([currentUserLocation.latitude, currentUserLocation.longitude]);
+        }
+        var bounds = L.latLngBounds(points);
+        map.fitBounds(bounds, { padding: [60, 60], maxZoom: 15 });
+      } else if (currentUserLocation) {
+        map.setView([currentUserLocation.latitude, currentUserLocation.longitude], 14);
       }
     }
 
     // Initialize all layers
     renderUserLocation();
     renderPlaceMarkers();
-    drawGoogleMapsRoute();
+    if (showRoute) {
+      drawGoogleMapsRoute();
+    }
+    adjustMapBounds();
 
     // Listen for messages from React Native
     window.addEventListener('message', function(event) {
@@ -367,12 +384,7 @@ export const RealLeafletMap = ({
         if (data.type === 'PAN_TO') {
           map.flyTo([data.lat, data.lng], data.zoom || 15, { duration: 1.2 });
         } else if (data.type === 'FIT_ROUTE') {
-          if (currentSelectedPlace && currentUserLocation) {
-            var start = [currentUserLocation.latitude, currentUserLocation.longitude];
-            var end = [currentSelectedPlace.coords.latitude, currentSelectedPlace.coords.longitude];
-            var bounds = L.latLngBounds([start, end]);
-            map.fitBounds(bounds, { padding: [90, 90], maxZoom: 16 });
-          }
+          adjustMapBounds();
         }
       } catch (e) {}
     });
