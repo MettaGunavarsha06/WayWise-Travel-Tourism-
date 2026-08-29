@@ -1,96 +1,164 @@
-// WayWise Design System — Color Tokens
-// Tourism + Sustainability Identity
-// Primary: Deep Forest Green | Accent: Warm Amber (used sparingly)
+// WayWise Design System — Multi-Theme Visual Tokens
+// Includes: Glass Horizon (iOS Glassmorphism), Vintage Voyager (Heritage Maps + Modern Luxury), Obsidian Dark, and Emerald Nature
 
-export const LightTheme = {
-  mode: 'light',
+export const GlassHorizonTheme = {
+  name: 'glass_horizon',
+  displayName: 'Glass Horizon',
+  subtitle: 'Apple iOS Glassmorphism · Translucent Frost & Azure',
+  mode: 'glass_horizon',
+  isDark: false,
 
-  // === Primary Brand: Forest Green ===
-  primary: '#2E7D32',        // Medium forest green — buttons, active states
-  primaryDark: '#1B5E20',    // Deep forest green — emphasis
-  primaryLight: '#E8F5E9',   // Soft mint — backgrounds, chips
-  primaryMid: '#388E3C',     // Mid green — hover states
+  // === Primary Brand: Luminous Azure & Oceanic Cyan ===
+  primary: '#0284C7',        // Luminous azure blue
+  primaryDark: '#0369A1',    // Deep ocean blue
+  primaryLight: '#E0F2FE',   // Translucent crystal cyan tint
+  primaryMid: '#0EA5E9',     // Sky blue
 
-  // === Secondary Greens ===
-  secondary: '#43A047',      // Fresh green — secondary actions
-  secondaryLight: '#C8E6C9', // Light green — subtle backgrounds
+  // === Secondary ===
+  secondary: '#38BDF8',      // Bright azure cyan
+  secondaryLight: '#F0F9FF', // Ultra-soft sky ice
 
-  // === Accent (Warm Amber — use sparingly) ===
-  accent: '#F59E0B',
-  accentLight: '#FEF3C7',
+  // === Accent ===
+  accent: '#06B6D4',        // Vibrant cyan
+  accentLight: '#CFFAFE',
 
-  // === Backgrounds & Surfaces ===
-  background: '#F7F9F4',     // Warm off-white with green tint
-  card: '#FFFFFF',
-  cardSecondary: '#F1F7EF',  // Very light green-tinted surface
+  // === Backgrounds & Surfaces (Glassmorphic Translucent) ===
+  background: '#F0F9FF',     // Crisp frosted sky tint
+  card: '#FFFFFF',           // Translucent glossy card
+  cardSecondary: '#E0F2FE',  // Frosted cyan secondary surface
   surface: '#FFFFFF',
-  surfaceElevated: '#FAFCF8',
+  surfaceElevated: '#F8FCFF',
 
-  // === Text ===
-  text: '#1A2E1A',           // Dark charcoal-green
-  textSecondary: '#4A6741',  // Muted gray-green
-  textMuted: '#8FAF8A',      // Very muted green-gray
+  // === Text (High Contrast Oceanic Navy) ===
+  text: '#0C4A6E',           // Deep oceanic navy
+  textSecondary: '#0369A1',  // Medium cyan-navy
+  textMuted: '#64748B',      // Slate muted
 
-  // === Borders ===
-  border: '#D5E8D0',         // Soft green border
-  borderLight: '#EAF4E7',    // Very subtle border
+  // === Borders (Glossy Crystal Borders) ===
+  border: '#BAE6FD',         // Crisp sky ice border
+  borderLight: '#E0F2FE',
 
   // === Semantic Colors ===
-  error: '#D32F2F',
-  errorLight: '#FFEBEE',
-  success: '#2E7D32',
-  successLight: '#E8F5E9',
-  warning: '#E65100',
-  warningLight: '#FFF3E0',
-  info: '#1565C0',
-  infoLight: '#E3F2FD',
+  error: '#EF4444',
+  errorLight: '#FEE2E2',
+  success: '#0EA5E9',
+  successLight: '#E0F2FE',
+  warning: '#F59E0B',
+  warningLight: '#FEF3C7',
+  info: '#0284C7',
+  infoLight: '#E0F2FE',
 
   // === Eco / Sustainability ===
-  ecoGreen: '#2E7D32',
-  ecoGreenLight: '#E8F5E9',
-  ecoGreenMid: '#A5D6A7',
+  ecoGreen: '#0284C7',
+  ecoGreenLight: '#E0F2FE',
+  ecoGreenMid: '#38BDF8',
 
   // === UI Chrome ===
-  glassBg: 'rgba(255, 255, 255, 0.88)',
-  glassBorder: 'rgba(213, 232, 208, 0.8)',
-  shadow: '#1A2E1A',
+  glassBg: 'rgba(255, 255, 255, 0.92)',
+  glassBorder: 'rgba(56, 189, 248, 0.35)',
+  shadow: '#0284C7',
   tabBar: '#FFFFFF',
-  tabBarInactive: '#7A9E76',  // Muted green-gray — not disabled-looking
+  tabBarInactive: '#64748B',
+  statusBar: 'dark',
+};
+
+export const VintageVoyagerTheme = {
+  name: 'vintage_voyager',
+  displayName: 'Vintage Voyager',
+  subtitle: 'Heritage Cartography · Antique Maps & Modern Luxury',
+  mode: 'vintage_voyager',
+  isDark: false,
+
+  // === Primary Brand: Burnished Brass & Antique Terracotta ===
+  primary: '#B45309',        // Burnished antique brass
+  primaryDark: '#78350F',    // Deep saddle leather amber
+  primaryLight: '#FEF3C7',   // Warm golden parchment tint
+  primaryMid: '#D97706',     // Warm amber
+
+  // === Secondary ===
+  secondary: '#C2410C',      // Aged terracotta
+  secondaryLight: '#FFEDD5',
+
+  // === Accent ===
+  accent: '#CA8A04',        // Antique gold
+  accentLight: '#FEF9C3',
+
+  // === Backgrounds & Surfaces (Aged Map Parchment) ===
+  background: '#FAF6ED',     // Warm aged antique parchment
+  card: '#FFFFFF',           // Crisp parchment surface
+  cardSecondary: '#F3EBDD',  // Sepia-tinted secondary card
+  surface: '#FFFFFF',
+  surfaceElevated: '#FFFDF9',
+
+  // === Text (Sepia & Espresso Leather) ===
+  text: '#2C1E14',           // Deep sepia espresso
+  textSecondary: '#78563B',  // Warm antique leather brown
+  textMuted: '#A8907A',      // Muted cartography tan
+
+  // === Borders (Antique Map Line Contours) ===
+  border: '#E5D9C3',         // Aged parchment contour border
+  borderLight: '#F1E9DB',
+
+  // === Semantic Colors ===
+  error: '#DC2626',
+  errorLight: '#FEE2E2',
+  success: '#854D0E',
+  successLight: '#FEF3C7',
+  warning: '#D97706',
+  warningLight: '#FEF3C7',
+  info: '#1E293B',
+  infoLight: '#F1F5F9',
+
+  // === Eco / Sustainability ===
+  ecoGreen: '#854D0E',
+  ecoGreenLight: '#FEF3C7',
+  ecoGreenMid: '#B45309',
+
+  // === UI Chrome ===
+  glassBg: 'rgba(250, 246, 237, 0.94)',
+  glassBorder: 'rgba(202, 138, 4, 0.35)',
+  shadow: '#2C1E14',
+  tabBar: '#FAF6ED',
+  tabBarInactive: '#8C715A',
   statusBar: 'dark',
 };
 
 export const DarkTheme = {
+  name: 'dark',
+  displayName: 'Obsidian Dark',
+  subtitle: 'Pure Deep Black · OLED Charcoal & Emerald',
   mode: 'dark',
+  isDark: true,
 
-  // === Primary Brand: Vibrant Emerald / Forest (Clean on black background) ===
-  primary: '#10B981',        // Vibrant emerald green — buttons, active states
-  primaryDark: '#059669',    // Deep emerald green — emphasis
-  primaryLight: 'rgba(16, 185, 129, 0.16)', // Subtle emerald tint for chips/badges
+  // === Primary Brand: Vibrant Emerald ===
+  primary: '#10B981',        // Vibrant emerald green
+  primaryDark: '#059669',    // Deep emerald
+  primaryLight: 'rgba(16, 185, 129, 0.16)', // Subtle emerald tint
   primaryMid: '#34D399',     // Mid emerald
 
   // === Secondary ===
-  secondary: '#34D399',      // Fresh light emerald
+  secondary: '#34D399',
   secondaryLight: 'rgba(52, 211, 153, 0.16)',
 
   // === Accent ===
   accent: '#F59E0B',
   accentLight: 'rgba(245, 158, 11, 0.16)',
 
-  // === Backgrounds & Surfaces (Pure Black & Neutral Charcoal) ===
+  // === Backgrounds & Surfaces (Obsidian Black) ===
   background: '#09090B',     // Deep obsidian black
-  card: '#121215',           // Dark neutral card surface
-  cardSecondary: '#18181C',  // Secondary dark surface
+  card: '#121215',           // Dark neutral card
+  cardSecondary: '#18181C',  // Secondary charcoal
   surface: '#121215',
   surfaceElevated: '#1E1E24',
 
-  // === Text (Clean Neutral Grays & Whites) ===
+  // === Text (Clean Slate & Neutral) ===
   text: '#F4F4F5',           // Crisp near-white
   textSecondary: '#A1A1AA',  // Clean neutral light gray
   textMuted: '#71717A',      // Muted neutral gray
 
   // === Borders ===
   border: '#27272A',         // Clean subtle border
-  borderLight: '#1E1E24',    // Very subtle border
+  borderLight: '#1E1E24',
 
   // === Semantic Colors ===
   error: '#EF4444',
@@ -115,3 +183,119 @@ export const DarkTheme = {
   tabBarInactive: '#71717A',
   statusBar: 'light',
 };
+
+export const LightTheme = {
+  name: 'light',
+  displayName: 'Emerald Nature',
+  subtitle: 'Sustainable Tourism · Forest Mint & Warm Slate',
+  mode: 'light',
+  isDark: false,
+
+  // === Primary Brand: Forest Green ===
+  primary: '#2E7D32',        // Medium forest green
+  primaryDark: '#1B5E20',    // Deep forest green
+  primaryLight: '#E8F5E9',   // Soft mint
+  primaryMid: '#388E3C',     // Mid green
+
+  // === Secondary ===
+  secondary: '#43A047',
+  secondaryLight: '#C8E6C9',
+
+  // === Accent ===
+  accent: '#F59E0B',
+  accentLight: '#FEF3C7',
+
+  // === Backgrounds & Surfaces ===
+  background: '#F7F9F4',     // Warm off-white
+  card: '#FFFFFF',
+  cardSecondary: '#F1F7EF',  // Very light green-tinted surface
+  surface: '#FFFFFF',
+  surfaceElevated: '#FAFCF8',
+
+  // === Text ===
+  text: '#1A2E1A',           // Dark charcoal-green
+  textSecondary: '#4A6741',  // Muted gray-green
+  textMuted: '#8FAF8A',      // Very muted green-gray
+
+  // === Borders ===
+  border: '#D5E8D0',         // Soft green border
+  borderLight: '#EAF4E7',
+
+  // === Semantic Colors ===
+  error: '#D32F2F',
+  errorLight: '#FFEBEE',
+  success: '#2E7D32',
+  successLight: '#E8F5E9',
+  warning: '#E65100',
+  warningLight: '#FFF3E0',
+  info: '#1565C0',
+  infoLight: '#E3F2FD',
+
+  // === Eco / Sustainability ===
+  ecoGreen: '#2E7D32',
+  ecoGreenLight: '#E8F5E9',
+  ecoGreenMid: '#A5D6A7',
+
+  // === UI Chrome ===
+  glassBg: 'rgba(255, 255, 255, 0.88)',
+  glassBorder: 'rgba(213, 232, 208, 0.8)',
+  shadow: '#1A2E1A',
+  tabBar: '#FFFFFF',
+  tabBarInactive: '#7A9E76',
+  statusBar: 'dark',
+};
+
+export const THEMES_LIST = [
+  {
+    id: 'glass_horizon',
+    name: 'Glass Horizon',
+    tagline: 'Apple iOS Glassmorphism · Translucent Frost & Azure',
+    badge: 'Modern Glass',
+    theme: GlassHorizonTheme,
+    primaryColor: '#0284C7',
+    bgColor: '#F0F9FF',
+    accentColor: '#38BDF8',
+    cardColor: '#FFFFFF',
+    icon: 'cube-outline',
+    description: 'Ultra-modern frosted glass surfaces, oceanic cyan gradients, and crisp iOS-inspired luxury aesthetics.',
+  },
+  {
+    id: 'vintage_voyager',
+    name: 'Vintage Voyager',
+    tagline: 'Heritage Cartography · Antique Maps & Modern Luxury',
+    badge: 'Heritage Map',
+    theme: VintageVoyagerTheme,
+    primaryColor: '#B45309',
+    bgColor: '#FAF6ED',
+    accentColor: '#CA8A04',
+    cardColor: '#FFFFFF',
+    icon: 'compass-outline',
+    description: 'Warm aged parchment, old-world navigation brass, antique leather tones, and refined luxury travel typography.',
+  },
+  {
+    id: 'dark',
+    name: 'Obsidian Dark',
+    tagline: 'Pure Deep Black · OLED Charcoal & Emerald',
+    badge: 'Obsidian OLED',
+    theme: DarkTheme,
+    primaryColor: '#10B981',
+    bgColor: '#09090B',
+    accentColor: '#F59E0B',
+    cardColor: '#121215',
+    icon: 'moon-outline',
+    description: 'Deep neutral black surfaces with luminous emerald accents tailored for low-light night exploration.',
+  },
+  {
+    id: 'light',
+    name: 'Emerald Nature',
+    tagline: 'Sustainable Tourism · Forest Mint & Warm Slate',
+    badge: 'Classic Nature',
+    theme: LightTheme,
+    primaryColor: '#2E7D32',
+    bgColor: '#F7F9F4',
+    accentColor: '#F59E0B',
+    cardColor: '#FFFFFF',
+    icon: 'leaf-outline',
+    description: 'Classic eco-tourism visual identity inspired by nature reserves and green travel.',
+  },
+];

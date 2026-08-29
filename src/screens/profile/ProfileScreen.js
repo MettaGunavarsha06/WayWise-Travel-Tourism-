@@ -17,6 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
+import { THEMES_LIST } from '../../constants/colors';
 import { Button } from '../../components/Button';
 import * as ImagePicker from 'expo-image-picker';
 import {
@@ -40,9 +41,12 @@ const AVATAR_PRESETS = [
 const DEFAULT_AVATAR = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
 
 export const ProfileScreen = ({ navigation }) => {
-  const { theme, isDark, toggleTheme } = useTheme();
+  const { theme, themeName, setThemeName, isDark, toggleTheme, themesList } = useTheme();
   const { currentLanguage, languages, setLanguage, t } = useLanguage();
   const { user, role, toggleRole, logout, updateProfile, updateSettings } = useAuth();
+
+  // --- THEME MODAL STATE ---
+  const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
 
   // --- EDIT PROFILE MODAL STATE ---
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -423,8 +427,35 @@ export const ProfileScreen = ({ navigation }) => {
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <Text style={[styles.cardTitle, { color: theme.text }]}>App Settings &amp; Permissions</Text>
 
-          {/* Dark Mode */}
-          <View style={styles.settingRow}>
+          {/* App Theme & Visual Experience Selector */}
+          <TouchableOpacity
+            onPress={() => setIsThemeModalOpen(true)}
+            style={[styles.menuRow, { paddingVertical: 13 }]}
+            activeOpacity={0.8}
+          >
+            <View style={styles.settingLeft}>
+              <View style={[styles.themeIconBox, { backgroundColor: theme.primaryLight }]}>
+                <Ionicons name="color-palette-outline" size={20} color={theme.primary} />
+              </View>
+              <View>
+                <Text style={[styles.settingLabel, { color: theme.text }]}>App Theme &amp; Experience</Text>
+                <Text style={[styles.settingSub, { color: theme.textSecondary }]}>
+                  {themesList?.find((t) => t.id === themeName)?.name || 'Glass Horizon'} · {themesList?.find((t) => t.id === themeName)?.badge || 'Luxury'}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.themeBadgeWrap}>
+              <View style={[styles.activeThemePill, { backgroundColor: theme.primaryLight, borderColor: theme.primary }]}>
+                <Text style={[styles.activeThemePillText, { color: theme.primaryDark }]}>
+                  {themesList?.find((t) => t.id === themeName)?.name || 'Glass Horizon'}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={theme.textMuted} />
+            </View>
+          </TouchableOpacity>
+
+          {/* Quick Dark Mode Toggle */}
+          <View style={[styles.settingRow, { borderTopWidth: 1, borderTopColor: theme.borderLight }]}>
             <View style={styles.settingLeft}>
               <Ionicons name="moon-outline" size={20} color={theme.text} />
               <Text style={[styles.settingLabel, { color: theme.text }]}>Dark Mode</Text>
@@ -967,6 +998,142 @@ export const ProfileScreen = ({ navigation }) => {
           </View>
         </View>
       </Modal>
+
+      {/* APP THEME & EXPERIENCE MODAL */}
+      <Modal
+        visible={isThemeModalOpen}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setIsThemeModalOpen(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.themeModalContent, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            {/* Modal Header */}
+            <View style={[styles.modalHeader, { borderBottomColor: theme.border }]}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <View style={[styles.themeModalIcon, { backgroundColor: theme.primaryLight }]}>
+                  <Ionicons name="color-palette" size={20} color={theme.primary} />
+                </View>
+                <View>
+                  <Text style={[styles.modalTitle, { color: theme.text }]}>App Theme &amp; Experience</Text>
+                  <Text style={[styles.modalSubtitle, { color: theme.textSecondary }]}>
+                    Luxury aesthetics, glassmorphism &amp; maps
+                  </Text>
+                </View>
+              </View>
+              <TouchableOpacity onPress={() => setIsThemeModalOpen(false)} style={styles.closeBtn}>
+                <Ionicons name="close" size={22} color={theme.text} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView contentContainerStyle={styles.themeModalScroll} showsVerticalScrollIndicator={false}>
+              <Text style={[styles.themeIntroText, { color: theme.textSecondary }]}>
+                Choose your bespoke travel aesthetic. The entire app (tabs, headers, cards, buttons, badges) updates instantly.
+              </Text>
+
+              <View style={styles.themeCardsList}>
+                {(themesList || []).map((tItem) => {
+                  const isSelected = themeName === tItem.id;
+                  return (
+                    <TouchableOpacity
+                      key={tItem.id}
+                      activeOpacity={0.85}
+                      onPress={() => {
+                        setThemeName(tItem.id);
+                      }}
+                      style={[
+                        styles.themeItemCard,
+                        {
+                          backgroundColor: isSelected ? theme.primaryLight : theme.cardSecondary,
+                          borderColor: isSelected ? theme.primary : theme.border,
+                          borderWidth: isSelected ? 2 : 1,
+                        },
+                      ]}
+                    >
+                      {/* Top Row: Icon, Title & Badge */}
+                      <View style={styles.themeCardTop}>
+                        <View style={styles.themeCardTitleRow}>
+                          <View
+                            style={[
+                              styles.themeIconCircle,
+                              { backgroundColor: isSelected ? theme.primary : theme.card },
+                            ]}
+                          >
+                            <Ionicons
+                              name={tItem.icon}
+                              size={20}
+                              color={isSelected ? '#FFFFFF' : theme.primary}
+                            />
+                          </View>
+                          <View style={{ flex: 1 }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                              <Text style={[styles.themeCardName, { color: isSelected ? theme.primaryDark : theme.text }]}>
+                                {tItem.name}
+                              </Text>
+                              <View style={[styles.themeTagBadge, { backgroundColor: isSelected ? theme.primary : 'rgba(0,0,0,0.06)' }]}>
+                                <Text style={[styles.themeTagBadgeText, { color: isSelected ? '#FFFFFF' : theme.textSecondary }]}>
+                                  {tItem.badge}
+                                </Text>
+                              </View>
+                            </View>
+                            <Text style={[styles.themeCardTagline, { color: theme.textSecondary }]} numberOfLines={1}>
+                              {tItem.tagline}
+                            </Text>
+                          </View>
+                        </View>
+
+                        {/* Radio Checkmark */}
+                        <View
+                          style={[
+                            styles.themeRadio,
+                            {
+                              borderColor: isSelected ? theme.primary : theme.border,
+                              backgroundColor: isSelected ? theme.primary : 'transparent',
+                            },
+                          ]}
+                        >
+                          {isSelected && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
+                        </View>
+                      </View>
+
+                      {/* Description */}
+                      <Text style={[styles.themeDescText, { color: theme.textSecondary }]}>
+                        {tItem.description}
+                      </Text>
+
+                      {/* Color Palette Swatches */}
+                      <View style={styles.swatchRow}>
+                        <Text style={[styles.swatchLabel, { color: theme.textMuted }]}>Palette:</Text>
+                        <View style={styles.swatches}>
+                          <View style={[styles.swatchCircle, { backgroundColor: tItem.bgColor, borderColor: theme.border }]} />
+                          <View style={[styles.swatchCircle, { backgroundColor: tItem.cardColor, borderColor: theme.border }]} />
+                          <View style={[styles.swatchCircle, { backgroundColor: tItem.primaryColor, borderColor: theme.border }]} />
+                          <View style={[styles.swatchCircle, { backgroundColor: tItem.accentColor, borderColor: theme.border }]} />
+                        </View>
+                        {isSelected && (
+                          <View style={[styles.appliedTag, { backgroundColor: theme.primary }]}>
+                            <Text style={styles.appliedTagText}>Active</Text>
+                          </View>
+                        )}
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </ScrollView>
+
+            <View style={[styles.themeModalFooter, { borderTopColor: theme.border }]}>
+              <Button
+                title="Done"
+                variant="primary"
+                size="large"
+                onPress={() => setIsThemeModalOpen(false)}
+                style={{ width: '100%' }}
+              />
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -1099,27 +1266,27 @@ const styles = StyleSheet.create({
   aiIconBadge: {
     width: 28,
     height: 28,
-    borderRadius: 8,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
   linkText: {
-    fontSize: 12,
+    fontSize: 13,
     fontFamily: 'Manrope_700Bold',
   },
   aiSubtitle: {
-    fontSize: 11.5,
+    fontSize: 12,
     fontFamily: 'Manrope_400Regular',
     marginBottom: 14,
-    lineHeight: 16,
+    lineHeight: 17,
   },
   aiGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 10,
   },
   aiToolCard: {
-    width: '48.5%',
+    width: '48%',
     borderRadius: 12,
     borderWidth: 1,
     padding: 12,
@@ -1130,7 +1297,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     padding: 12,
-    marginTop: 4,
     gap: 4,
   },
   aiToolTitle: {
@@ -1138,7 +1304,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope_700Bold',
   },
   aiToolSub: {
-    fontSize: 10.5,
+    fontSize: 11,
     fontFamily: 'Manrope_400Regular',
   },
   langGrid: {
@@ -1150,8 +1316,8 @@ const styles = StyleSheet.create({
     width: '31%',
     borderRadius: 10,
     borderWidth: 1,
-    paddingVertical: 9,
-    paddingHorizontal: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
     alignItems: 'center',
   },
   langBtnName: {
@@ -1159,40 +1325,56 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope_700Bold',
   },
   langBtnNative: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontFamily: 'Manrope_400Regular',
-    marginTop: 1,
+    marginTop: 2,
   },
   settingRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: 12,
+  },
+  settingLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+  },
+  settingLabel: {
+    fontSize: 13.5,
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  settingSub: {
+    fontSize: 11,
+    fontFamily: 'Manrope_400Regular',
+    marginTop: 2,
   },
   menuRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 12,
-    borderTopWidth: 1,
-  },
-  settingLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  settingLabel: {
-    fontSize: 13.5,
-    fontFamily: 'Manrope_500Medium',
   },
   logoutBtn: {
-    marginTop: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 30,
+  },
+  logoutText: {
+    fontSize: 14,
+    fontFamily: 'Manrope_700Bold',
   },
 
-  // Modal Styles
+  // Modal Common
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.65)',
     justifyContent: 'flex-end',
   },
   modalContent: {
@@ -1200,98 +1382,246 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 24,
     borderWidth: 1,
     maxHeight: '90%',
+    paddingBottom: 20,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingHorizontal: 18,
+    paddingVertical: 16,
     borderBottomWidth: 1,
   },
   modalTitle: {
     fontSize: 16,
     fontFamily: 'Manrope_700Bold',
   },
-  avatarSection: {
-    alignItems: 'center',
-    marginBottom: 16,
-    gap: 10,
+  modalSubtitle: {
+    fontSize: 11.5,
+    fontFamily: 'Manrope_400Regular',
+    marginTop: 1,
   },
-  modalAvatarPreview: {
+  closeBtn: {
+    padding: 4,
+  },
+  modalScroll: {
+    padding: 18,
+    gap: 14,
+  },
+  avatarPickerSection: {
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  previewAvatar: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    borderWidth: 2,
-    borderColor: '#10B981',
+    marginBottom: 10,
   },
-  avatarActionRow: {
-    width: '100%',
+  avatarActionsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 10,
+  },
+  photoBtn: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  photoBtnText: {
+    fontSize: 12,
+    fontFamily: 'Manrope_700Bold',
+  },
+  urlInputWrap: {
+    width: '100%',
+    marginTop: 8,
+  },
+  presetScroll: {
+    marginTop: 4,
     gap: 8,
   },
-  presetRow: {
-    gap: 8,
-    paddingVertical: 4,
-  },
-  presetPill: {
-    borderWidth: 2,
+  presetAvatarWrap: {
+    padding: 2,
     borderRadius: 22,
-    overflow: 'hidden',
+    borderWidth: 2,
   },
-  presetThumb: {
+  presetAvatar: {
     width: 40,
     height: 40,
     borderRadius: 20,
   },
-  avatarBtnRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  smallActionBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  smallActionBtnText: {
-    fontSize: 11.5,
-    fontFamily: 'Manrope_600SemiBold',
-  },
-  inputGroup: {
-    marginBottom: 14,
+  fieldWrap: {
     gap: 4,
   },
   fieldLabel: {
     fontSize: 12.5,
-    fontFamily: 'Manrope_700Bold',
+    fontFamily: 'Manrope_600SemiBold',
   },
   inputField: {
     height: 44,
     borderRadius: 10,
     borderWidth: 1,
     paddingHorizontal: 12,
-    fontSize: 13,
-    fontFamily: 'Manrope_400Regular',
+    fontSize: 13.5,
+    fontFamily: 'Manrope_500Medium',
   },
-  textArea: {
-    height: 70,
-    paddingTop: 10,
-    textAlignVertical: 'top',
-  },
-  errorMsg: {
-    color: '#EF4444',
+  errorText: {
     fontSize: 11,
-    fontFamily: 'Manrope_400Regular',
+    color: '#EF4444',
+    fontFamily: 'Manrope_500Medium',
+    marginTop: 2,
   },
   modalBtnRow: {
     flexDirection: 'row',
     gap: 10,
     marginTop: 10,
     marginBottom: 20,
+  },
+
+  // Theme Picker Row & Modal Styles
+  themeIconBox: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  themeBadgeWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  activeThemePill: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
+  activeThemePillText: {
+    fontSize: 11,
+    fontFamily: 'Manrope_700Bold',
+  },
+  themeModalContent: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    borderWidth: 1,
+    maxHeight: '88%',
+  },
+  themeModalIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  themeModalScroll: {
+    padding: 16,
+    gap: 12,
+  },
+  themeIntroText: {
+    fontSize: 12.5,
+    fontFamily: 'Manrope_400Regular',
+    lineHeight: 18,
+    marginBottom: 4,
+  },
+  themeCardsList: {
+    gap: 12,
+  },
+  themeItemCard: {
+    borderRadius: 16,
+    padding: 14,
+    gap: 10,
+  },
+  themeCardTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  themeCardTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+  },
+  themeIconCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  themeCardName: {
+    fontSize: 15,
+    fontFamily: 'Manrope_700Bold',
+  },
+  themeTagBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  themeTagBadgeText: {
+    fontSize: 9.5,
+    fontFamily: 'Manrope_800ExtraBold',
+    letterSpacing: 0.3,
+  },
+  themeCardTagline: {
+    fontSize: 11.5,
+    fontFamily: 'Manrope_400Regular',
+    marginTop: 2,
+  },
+  themeRadio: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+  },
+  themeDescText: {
+    fontSize: 12,
+    fontFamily: 'Manrope_400Regular',
+    lineHeight: 17,
+  },
+  swatchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 2,
+  },
+  swatchLabel: {
+    fontSize: 11,
+    fontFamily: 'Manrope_600SemiBold',
+    marginRight: 6,
+  },
+  swatches: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  swatchCircle: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 1,
+  },
+  appliedTag: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  appliedTagText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontFamily: 'Manrope_800ExtraBold',
+  },
+  themeModalFooter: {
+    padding: 16,
+    borderTopWidth: 1,
   },
 
   // AI Modal Results
