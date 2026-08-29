@@ -18,6 +18,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/Button';
+import { VoiceTranslatorModal } from '../../components/VoiceTranslatorModal';
 import * as ImagePicker from 'expo-image-picker';
 import {
   generateAITripPlan,
@@ -54,9 +55,11 @@ export const ProfileScreen = ({ navigation }) => {
   const [customAvatarUrl, setCustomAvatarUrl] = useState('');
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
+  const [savingProfile, setSavingProfile] = useState(false);
 
   // --- AI TRAVEL ASSISTANT MODAL STATES ---
   const [activeAITool, setActiveAITool] = useState(null); // 'trip', 'guide', 'budget', 'local', 'translate', 'safety', 'smart'
+  const [showVoiceTranslator, setShowVoiceTranslator] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResult, setAiResult] = useState(null);
 
@@ -185,10 +188,9 @@ export const ProfileScreen = ({ navigation }) => {
           destination: tripDest || 'Jaipur',
         });
       } else if (toolType === 'translate') {
-        res = await translateTravelText({
-          text: customQuery || translateInput,
-          targetLanguage: targetLang,
-        });
+        setShowVoiceTranslator(true);
+        setAiLoading(false);
+        return;
       } else if (toolType === 'safety') {
         res = await getSafetyGuidance({
           destination: tripDest || 'Jaipur',
@@ -320,12 +322,12 @@ export const ProfileScreen = ({ navigation }) => {
 
             <TouchableOpacity
               style={[styles.aiToolCard, { backgroundColor: theme.cardSecondary, borderColor: theme.border }]}
-              onPress={() => runAITool('translate')}
+              onPress={() => setShowVoiceTranslator(true)}
               activeOpacity={0.8}
             >
-              <Ionicons name="language-outline" size={22} color={theme.primary} />
-              <Text style={[styles.aiToolTitle, { color: theme.text }]}>AI Translator</Text>
-              <Text style={[styles.aiToolSub, { color: theme.textMuted }]}>6 Indian languages</Text>
+              <Ionicons name="mic-circle" size={24} color="#2563EB" />
+              <Text style={[styles.aiToolTitle, { color: theme.text }]}>Voice AI Translator</Text>
+              <Text style={[styles.aiToolSub, { color: theme.textMuted }]}>Voice record → 9+ languages</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -931,6 +933,13 @@ export const ProfileScreen = ({ navigation }) => {
           </View>
         </View>
       </Modal>
+
+      {/* Voice AI Multi-Language Simultaneous Translator Modal */}
+      <VoiceTranslatorModal
+        visible={showVoiceTranslator}
+        onClose={() => setShowVoiceTranslator(false)}
+        initialText={translateInput}
+      />
     </SafeAreaView>
   );
 };

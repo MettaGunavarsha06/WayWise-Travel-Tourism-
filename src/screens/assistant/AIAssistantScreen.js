@@ -17,8 +17,10 @@ import { useTheme } from '../../context/ThemeContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTrips } from '../../context/TripContext';
 import { queryGemmaAssistant, GEMMA_MODEL_VERSION } from '../../utils/gemmaAI';
+import { VoiceTranslatorModal } from '../../components/VoiceTranslatorModal';
 
 const quickPrompts = [
+  '🎙️ Voice Multi-Translator',
   'Suggest places near me',
   'I have ₹2,000 remaining',
   'Change tomorrow\'s plan because of rain',
@@ -34,6 +36,7 @@ export const AIAssistantScreen = ({ navigation }) => {
 
   const [inputMessage, setInputMessage] = useState('');
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [showVoiceTranslator, setShowVoiceTranslator] = useState(false);
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState([
     {
@@ -67,6 +70,11 @@ export const AIAssistantScreen = ({ navigation }) => {
   const handleSend = async (textToSend) => {
     const query = (textToSend || inputMessage).trim();
     if (!query) return;
+
+    if (query === '🎙️ Voice Multi-Translator') {
+      setShowVoiceTranslator(true);
+      return;
+    }
 
     const userMsg = {
       id: `msg_${Date.now()}`,
@@ -137,16 +145,25 @@ export const AIAssistantScreen = ({ navigation }) => {
           </View>
         </View>
 
-        <TouchableOpacity
-          onPress={() => speakText(messages[messages.length - 1]?.text || 'Assistant ready')}
-          style={[styles.voiceBtn, { backgroundColor: isSpeaking ? theme.primary : theme.cardSecondary }]}
-        >
-          <Ionicons
-            name={isSpeaking ? 'volume-high' : 'volume-medium-outline'}
-            size={20}
-            color={isSpeaking ? '#FFFFFF' : theme.text}
-          />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <TouchableOpacity
+            onPress={() => setShowVoiceTranslator(true)}
+            style={[styles.voiceBtn, { backgroundColor: theme.primaryLight }]}
+          >
+            <Ionicons name="mic" size={18} color={theme.primary} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => speakText(messages[messages.length - 1]?.text || 'Assistant ready')}
+            style={[styles.voiceBtn, { backgroundColor: isSpeaking ? theme.primary : theme.cardSecondary }]}
+          >
+            <Ionicons
+              name={isSpeaking ? 'volume-high' : 'volume-medium-outline'}
+              size={18}
+              color={isSpeaking ? '#FFFFFF' : theme.text}
+            />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <KeyboardAvoidingView
@@ -263,6 +280,12 @@ export const AIAssistantScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
+
+      {/* Voice AI Multi-Language Simultaneous Translator Modal */}
+      <VoiceTranslatorModal
+        visible={showVoiceTranslator}
+        onClose={() => setShowVoiceTranslator(false)}
+      />
     </SafeAreaView>
   );
 };
