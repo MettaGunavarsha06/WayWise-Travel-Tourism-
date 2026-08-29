@@ -282,9 +282,7 @@ export const DestinationDetailScreen = ({ route, navigation }) => {
               {attr.image ? (
                 <Image source={{ uri: attr.image }} style={styles.attrImage} resizeMode="cover" />
               ) : (
-                <View style={[styles.attrIcon, { backgroundColor: theme.cardSecondary }]}>
-                  <Ionicons name={attr.icon || 'location-outline'} size={20} color={theme.primary} />
-                </View>
+                <Image source={{ uri: destination.image }} style={styles.attrImage} resizeMode="cover" />
               )}
 
               <View style={{ flex: 1 }}>

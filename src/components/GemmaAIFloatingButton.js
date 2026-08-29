@@ -3,8 +3,9 @@ import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 
-export const GemmaAIFloatingButton = ({ onPress, bottomOffset = 82, rightOffset = 18 }) => {
-  const { theme } = useTheme();
+export const GemmaAIFloatingButton = ({ onPress, bottomOffset = 76, rightOffset = 18 }) => {
+  const { theme, isDark } = useTheme();
+  const isGlass = theme.mode === 'glass_horizon';
 
   return (
     <TouchableOpacity
@@ -15,16 +16,36 @@ export const GemmaAIFloatingButton = ({ onPress, bottomOffset = 82, rightOffset 
         {
           bottom: bottomOffset,
           right: rightOffset,
-          backgroundColor: theme.primary,
-          shadowColor: theme.primaryDark,
+          backgroundColor: isGlass
+            ? (isDark ? 'rgba(56, 189, 248, 0.90)' : 'rgba(30, 58, 95, 0.92)')
+            : theme.primary,
+          borderColor: isGlass ? 'rgba(255, 255, 255, 0.85)' : 'transparent',
+          borderWidth: isGlass ? 1.5 : 0,
+          shadowColor: theme.shadow,
         },
       ]}
     >
       <View style={styles.contentRow}>
-        <View style={[styles.iconContainer, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
-          <Ionicons name="chatbubble-ellipses" size={16} color="#FFFFFF" />
+        <View
+          style={[
+            styles.iconContainer,
+            { backgroundColor: isDark && isGlass ? 'rgba(10, 25, 47, 0.25)' : 'rgba(255, 255, 255, 0.22)' },
+          ]}
+        >
+          <Ionicons
+            name="chatbubble-ellipses"
+            size={16}
+            color={isDark && isGlass ? '#0A192F' : '#FFFFFF'}
+          />
         </View>
-        <Text style={styles.label}>Assistant</Text>
+        <Text
+          style={[
+            styles.label,
+            { color: isDark && isGlass ? '#0A192F' : '#FFFFFF' },
+          ]}
+        >
+          Assistant
+        </Text>
       </View>
     </TouchableOpacity>
   );
@@ -35,13 +56,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 13,
-    paddingVertical: 9,
-    borderRadius: 22,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 7,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 24,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 8,
     zIndex: 999,
   },
   contentRow: {
@@ -57,9 +78,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   label: {
-    color: '#FFFFFF',
     fontSize: 13,
     fontFamily: 'Manrope_700Bold',
-    letterSpacing: 0.1,
+    letterSpacing: 0.2,
   },
 });
