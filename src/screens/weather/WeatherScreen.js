@@ -177,9 +177,10 @@ export const WeatherScreen = ({ navigation }) => {
 
   // SVG Trajectory Curve for Hourly Forecast
   const renderHourlyTrajectory = () => {
-    if (!weatherData?.hourly || weatherData.hourly.length === 0) return null;
+    if (!weatherData?.hourly || weatherData.hourly.length < 2) return null;
 
     const points = weatherData.hourly.slice(0, 8);
+    if (points.length < 2) return null;
     const svgWidth = Math.max(SCREEN_WIDTH - 32, points.length * 60);
     const svgHeight = 65;
     const paddingX = 30;

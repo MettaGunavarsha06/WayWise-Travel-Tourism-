@@ -35,6 +35,7 @@ function RootApp() {
 }
 
 export default function App() {
+  const [forceReady, setForceReady] = React.useState(false);
   const [fontsLoaded, fontError] = useFonts({
     Manrope_400Regular,
     Manrope_500Medium,
@@ -44,18 +45,27 @@ export default function App() {
   });
 
   useEffect(() => {
+    // Safety timer to force rendering if font loading delays on device
+    const timer = setTimeout(() => {
+      setForceReady(true);
+      SplashScreen.hideAsync().catch(() => {});
+    }, 1200);
+
     if (fontsLoaded || fontError) {
+      clearTimeout(timer);
       SplashScreen.hideAsync().catch(() => {});
     }
+
+    return () => clearTimeout(timer);
   }, [fontsLoaded, fontError]);
 
   const onLayoutRootView = useCallback(async () => {
-    if (fontsLoaded || fontError) {
+    if (fontsLoaded || fontError || forceReady) {
       await SplashScreen.hideAsync().catch(() => {});
     }
-  }, [fontsLoaded, fontError]);
+  }, [fontsLoaded, fontError, forceReady]);
 
-  if (!fontsLoaded && !fontError) {
+  if (!fontsLoaded && !fontError && !forceReady) {
     return null;
   }
 
