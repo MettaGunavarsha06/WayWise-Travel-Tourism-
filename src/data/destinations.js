@@ -183,9 +183,20 @@ export const destinations = [
     description: "Explore historic palaces, vibrant pink sandstone markets and Rajasthan's royal heritage.",
     bestTimeToVisit: 'October to March',
     attractions: [
-      { id: 'j1', name: 'Amer Fort', type: 'outdoor', time: '3 hrs', cost: 200, crowd: 'moderate', icon: 'shield' },
-      { id: 'j2', name: 'Hawa Mahal', type: 'outdoor', time: '1 hr', cost: 50, crowd: 'high', icon: 'business' },
-      { id: 'j3', name: 'City Palace', type: 'indoor', time: '2.5 hrs', cost: 300, crowd: 'moderate', icon: 'home' },
+      {
+        id: 'j1',
+        name: 'Amer Fort',
+        type: 'outdoor',
+        time: '3 hrs',
+        cost: 200,
+        crowd: 'moderate',
+        icon: 'shield',
+        image: 'https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80',
+        location: 'Amer, Jaipur, Rajasthan',
+        description: 'Majestic hilltop sandstone fortress featuring the Sheesh Mahal mirror palace and panoramic Maota lake vistas.',
+      },
+      { id: 'j2', name: 'Hawa Mahal', type: 'outdoor', time: '1 hr', cost: 50, crowd: 'high', icon: 'business', image: 'https://images.unsplash.com/photo-1609137144827-e4318c47f7d1?auto=format&fit=crop&w=1200&q=80' },
+      { id: 'j3', name: 'City Palace', type: 'indoor', time: '2.5 hrs', cost: 300, crowd: 'moderate', icon: 'home', image: 'https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?auto=format&fit=crop&w=1200&q=80' },
     ],
     indoorAlternatives: [
       { name: 'Albert Hall State Museum', desc: 'Indo-Saracenic gallery housing 19th-century royal miniature paintings.' },

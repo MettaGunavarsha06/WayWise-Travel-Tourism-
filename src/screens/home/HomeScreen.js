@@ -40,13 +40,14 @@ export const HomeScreen = ({ navigation }) => {
   const [gemmaModalVisible, setGemmaModalVisible] = useState(false);
 
   const jaipurDest = destinations.find((d) => d.id === 'dest_jaipur') || destinations[4];
-  const amerFortAttraction = jaipurDest?.attractions?.find((a) => a.id === 'j1') || {
-    name: 'Amer Fort',
-    location: 'Jaipur, Rajasthan',
-    description: 'A historic hilltop fort known for its grand courtyards, architecture and views.',
-    image: 'https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=800&q=80',
-    time: '3 hrs',
-    cost: 200,
+  const foundAmerFort = jaipurDest?.attractions?.find((a) => a.id === 'j1');
+  const amerFortAttraction = {
+    name: foundAmerFort?.name || 'Amer Fort',
+    location: foundAmerFort?.location || 'Amer, Jaipur, Rajasthan',
+    description: foundAmerFort?.description || 'Majestic hilltop sandstone fortress featuring the Sheesh Mahal mirror palace and panoramic Maota lake vistas.',
+    image: foundAmerFort?.image || 'https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80',
+    time: foundAmerFort?.time || '3 hrs',
+    cost: foundAmerFort?.cost || 200,
   };
 
   const filteredDestinations = useMemo(() => {
