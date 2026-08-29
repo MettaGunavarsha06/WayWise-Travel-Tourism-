@@ -77,12 +77,14 @@ export const DestinationCard = ({ destination, onPress, style, horizontal = fals
           </View>
 
           <View style={styles.bottomRow}>
-            <Text style={[styles.cost, { color: theme.primary }]}>
-              {formatCurrency(destination.estimatedCost)}
-              <Text style={[styles.perPerson, { color: theme.textMuted }]}> / trip</Text>
-            </Text>
-            <Text style={[styles.duration, { color: theme.textSecondary }]}>
-              {destination.duration}
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <Ionicons name="time-outline" size={12} color={theme.textSecondary} />
+              <Text style={[styles.duration, { color: theme.textSecondary }]}>
+                {destination.duration}
+              </Text>
+            </View>
+            <Text style={[styles.duration, { color: theme.primary, fontFamily: 'Manrope_700Bold' }]}>
+              Explore →
             </Text>
           </View>
         </View>
@@ -169,10 +171,10 @@ export const DestinationCard = ({ destination, onPress, style, horizontal = fals
         <View style={[styles.divider, { backgroundColor: theme.borderLight }]} />
 
         <View style={styles.footer}>
-          <View>
-            <Text style={[styles.estLabel, { color: theme.textMuted }]}>Est. Cost</Text>
-            <Text style={[styles.cost, { color: theme.primary }]}>
-              {formatCurrency(destination.estimatedCost)}
+          <View style={styles.categoryPill}>
+            <Ionicons name="compass-outline" size={13} color={theme.primary} />
+            <Text style={[styles.categoryPillText, { color: theme.primary }]}>
+              {destination.category}
             </Text>
           </View>
           <View style={styles.durationPill}>
@@ -315,6 +317,15 @@ const styles = StyleSheet.create({
   perPerson: {
     fontSize: 11,
     fontFamily: 'Manrope_400Regular',
+  },
+  categoryPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  categoryPillText: {
+    fontSize: 12,
+    fontFamily: 'Manrope_700Bold',
   },
   durationPill: {
     flexDirection: 'row',

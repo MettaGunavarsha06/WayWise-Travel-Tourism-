@@ -216,10 +216,10 @@ export const DestinationDetailScreen = ({ route, navigation }) => {
             </View>
 
             <View style={styles.metaItem}>
-              <Ionicons name="cash-outline" size={16} color={theme.primary} />
-              <Text style={[styles.metaLabel, { color: theme.textMuted }]}>Est. Budget: </Text>
+              <Ionicons name="time-outline" size={16} color={theme.primary} />
+              <Text style={[styles.metaLabel, { color: theme.textMuted }]}>Duration: </Text>
               <Text style={[styles.metaVal, { color: theme.primary, fontWeight: '700' }]}>
-                {formatCurrency(destination.estimatedCost)}
+                {destination.duration}
               </Text>
             </View>
           </View>
@@ -420,10 +420,9 @@ export const DestinationDetailScreen = ({ route, navigation }) => {
       {/* Bottom Sticky Action Bar */}
       <View style={[styles.bottomBar, { backgroundColor: theme.card, borderTopColor: theme.border }]}>
         <View>
-          <Text style={[styles.bottomPriceLabel, { color: theme.textMuted }]}>Estimated Trip</Text>
+          <Text style={[styles.bottomPriceLabel, { color: theme.textMuted }]}>Recommended Stay</Text>
           <Text style={[styles.bottomPrice, { color: theme.primary }]}>
-            {formatCurrency(destination.estimatedCost)}
-            <Text style={[styles.perTrip, { color: theme.textSecondary }]}> / {destination.duration}</Text>
+            {destination.duration}
           </Text>
         </View>
 
