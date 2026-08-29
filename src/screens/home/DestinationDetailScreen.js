@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { useTrips } from '../../context/TripContext';
 import { useBusinesses } from '../../context/BusinessContext';
 import { weatherData, defaultWeather } from '../../data/weather';
@@ -22,11 +23,14 @@ import { EcoScoreBadge } from '../../components/EcoScoreBadge';
 import { BusinessCard } from '../../components/BusinessCard';
 import { Button } from '../../components/Button';
 import { SavedToast } from '../../components/SavedToast';
+import { getTranslatedDestination } from '../../data/translations';
 import { formatCurrency } from '../../utils/helpers';
 
 export const DestinationDetailScreen = ({ route, navigation }) => {
-  const { destination } = route.params;
+  const { destination: rawDestination } = route.params;
   const { theme } = useTheme();
+  const { currentLanguage, t } = useLanguage();
+  const destination = getTranslatedDestination(rawDestination, currentLanguage);
   const {
     createTrip,
     toggleSavePlace,

@@ -6,12 +6,15 @@ import { useLanguage } from '../context/LanguageContext';
 import { useTrips } from '../context/TripContext';
 import { CrowdIndicator } from './CrowdIndicator';
 import { EcoScoreBadge } from './EcoScoreBadge';
+import { getTranslatedDestination } from '../data/translations';
 import { formatCurrency } from '../utils/helpers';
 
-export const DestinationCard = ({ destination, onPress, style, horizontal = false }) => {
+export const DestinationCard = ({ destination: rawDestination, onPress, style, horizontal = false }) => {
   const { theme } = useTheme();
-  const { t } = useLanguage();
+  const { currentLanguage, t } = useLanguage();
   const { toggleSavePlace, isPlaceSaved } = useTrips();
+
+  const destination = getTranslatedDestination(rawDestination, currentLanguage);
 
   const isSaved = isPlaceSaved(destination.id);
 

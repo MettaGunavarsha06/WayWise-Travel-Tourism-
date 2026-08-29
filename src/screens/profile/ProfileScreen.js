@@ -216,9 +216,9 @@ export const ProfileScreen = ({ navigation }) => {
   };
 
   const handleLogout = () => {
-    Alert.alert('Sign Out', 'Are you sure you want to sign out of WayWise?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Sign Out', style: 'destructive', onPress: logout },
+    Alert.alert(t('signOut') || 'Sign Out', t('signOutConfirm') || 'Are you sure you want to sign out of WayWise?', [
+      { text: t('cancel') || 'Cancel', style: 'cancel' },
+      { text: t('signOut') || 'Sign Out', style: 'destructive', onPress: logout },
     ]);
   };
 
@@ -248,7 +248,7 @@ export const ProfileScreen = ({ navigation }) => {
               <View style={[styles.ecoBadgePill, { backgroundColor: theme.ecoGreenLight }]}>
                 <Ionicons name="leaf" size={13} color={theme.ecoGreen} />
                 <Text style={[styles.ecoBadgeText, { color: theme.ecoGreen }]}>
-                  {user?.ecoPoints || 520} Eco Points
+                  {user?.ecoPoints || 520} {t('ecoPoints') || 'Eco Points'}
                 </Text>
               </View>
             </View>
@@ -274,12 +274,12 @@ export const ProfileScreen = ({ navigation }) => {
               <Text style={[styles.cardTitle, { color: theme.text, marginBottom: 0 }]}>{t('aiAssistant') || 'AI Travel Assistant'}</Text>
             </View>
             <TouchableOpacity onPress={() => navigation.navigate('AIAssistant')}>
-              <Text style={[styles.linkText, { color: theme.primary }]}>Open Chat</Text>
+              <Text style={[styles.linkText, { color: theme.primary }]}>{t('openChat') || 'Open Chat'}</Text>
             </TouchableOpacity>
           </View>
 
           <Text style={[styles.aiSubtitle, { color: theme.textSecondary }]}>
-            AI-powered travel tools designed for sustainable, budget-friendly and cultural tourism.
+            {t('aiSubtitle') || 'AI-powered travel tools designed for sustainable, budget-friendly and cultural tourism.'}
           </Text>
 
           {/* 7 AI Feature Tool Grid */}
@@ -290,8 +290,8 @@ export const ProfileScreen = ({ navigation }) => {
               activeOpacity={0.8}
             >
               <Ionicons name="map-outline" size={22} color={theme.primary} />
-              <Text style={[styles.aiToolTitle, { color: theme.text }]}>AI Trip Planner</Text>
-              <Text style={[styles.aiToolSub, { color: theme.textMuted }]}>Custom day-by-day itinerary</Text>
+              <Text style={[styles.aiToolTitle, { color: theme.text }]}>{t('aiTripPlanner') || 'AI Trip Planner'}</Text>
+              <Text style={[styles.aiToolSub, { color: theme.textMuted }]}>{t('aiTripPlannerSub') || 'Custom day-by-day itinerary'}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -300,8 +300,8 @@ export const ProfileScreen = ({ navigation }) => {
               activeOpacity={0.8}
             >
               <Ionicons name="compass-outline" size={22} color={theme.primary} />
-              <Text style={[styles.aiToolTitle, { color: theme.text }]}>Destination Guide</Text>
-              <Text style={[styles.aiToolSub, { color: theme.textMuted }]}>Places, foods &amp; activities</Text>
+              <Text style={[styles.aiToolTitle, { color: theme.text }]}>{t('destinationGuide') || 'Destination Guide'}</Text>
+              <Text style={[styles.aiToolSub, { color: theme.textMuted }]}>{t('destinationGuideSub') || 'Places, foods & activities'}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -310,8 +310,8 @@ export const ProfileScreen = ({ navigation }) => {
               activeOpacity={0.8}
             >
               <Ionicons name="wallet-outline" size={22} color={theme.primary} />
-              <Text style={[styles.aiToolTitle, { color: theme.text }]}>Budget Planner</Text>
-              <Text style={[styles.aiToolSub, { color: theme.textMuted }]}>Breakdown &amp; savings tips</Text>
+              <Text style={[styles.aiToolTitle, { color: theme.text }]}>{t('budgetPlanner') || 'Budget Planner'}</Text>
+              <Text style={[styles.aiToolSub, { color: theme.textMuted }]}>{t('budgetPlannerSub') || 'Breakdown & savings tips'}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -320,8 +320,8 @@ export const ProfileScreen = ({ navigation }) => {
               activeOpacity={0.8}
             >
               <Ionicons name="storefront-outline" size={22} color={theme.primary} />
-              <Text style={[styles.aiToolTitle, { color: theme.text }]}>Local Recommender</Text>
-              <Text style={[styles.aiToolSub, { color: theme.textMuted }]}>Artisans &amp; eco-experiences</Text>
+              <Text style={[styles.aiToolTitle, { color: theme.text }]}>{t('localRecommender') || 'Local Recommender'}</Text>
+              <Text style={[styles.aiToolSub, { color: theme.textMuted }]}>{t('localRecommenderSub') || 'Artisans & eco-experiences'}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -331,7 +331,7 @@ export const ProfileScreen = ({ navigation }) => {
             >
               <Ionicons name="mic-circle" size={24} color="#2563EB" />
               <Text style={[styles.aiToolTitle, { color: theme.text }]}>{t('voiceTranslator') || 'Voice AI Translator'}</Text>
-              <Text style={[styles.aiToolSub, { color: theme.textMuted }]}>Voice record → 9+ languages</Text>
+              <Text style={[styles.aiToolSub, { color: theme.textMuted }]}>{t('voiceTranslatorSub') || 'Voice record → 9+ languages'}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -340,8 +340,8 @@ export const ProfileScreen = ({ navigation }) => {
               activeOpacity={0.8}
             >
               <Ionicons name="shield-checkmark-outline" size={22} color={theme.primary} />
-              <Text style={[styles.aiToolTitle, { color: theme.text }]}>Safety Assistant</Text>
-              <Text style={[styles.aiToolSub, { color: theme.textMuted }]}>Rules, alerts &amp; contacts</Text>
+              <Text style={[styles.aiToolTitle, { color: theme.text }]}>{t('safetyAssistant') || 'Safety Assistant'}</Text>
+              <Text style={[styles.aiToolSub, { color: theme.textMuted }]}>{t('safetyAssistantSub') || 'Rules, alerts & contacts'}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -353,7 +353,7 @@ export const ProfileScreen = ({ navigation }) => {
                 <Ionicons name="bulb-outline" size={20} color={theme.primaryDark} />
                 <Text style={[styles.aiToolTitle, { color: theme.primaryDark }]}>{t('aiSmartRecommendations') || 'Smart Recommendations'}</Text>
               </View>
-              <Text style={[styles.aiToolSub, { color: theme.primaryDark }]}>Personalized suggestions based on preferences</Text>
+              <Text style={[styles.aiToolSub, { color: theme.primaryDark }]}>{t('smartRecommendationsSub') || 'Personalized suggestions based on preferences'}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -546,7 +546,7 @@ export const ProfileScreen = ({ navigation }) => {
               <View style={styles.avatarSection}>
                 <Image source={{ uri: editAvatar }} style={styles.modalAvatarPreview} />
                 <View style={styles.avatarActionRow}>
-                  <Text style={[styles.fieldLabel, { color: theme.text }]}>Select Profile Picture</Text>
+                  <Text style={[styles.fieldLabel, { color: theme.text }]}>{t('selectProfilePic') || 'Select Profile Picture'}</Text>
 
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.presetRow}>
                     {AVATAR_PRESETS.map((presetUrl, idx) => (
@@ -569,7 +569,7 @@ export const ProfileScreen = ({ navigation }) => {
                       style={[styles.smallActionBtn, { backgroundColor: theme.primaryLight, borderColor: theme.primary }]}
                     >
                       <Ionicons name="image-outline" size={14} color={theme.primaryDark} />
-                      <Text style={[styles.smallActionBtnText, { color: theme.primaryDark }]}>Upload Photo</Text>
+                      <Text style={[styles.smallActionBtnText, { color: theme.primaryDark }]}>{t('uploadPhoto') || 'Upload Photo'}</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -577,7 +577,7 @@ export const ProfileScreen = ({ navigation }) => {
                       style={[styles.smallActionBtn, { backgroundColor: theme.cardSecondary, borderColor: theme.border }]}
                     >
                       <Ionicons name="link-outline" size={14} color={theme.primary} />
-                      <Text style={[styles.smallActionBtnText, { color: theme.primary }]}>URL</Text>
+                      <Text style={[styles.smallActionBtnText, { color: theme.primary }]}>{t('url') || 'URL'}</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -585,7 +585,7 @@ export const ProfileScreen = ({ navigation }) => {
                       style={[styles.smallActionBtn, { backgroundColor: theme.cardSecondary, borderColor: theme.border }]}
                     >
                       <Ionicons name="trash-outline" size={14} color={theme.error} />
-                      <Text style={[styles.smallActionBtnText, { color: theme.error }]}>Remove</Text>
+                      <Text style={[styles.smallActionBtnText, { color: theme.error }]}>{t('remove') || 'Remove'}</Text>
                     </TouchableOpacity>
                   </View>
 
@@ -596,7 +596,7 @@ export const ProfileScreen = ({ navigation }) => {
                         setCustomAvatarUrl(val);
                         if (val.startsWith('http')) setEditAvatar(val);
                       }}
-                      placeholder="Paste image URL (https://...)"
+                      placeholder={t('pasteImageUrl') || 'Paste image URL (https://...)'}
                       placeholderTextColor={theme.textMuted}
                       style={[styles.inputField, { backgroundColor: theme.cardSecondary, color: theme.text, borderColor: theme.border, marginTop: 8 }]}
                     />
@@ -610,7 +610,7 @@ export const ProfileScreen = ({ navigation }) => {
                 <TextInput
                   value={editName}
                   onChangeText={setEditName}
-                  placeholder="Enter full name"
+                  placeholder={t('enterFullName') || 'Enter full name'}
                   placeholderTextColor={theme.textMuted}
                   style={[
                     styles.inputField,
@@ -632,7 +632,7 @@ export const ProfileScreen = ({ navigation }) => {
                   onChangeText={setEditEmail}
                   keyboardType="email-address"
                   autoCapitalize="none"
-                  placeholder="Enter email address"
+                  placeholder={t('enterEmailAddress') || 'Enter email address'}
                   placeholderTextColor={theme.textMuted}
                   style={[
                     styles.inputField,
@@ -653,7 +653,7 @@ export const ProfileScreen = ({ navigation }) => {
                   value={editPhone}
                   onChangeText={setEditPhone}
                   keyboardType="phone-pad"
-                  placeholder="Enter phone number (+91...)"
+                  placeholder={t('enterPhoneNumber') || 'Enter phone number (+91...)'}
                   placeholderTextColor={theme.textMuted}
                   style={[
                     styles.inputField,
@@ -675,7 +675,7 @@ export const ProfileScreen = ({ navigation }) => {
                   onChangeText={setEditAddress}
                   multiline
                   numberOfLines={3}
-                  placeholder="Enter complete tourist or home address"
+                  placeholder={t('enterAddress') || 'Enter complete tourist or home address'}
                   placeholderTextColor={theme.textMuted}
                   style={[
                     styles.inputField,
@@ -990,7 +990,7 @@ export const ProfileScreen = ({ navigation }) => {
                 <View>
                   <Text style={[styles.modalTitle, { color: theme.text }]}>App Theme &amp; Experience</Text>
                   <Text style={[styles.modalSubtitle, { color: theme.textSecondary }]}>
-                    Luxury aesthetics, glassmorphism &amp; maps
+                    {t('themeSubtitle') || "Luxury aesthetics, glassmorphism & maps"}
                   </Text>
                 </View>
               </View>
@@ -1001,7 +1001,7 @@ export const ProfileScreen = ({ navigation }) => {
 
             <ScrollView contentContainerStyle={styles.themeModalScroll} showsVerticalScrollIndicator={false}>
               <Text style={[styles.themeIntroText, { color: theme.textSecondary }]}>
-                Choose your bespoke travel aesthetic. The entire app (tabs, headers, cards, buttons, badges) updates instantly.
+                {t('themeIntro') || 'Choose your bespoke travel aesthetic. The entire app (tabs, headers, cards, buttons, badges) updates instantly.'}
               </Text>
 
               <View style={styles.themeCardsList}>
@@ -1076,7 +1076,7 @@ export const ProfileScreen = ({ navigation }) => {
 
                       {/* Color Palette Swatches */}
                       <View style={styles.swatchRow}>
-                        <Text style={[styles.swatchLabel, { color: theme.textMuted }]}>Palette:</Text>
+                        <Text style={[styles.swatchLabel, { color: theme.textMuted }]}>{t('palette') || "Palette"}:</Text>
                         <View style={styles.swatches}>
                           <View style={[styles.swatchCircle, { backgroundColor: tItem.bgColor, borderColor: theme.border }]} />
                           <View style={[styles.swatchCircle, { backgroundColor: tItem.cardColor, borderColor: theme.border }]} />
@@ -1085,7 +1085,7 @@ export const ProfileScreen = ({ navigation }) => {
                         </View>
                         {isSelected && (
                           <View style={[styles.appliedTag, { backgroundColor: theme.primary }]}>
-                            <Text style={styles.appliedTagText}>Active</Text>
+                            <Text style={styles.appliedTagText}>{t('activeTheme') || 'Active'}</Text>
                           </View>
                         )}
                       </View>
@@ -1097,7 +1097,7 @@ export const ProfileScreen = ({ navigation }) => {
 
             <View style={[styles.themeModalFooter, { borderTopColor: theme.border }]}>
               <Button
-                title="Done"
+                title={t('done') || "Done"}
                 variant="primary"
                 size="large"
                 onPress={() => setIsThemeModalOpen(false)}
