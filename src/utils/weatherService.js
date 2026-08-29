@@ -1,4 +1,4 @@
-// WayWise Weather Service — Vatavaranam X Live Engine
+// WayWise Weather Service — Live Weather Engine
 // Multi-Tier Satellite Telemetry & OpenWeatherMap Integration
 
 export const USER_API_KEY = 'c54b1f47771fdbad4c8e208c7dfec1b4';

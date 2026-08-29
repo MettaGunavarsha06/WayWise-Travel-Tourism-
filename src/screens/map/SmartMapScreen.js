@@ -12,10 +12,12 @@ import {
   Modal,
   Linking,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
+import { useTrips } from '../../context/TripContext';
 import {
   requestAndGetUserLocation,
   checkLocationPermission,
@@ -31,6 +33,7 @@ import { RealLeafletMap } from '../../components/RealLeafletMap';
 import { CrowdIndicator } from '../../components/CrowdIndicator';
 import { EcoScoreBadge } from '../../components/EcoScoreBadge';
 import { Button } from '../../components/Button';
+import { SavedToast } from '../../components/SavedToast';
 import { formatCurrency } from '../../utils/helpers';
 
 const { width, height } = Dimensions.get('window');
@@ -50,8 +53,16 @@ const MAP_LAYERS = [
   { id: 'terrain', label: 'Terrain', icon: 'triangle-outline' },
 ];
 
+const TRAVEL_MODES = [
+  { id: 'driving', label: 'Drive', icon: 'car-outline', speedMultiplier: 1 },
+  { id: 'motorcycle', label: 'Bike', icon: 'bicycle-outline', speedMultiplier: 0.8 },
+  { id: 'walking', label: 'Walk', icon: 'walk-outline', speedMultiplier: 3.8 },
+  { id: 'transit', label: 'Transit', icon: 'train-outline', speedMultiplier: 1.4 },
+];
+
 export const SmartMapScreen = ({ navigation, route }) => {
   const { theme, isDark } = useTheme();
+  const { toggleSavePlace, isPlaceSaved } = useTrips();
   
   // Location States
   const [userCoords, setUserCoords] = useState(DEFAULT_COORDINATES);
@@ -68,10 +79,14 @@ export const SmartMapScreen = ({ navigation, route }) => {
   const [mapLayer, setMapLayer] = useState('standard');
   const [viewMode, setViewMode] = useState('map'); // 'map' | 'list'
 
-  // Selection & Details
+  // Selection, Google Maps Navigation & Saved Toast States
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [showLayerMenu, setShowLayerMenu] = useState(false);
   const [navigationActive, setNavigationActive] = useState(false);
+  const [travelMode, setTravelMode] = useState('driving');
+  const [isVoiceMuted, setIsVoiceMuted] = useState(false);
+  const [showStepsModal, setShowStepsModal] = useState(false);
+  const [toastVisible, setToastVisible] = useState(false);
 
   // Compute Places around user coordinates
   const { places, allPlaces, categoryCounts } = useMemo(() => {
@@ -153,14 +168,81 @@ export const SmartMapScreen = ({ navigation, route }) => {
     });
   };
 
+  // Google Maps Turn-by-Turn Navigation Activation
   const handleStartNavigation = (place) => {
+    setSelectedPlace(place);
     setNavigationActive(true);
-    Alert.alert(
-      'Turn-by-Turn Navigation Active',
-      `Live routing to ${place.name} (${place.distanceKm} km · ~${place.driveMinutes} mins drive / ${place.walkMinutes} mins walk). Blue path is highlighted on the map!`,
-      [{ text: 'Got it', style: 'default' }]
-    );
+    setViewMode('map');
   };
+
+  // Open native Google Maps app or web
+  const handleOpenGoogleMapsApp = (place) => {
+    if (!place) return;
+    const originLat = userCoords.latitude;
+    const originLng = userCoords.longitude;
+    const destLat = place.coords.latitude;
+    const destLng = place.coords.longitude;
+    const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${originLat},${originLng}&destination=${destLat},${destLng}&travelmode=${travelMode}`;
+    
+    Linking.openURL(googleMapsUrl).catch(() => {
+      Alert.alert('Google Maps', `Could not open Google Maps app. Opening browser link instead: ${googleMapsUrl}`);
+    });
+  };
+
+  // Calculate dynamic ETA for selected travel mode
+  const currentDurationMins = useMemo(() => {
+    if (!selectedPlace) return 10;
+    const baseDrive = selectedPlace.driveMinutes || Math.max(2, Math.round(selectedPlace.distanceKm * 2.8));
+    if (travelMode === 'walking') return Math.max(3, Math.round(selectedPlace.distanceKm * 12));
+    if (travelMode === 'motorcycle') return Math.max(1, Math.round(baseDrive * 0.8));
+    if (travelMode === 'transit') return Math.max(5, Math.round(baseDrive * 1.5));
+    return baseDrive;
+  }, [selectedPlace, travelMode]);
+
+  // Calculate ETA arrival time
+  const etaClockTime = useMemo(() => {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() + currentDurationMins);
+    return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }, [currentDurationMins]);
+
+  // Generate realistic Turn-by-Turn step directions
+  const turnSteps = useMemo(() => {
+    if (!selectedPlace) return [];
+    const dist = selectedPlace.distanceKm || 1.2;
+    return [
+      {
+        id: 'step_1',
+        instruction: `Head northeast from current location`,
+        distance: `${Math.round(dist * 200)} m`,
+        icon: 'navigate',
+      },
+      {
+        id: 'step_2',
+        instruction: `Turn right onto Main Coastal Arterial Highway`,
+        distance: `${(dist * 0.4).toFixed(1)} km`,
+        icon: 'arrow-redo',
+      },
+      {
+        id: 'step_3',
+        instruction: `Continue straight past landmark junction towards ${selectedPlace.subCategory}`,
+        distance: `${(dist * 0.35).toFixed(1)} km`,
+        icon: 'arrow-up',
+      },
+      {
+        id: 'step_4',
+        instruction: `Slight left onto destination approach road`,
+        distance: `${Math.round(dist * 150)} m`,
+        icon: 'arrow-undo',
+      },
+      {
+        id: 'step_5',
+        instruction: `Arrive at ${selectedPlace.name} on the right`,
+        distance: 'Destination reached 🏁',
+        icon: 'flag',
+      },
+    ];
+  }, [selectedPlace]);
 
   const currentSymbol = selectedPlace?.symbolConfig || {
     icon: 'location',
@@ -169,80 +251,114 @@ export const SmartMapScreen = ({ navigation, route }) => {
     bg: theme.primaryLight,
   };
 
+  const isCurrentSaved = selectedPlace ? isPlaceSaved(selectedPlace.id) : false;
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      {/* Top Header Bar */}
-      <View style={[styles.topBar, { borderBottomColor: theme.border, backgroundColor: theme.card }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
-          <Ionicons name="arrow-back" size={22} color={theme.text} />
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => setShowCityPicker(true)} style={styles.cityTitleWrap} activeOpacity={0.7}>
-          <View style={styles.cityRow}>
-            <Ionicons
-              name={gpsStatus === 'live' ? 'navigate-circle' : 'location-sharp'}
-              size={16}
-              color={gpsStatus === 'live' ? '#16A34A' : theme.primary}
-            />
-            <Text style={[styles.cityText, { color: theme.text }]} numberOfLines={1}>
-              {cityName}
-            </Text>
-            <Ionicons name="chevron-down" size={14} color={theme.textSecondary} />
-          </View>
-
-          <View style={styles.statusBadgeRow}>
-            <View
-              style={[
-                styles.statusDot,
-                { backgroundColor: gpsStatus === 'live' ? '#16A34A' : gpsStatus === 'loading' ? '#EAB308' : '#3B82F6' },
-              ]}
-            />
-            <Text style={[styles.statusText, { color: theme.textSecondary }]}>
-              {gpsStatus === 'live'
-                ? '🟢 Live GPS Connected'
-                : gpsStatus === 'loading'
-                ? '🟡 Locating GPS...'
-                : gpsStatus === 'denied'
-                ? '🔴 GPS Denied (Demo Mode)'
-                : '🔵 Demo Location'}
-            </Text>
-          </View>
-        </TouchableOpacity>
-
-        {/* View Mode & Locate Action */}
-        <View style={styles.topRightActions}>
-          <TouchableOpacity
-            onPress={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
-            style={[styles.actionBtn, { backgroundColor: theme.cardSecondary, borderColor: theme.border }]}
-          >
-            <Ionicons name={viewMode === 'map' ? 'list-outline' : 'map-outline'} size={18} color={theme.text} />
+      {/* Top Header Bar (Hidden during full-screen Google Maps Navigation for max immersion) */}
+      {!navigationActive && (
+        <View style={[styles.topBar, { borderBottomColor: theme.border, backgroundColor: theme.card }]}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
+            <Ionicons name="arrow-back" size={22} color={theme.text} />
           </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={handleRequestLocation}
-            style={[
-              styles.actionBtn,
-              {
-                backgroundColor: gpsStatus === 'live' ? '#DCFCE7' : theme.primaryLight,
-                borderColor: gpsStatus === 'live' ? '#16A34A' : theme.primary,
-              },
-            ]}
-          >
-            {isLocating ? (
-              <ActivityIndicator size="small" color={theme.primary} />
-            ) : (
+          <TouchableOpacity onPress={() => setShowCityPicker(true)} style={styles.cityTitleWrap} activeOpacity={0.7}>
+            <View style={styles.cityRow}>
               <Ionicons
-                name={gpsStatus === 'live' ? 'locate' : 'navigate-outline'}
-                size={18}
+                name={gpsStatus === 'live' ? 'navigate-circle' : 'location-sharp'}
+                size={16}
                 color={gpsStatus === 'live' ? '#16A34A' : theme.primary}
               />
-            )}
-          </TouchableOpacity>
-        </View>
-      </View>
+              <Text style={[styles.cityText, { color: theme.text }]} numberOfLines={1}>
+                {cityName}
+              </Text>
+              <Ionicons name="chevron-down" size={14} color={theme.textSecondary} />
+            </View>
 
-      {/* Permission Request Banner (when not yet granted) */}
-      {!permissionGranted && gpsStatus !== 'loading' && (
+            <View style={styles.statusBadgeRow}>
+              <View
+                style={[
+                  styles.statusDot,
+                  { backgroundColor: gpsStatus === 'live' ? '#16A34A' : gpsStatus === 'loading' ? '#EAB308' : '#3B82F6' },
+                ]}
+              />
+              <Text style={[styles.statusText, { color: theme.textSecondary }]}>
+                {gpsStatus === 'live'
+                  ? '🟢 Live GPS Connected'
+                  : gpsStatus === 'loading'
+                  ? '🟡 Locating GPS...'
+                  : gpsStatus === 'denied'
+                  ? '🔴 GPS Denied (Demo Mode)'
+                  : '🔵 Demo Location'}
+              </Text>
+            </View>
+          </TouchableOpacity>
+
+          {/* View Mode & Locate Action */}
+          <View style={styles.topRightActions}>
+            <TouchableOpacity
+              onPress={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
+              style={[styles.actionBtn, { backgroundColor: theme.cardSecondary, borderColor: theme.border }]}
+            >
+              <Ionicons name={viewMode === 'map' ? 'list-outline' : 'map-outline'} size={18} color={theme.text} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={handleRequestLocation}
+              style={[
+                styles.actionBtn,
+                {
+                  backgroundColor: gpsStatus === 'live' ? '#DCFCE7' : theme.primaryLight,
+                  borderColor: gpsStatus === 'live' ? '#16A34A' : theme.primary,
+                },
+              ]}
+            >
+              {isLocating ? (
+                <ActivityIndicator size="small" color={theme.primary} />
+              ) : (
+                <Ionicons
+                  name={gpsStatus === 'live' ? 'locate' : 'navigate-outline'}
+                  size={18}
+                  color={gpsStatus === 'live' ? '#16A34A' : theme.primary}
+                />
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
+      {/* Google Maps Turn-by-Turn Top Navigation Banner (Active when navigating) */}
+      {navigationActive && selectedPlace && (
+        <View style={styles.gmapsTopHeader}>
+          <View style={styles.gmapsTopContent}>
+            <View style={styles.gmapsManeuverCircle}>
+              <Ionicons name="arrow-redo" size={26} color="#FFFFFF" />
+            </View>
+            <View style={styles.gmapsInstructionWrap}>
+              <Text style={styles.gmapsDistanceNext}>In 250 m</Text>
+              <Text style={styles.gmapsManeuverText} numberOfLines={1}>
+                Turn right onto Coastal Highway
+              </Text>
+              <Text style={styles.gmapsTowardText} numberOfLines={1}>
+                towards {selectedPlace.name}
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => setIsVoiceMuted(!isVoiceMuted)}
+              style={styles.gmapsVoiceBtn}
+            >
+              <Ionicons
+                name={isVoiceMuted ? 'volume-mute-outline' : 'volume-high-outline'}
+                size={20}
+                color="#FFFFFF"
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
+      {/* Permission Request Banner (when not navigating & not granted) */}
+      {!navigationActive && !permissionGranted && gpsStatus !== 'loading' && (
         <View style={[styles.permissionBanner, { backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }]}>
           <View style={styles.permissionIconCircle}>
             <Ionicons name="location-outline" size={18} color="#2563EB" />
@@ -259,113 +375,117 @@ export const SmartMapScreen = ({ navigation, route }) => {
         </View>
       )}
 
-      {/* Search Bar & Radius Filter */}
-      <View style={[styles.searchSection, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
-        <View style={[styles.searchBox, { backgroundColor: theme.cardSecondary, borderColor: theme.border }]}>
-          <Ionicons name="search-outline" size={16} color={theme.textSecondary} />
-          <TextInput
-            placeholder="Search restaurants, hospitals, forts, cafes..."
-            placeholderTextColor={theme.textMuted}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            style={[styles.searchInput, { color: theme.text }]}
-          />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery('')}>
-              <Ionicons name="close-circle" size={16} color={theme.textSecondary} />
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {/* Radius Chips */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.radiusRow}>
-          <Text style={[styles.radiusLabel, { color: theme.textSecondary }]}>Radius:</Text>
-          {RADIUS_OPTIONS.map((r) => {
-            const isSelected = selectedRadius === r.value;
-            return (
-              <TouchableOpacity
-                key={r.label}
-                onPress={() => setSelectedRadius(r.value)}
-                style={[
-                  styles.radiusChip,
-                  {
-                    backgroundColor: isSelected ? theme.primary : theme.cardSecondary,
-                    borderColor: isSelected ? theme.primary : theme.border,
-                  },
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.radiusChipText,
-                    { color: isSelected ? '#FFFFFF' : theme.textSecondary },
-                  ]}
-                >
-                  {r.label}
-                </Text>
+      {/* Search Bar & Radius Filter (Hidden during navigation) */}
+      {!navigationActive && (
+        <View style={[styles.searchSection, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
+          <View style={[styles.searchBox, { backgroundColor: theme.cardSecondary, borderColor: theme.border }]}>
+            <Ionicons name="search-outline" size={16} color={theme.textSecondary} />
+            <TextInput
+              placeholder="Search restaurants, hospitals, forts, cafes..."
+              placeholderTextColor={theme.textMuted}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              style={[styles.searchInput, { color: theme.text }]}
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchQuery('')}>
+                <Ionicons name="close-circle" size={16} color={theme.textSecondary} />
               </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </View>
+            )}
+          </View>
 
-      {/* Category Filter Chips with Unique Icons & Counts */}
-      <View style={[styles.categoriesBar, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoriesScroll}>
-          {PLACE_CATEGORIES.map((cat) => {
-            const isSelected = selectedCategory === cat.id;
-            const count = categoryCounts[cat.id] || 0;
-            return (
-              <TouchableOpacity
-                key={cat.id}
-                onPress={() => setSelectedCategory(cat.id)}
-                style={[
-                  styles.catChip,
-                  {
-                    backgroundColor: isSelected ? cat.color : theme.cardSecondary,
-                    borderColor: isSelected ? cat.color : theme.border,
-                  },
-                ]}
-              >
-                <Ionicons
-                  name={cat.icon}
-                  size={15}
-                  color={isSelected ? '#FFFFFF' : cat.color}
-                />
-                <Text
+          {/* Radius Chips */}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.radiusRow}>
+            <Text style={[styles.radiusLabel, { color: theme.textSecondary }]}>Radius:</Text>
+            {RADIUS_OPTIONS.map((r) => {
+              const isSelected = selectedRadius === r.value;
+              return (
+                <TouchableOpacity
+                  key={r.label}
+                  onPress={() => setSelectedRadius(r.value)}
                   style={[
-                    styles.catChipText,
-                    { color: isSelected ? '#FFFFFF' : theme.text },
-                  ]}
-                >
-                  {cat.label}
-                </Text>
-                <View
-                  style={[
-                    styles.countBadge,
+                    styles.radiusChip,
                     {
-                      backgroundColor: isSelected ? 'rgba(255,255,255,0.25)' : cat.bg,
+                      backgroundColor: isSelected ? theme.primary : theme.cardSecondary,
+                      borderColor: isSelected ? theme.primary : theme.border,
                     },
                   ]}
                 >
                   <Text
                     style={[
-                      styles.countBadgeText,
-                      { color: isSelected ? '#FFFFFF' : cat.color },
+                      styles.radiusChipText,
+                      { color: isSelected ? '#FFFFFF' : theme.textSecondary },
                     ]}
                   >
-                    {count}
+                    {r.label}
                   </Text>
-                </View>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </View>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
+      )}
+
+      {/* Category Filter Chips with Unique Icons & Counts (Hidden during navigation) */}
+      {!navigationActive && (
+        <View style={[styles.categoriesBar, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoriesScroll}>
+            {PLACE_CATEGORIES.map((cat) => {
+              const isSelected = selectedCategory === cat.id;
+              const count = categoryCounts[cat.id] || 0;
+              return (
+                <TouchableOpacity
+                  key={cat.id}
+                  onPress={() => setSelectedCategory(cat.id)}
+                  style={[
+                    styles.catChip,
+                    {
+                      backgroundColor: isSelected ? cat.color : theme.cardSecondary,
+                      borderColor: isSelected ? cat.color : theme.border,
+                    },
+                  ]}
+                >
+                  <Ionicons
+                    name={cat.icon}
+                    size={15}
+                    color={isSelected ? '#FFFFFF' : cat.color}
+                  />
+                  <Text
+                    style={[
+                      styles.catChipText,
+                      { color: isSelected ? '#FFFFFF' : theme.text },
+                    ]}
+                  >
+                    {cat.label}
+                  </Text>
+                  <View
+                    style={[
+                      styles.countBadge,
+                      {
+                        backgroundColor: isSelected ? 'rgba(255,255,255,0.25)' : cat.bg,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.countBadgeText,
+                        { color: isSelected ? '#FFFFFF' : cat.color },
+                      ]}
+                    >
+                      {count}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
+      )}
 
       {/* Main Map View or List View */}
       {viewMode === 'map' ? (
         <View style={styles.mapArea}>
-          {/* Real Leaflet Map Engine */}
+          {/* Real Leaflet Map Engine with Google Maps Navigation Route */}
           <RealLeafletMap
             userLocation={userCoords}
             places={places}
@@ -375,11 +495,12 @@ export const SmartMapScreen = ({ navigation, route }) => {
             }}
             mapType={mapLayer}
             showRoute={navigationActive}
+            travelMode={travelMode}
             isDarkMode={isDark}
           />
 
-          {/* Floating Map Controls (Layers, Recenter, Places Count) */}
-          <View style={styles.floatingControls}>
+          {/* Floating Map Controls (Layers, Recenter) */}
+          <View style={[styles.floatingControls, navigationActive && { top: 80 }]}>
             {/* Map Layer Switcher Button */}
             <TouchableOpacity
               onPress={() => setShowLayerMenu(!showLayerMenu)}
@@ -399,7 +520,7 @@ export const SmartMapScreen = ({ navigation, route }) => {
 
           {/* Layer Menu Popup */}
           {showLayerMenu && (
-            <View style={[styles.layerMenu, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <View style={[styles.layerMenu, navigationActive && { top: 125 }, { backgroundColor: theme.card, borderColor: theme.border }]}>
               <Text style={[styles.layerMenuTitle, { color: theme.textSecondary }]}>Map Style</Text>
               {MAP_LAYERS.map((layer) => (
                 <TouchableOpacity
@@ -434,148 +555,261 @@ export const SmartMapScreen = ({ navigation, route }) => {
             </View>
           )}
 
-          {/* Bottom Interactive Place Details Card */}
-          {selectedPlace && (
-            <View style={[styles.bottomSheet, { backgroundColor: theme.card, borderTopColor: theme.border }]}>
+          {/* Google Maps Live Navigation Active Bottom Card */}
+          {navigationActive && selectedPlace ? (
+            <View style={[styles.gmapsBottomHUD, { backgroundColor: theme.card, borderTopColor: theme.border }]}>
               <View style={styles.sheetHandle} />
 
-              <View style={styles.sheetMainRow}>
-                <Image
-                  source={{ uri: selectedPlace.image }}
-                  style={styles.sheetPlaceImage}
-                  resizeMode="cover"
-                />
+              {/* ETA Duration, Distance & Arrival Clock */}
+              <View style={styles.gmapsEtaRow}>
+                <View style={styles.gmapsEtaMain}>
+                  <Text style={styles.gmapsDurationBig}>{currentDurationMins} min</Text>
+                  <Text style={[styles.gmapsDistanceClock, { color: theme.textSecondary }]}>
+                    {selectedPlace.distanceKm} km · {etaClockTime} ETA
+                  </Text>
+                </View>
 
-                <View style={styles.sheetDetails}>
-                  {/* Category Symbol & Subcategory */}
-                  <View style={styles.subCategoryRow}>
-                    <View
+                {/* Close / End Route Button */}
+                <TouchableOpacity
+                  onPress={() => setNavigationActive(false)}
+                  style={styles.gmapsCloseBtn}
+                >
+                  <Ionicons name="close" size={22} color="#EF4444" />
+                </TouchableOpacity>
+              </View>
+
+              {/* Traffic status & Route Tag */}
+              <View style={styles.trafficTagRow}>
+                <View style={styles.trafficPill}>
+                  <Ionicons name="shield-checkmark" size={13} color="#16A34A" />
+                  <Text style={styles.trafficText}>Fastest route · Normal traffic</Text>
+                </View>
+                <Text style={[styles.destNameHeader, { color: theme.text }]} numberOfLines={1}>
+                  to {selectedPlace.name}
+                </Text>
+              </View>
+
+              {/* Travel Mode Selector (Drive / Bike / Walk / Transit) */}
+              <View style={styles.travelModesBar}>
+                {TRAVEL_MODES.map((mode) => {
+                  const isSelected = travelMode === mode.id;
+                  return (
+                    <TouchableOpacity
+                      key={mode.id}
+                      onPress={() => setTravelMode(mode.id)}
                       style={[
-                        styles.symbolBadge,
+                        styles.travelModeBtn,
                         {
-                          backgroundColor: currentSymbol.bg,
-                          borderColor: currentSymbol.color,
+                          backgroundColor: isSelected ? '#1E3A8A' : theme.cardSecondary,
+                          borderColor: isSelected ? '#2563EB' : theme.border,
                         },
                       ]}
                     >
-                      <Text style={styles.symbolEmoji}>{currentSymbol.symbol}</Text>
-                      <Text style={[styles.symbolLabel, { color: currentSymbol.color }]}>
-                        {selectedPlace.subCategory}
+                      <Ionicons
+                        name={mode.icon}
+                        size={15}
+                        color={isSelected ? '#FFFFFF' : theme.textSecondary}
+                      />
+                      <Text
+                        style={[
+                          styles.travelModeText,
+                          { color: isSelected ? '#FFFFFF' : theme.text },
+                        ]}
+                      >
+                        {mode.label}
                       </Text>
-                    </View>
-
-                    <Text style={[styles.distanceText, { color: theme.primary }]}>
-                      {selectedPlace.distanceKm} km away
-                    </Text>
-                  </View>
-
-                  {/* Name */}
-                  <Text style={[styles.sheetPlaceName, { color: theme.text }]} numberOfLines={1}>
-                    {selectedPlace.name}
-                  </Text>
-
-                  {/* ETA & Rating */}
-                  <View style={styles.etaRow}>
-                    <View style={styles.ratingBadge}>
-                      <Ionicons name="star" size={12} color="#F59E0B" />
-                      <Text style={styles.ratingText}>{selectedPlace.rating}</Text>
-                      <Text style={[styles.reviewsText, { color: theme.textMuted }]}>
-                        ({selectedPlace.reviews})
-                      </Text>
-                    </View>
-
-                    <Text style={[styles.etaDot, { color: theme.textMuted }]}>•</Text>
-                    <Text style={[styles.etaText, { color: theme.textSecondary }]}>
-                      🚶 {selectedPlace.walkMinutes} min walk · 🚗 {selectedPlace.driveMinutes} min drive
-                    </Text>
-                  </View>
-
-                  {/* Crowd & Eco Badges */}
-                  <View style={styles.badgesRow}>
-                    {selectedPlace.crowdLevel && (
-                      <CrowdIndicator level={selectedPlace.crowdLevel} compact />
-                    )}
-                    {selectedPlace.ecoScore && (
-                      <EcoScoreBadge score={selectedPlace.ecoScore} size="small" />
-                    )}
-                  </View>
-                </View>
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
 
-              {/* Special Info (Cuisine / Specialty / Emergency / Entry Fee) */}
-              <View style={[styles.infoSnippet, { backgroundColor: theme.cardSecondary }]}>
-                {selectedPlace.category === 'restaurant' && (
-                  <Text style={[styles.snippetText, { color: theme.text }]} numberOfLines={1}>
-                    🍴 <Text style={{ fontFamily: 'Manrope_700Bold' }}>Cuisine:</Text> {selectedPlace.cuisine} ({selectedPlace.priceRange})
-                  </Text>
-                )}
-                {selectedPlace.category === 'hospital' && (
-                  <Text style={[styles.snippetText, { color: '#DC2626' }]} numberOfLines={1}>
-                    🚨 <Text style={{ fontFamily: 'Manrope_700Bold' }}>Emergency Hotline:</Text> {selectedPlace.emergencyHelpline || '108 / 112'}
-                  </Text>
-                )}
-                {selectedPlace.category === 'famous' && (
-                  <Text style={[styles.snippetText, { color: theme.text }]} numberOfLines={1}>
-                    🎟️ <Text style={{ fontFamily: 'Manrope_700Bold' }}>Entry:</Text> {selectedPlace.entryFee > 0 ? `₹${selectedPlace.entryFee}` : 'Free Entry'} · {selectedPlace.openHours}
-                  </Text>
-                )}
-                {selectedPlace.category === 'hotel' && (
-                  <Text style={[styles.snippetText, { color: theme.text }]} numberOfLines={1}>
-                    🏨 <Text style={{ fontFamily: 'Manrope_700Bold' }}>Stay:</Text> ₹{selectedPlace.pricePerNight} / night · {selectedPlace.openHours}
-                  </Text>
-                )}
-                {selectedPlace.category === 'artisan' && (
-                  <Text style={[styles.snippetText, { color: theme.text }]} numberOfLines={1}>
-                    🎨 <Text style={{ fontFamily: 'Manrope_700Bold' }}>Crafts:</Text> {selectedPlace.crafts ? selectedPlace.crafts.join(', ') : 'Traditional Handicrafts'}
-                  </Text>
-                )}
-                {selectedPlace.category === 'transit' && (
-                  <Text style={[styles.snippetText, { color: theme.text }]} numberOfLines={1}>
-                    🚆 <Text style={{ fontFamily: 'Manrope_700Bold' }}>Transit:</Text> {selectedPlace.fare || 'Standard Transit Tariff'}
-                  </Text>
-                )}
-                {selectedPlace.category === 'emergency' && (
-                  <Text style={[styles.snippetText, { color: theme.text }]} numberOfLines={1}>
-                    👮 <Text style={{ fontFamily: 'Manrope_700Bold' }}>Police:</Text> Dial 112 for immediate assistance
-                  </Text>
-                )}
-              </View>
+              {/* Action Buttons: 1-Tap Google Maps Native App & View Steps */}
+              <View style={styles.gmapsActionRow}>
+                <TouchableOpacity
+                  onPress={() => setShowStepsModal(true)}
+                  style={[styles.gmapsStepBtn, { backgroundColor: theme.cardSecondary, borderColor: theme.border }]}
+                >
+                  <Ionicons name="list-outline" size={17} color={theme.text} />
+                  <Text style={[styles.gmapsStepText, { color: theme.text }]}>Steps</Text>
+                </TouchableOpacity>
 
-              {/* Action Buttons */}
-              <View style={styles.sheetActionRow}>
-                {selectedPlace.phone ? (
-                  <TouchableOpacity
-                    onPress={() => handleCallEmergency(selectedPlace.phone)}
-                    style={[styles.actionIconBtn, { backgroundColor: '#FEE2E2', borderColor: '#DC2626' }]}
-                  >
-                    <Ionicons name="call" size={18} color="#DC2626" />
-                  </TouchableOpacity>
-                ) : null}
-
-                <Button
-                  title={navigationActive ? 'Directions Active' : 'Start Directions'}
-                  variant={navigationActive ? 'secondary' : 'primary'}
-                  size="small"
-                  icon="navigate"
-                  onPress={() => handleStartNavigation(selectedPlace)}
-                  style={styles.sheetBtnPrimary}
-                />
-
-                <Button
-                  title="Add to Trip"
-                  variant="outline"
-                  size="small"
-                  icon="add-circle-outline"
-                  onPress={() =>
-                    Alert.alert(
-                      'Added to Travel Plan',
-                      `${selectedPlace.name} has been added to your smart itinerary.`
-                    )
-                  }
-                  style={styles.sheetBtnOutline}
-                />
+                <TouchableOpacity
+                  onPress={() => handleOpenGoogleMapsApp(selectedPlace)}
+                  style={styles.gmapsLaunchBtn}
+                >
+                  <Ionicons name="logo-google" size={16} color="#FFFFFF" />
+                  <Text style={styles.gmapsLaunchText}>Open in Google Maps</Text>
+                  <Ionicons name="open-outline" size={15} color="#FFFFFF" />
+                </TouchableOpacity>
               </View>
             </View>
+          ) : (
+            /* Standard Bottom Selected Place Details Card */
+            selectedPlace && (
+              <View style={[styles.bottomSheet, { backgroundColor: theme.card, borderTopColor: theme.border }]}>
+                <View style={styles.sheetHandle} />
+
+                <View style={styles.sheetMainRow}>
+                  <Image
+                    source={{ uri: selectedPlace.image }}
+                    style={styles.sheetPlaceImage}
+                    resizeMode="cover"
+                  />
+
+                  <View style={styles.sheetDetails}>
+                    {/* Category Symbol & Subcategory */}
+                    <View style={styles.subCategoryRow}>
+                      <View
+                        style={[
+                          styles.symbolBadge,
+                          {
+                            backgroundColor: currentSymbol.bg,
+                            borderColor: currentSymbol.color,
+                          },
+                        ]}
+                      >
+                        <Text style={styles.symbolEmoji}>{currentSymbol.symbol}</Text>
+                        <Text style={[styles.symbolLabel, { color: currentSymbol.color }]}>
+                          {selectedPlace.subCategory}
+                        </Text>
+                      </View>
+
+                      <Text style={[styles.distanceText, { color: theme.primary }]}>
+                        {selectedPlace.distanceKm} km away
+                      </Text>
+                    </View>
+
+                    {/* Name */}
+                    <Text style={[styles.sheetPlaceName, { color: theme.text }]} numberOfLines={1}>
+                      {selectedPlace.name}
+                    </Text>
+
+                    {/* ETA & Rating */}
+                    <View style={styles.etaRow}>
+                      <View style={styles.ratingBadge}>
+                        <Ionicons name="star" size={12} color="#F59E0B" />
+                        <Text style={styles.ratingText}>{selectedPlace.rating}</Text>
+                        <Text style={[styles.reviewsText, { color: theme.textMuted }]}>
+                          ({selectedPlace.reviews})
+                        </Text>
+                      </View>
+
+                      <Text style={[styles.etaDot, { color: theme.textMuted }]}>•</Text>
+                      <Text style={[styles.etaText, { color: theme.textSecondary }]}>
+                        🚗 {selectedPlace.driveMinutes} min drive · 🚶 {selectedPlace.walkMinutes} min
+                      </Text>
+                    </View>
+
+                    {/* Crowd & Eco Badges */}
+                    <View style={styles.badgesRow}>
+                      {selectedPlace.crowdLevel && (
+                        <CrowdIndicator level={selectedPlace.crowdLevel} compact />
+                      )}
+                      {selectedPlace.ecoScore && (
+                        <EcoScoreBadge score={selectedPlace.ecoScore} size="small" />
+                      )}
+                    </View>
+                  </View>
+                </View>
+
+                {/* Special Info (Cuisine / Specialty / Emergency / Entry Fee) */}
+                <View style={[styles.infoSnippet, { backgroundColor: theme.cardSecondary }]}>
+                  {selectedPlace.category === 'restaurant' && (
+                    <Text style={[styles.snippetText, { color: theme.text }]} numberOfLines={1}>
+                      🍴 <Text style={{ fontFamily: 'Manrope_700Bold' }}>Cuisine:</Text> {selectedPlace.cuisine} ({selectedPlace.priceRange})
+                    </Text>
+                  )}
+                  {selectedPlace.category === 'hospital' && (
+                    <Text style={[styles.snippetText, { color: '#DC2626' }]} numberOfLines={1}>
+                      🚨 <Text style={{ fontFamily: 'Manrope_700Bold' }}>Emergency Hotline:</Text> {selectedPlace.emergencyHelpline || '108 / 112'}
+                    </Text>
+                  )}
+                  {selectedPlace.category === 'famous' && (
+                    <Text style={[styles.snippetText, { color: theme.text }]} numberOfLines={1}>
+                      🎟️ <Text style={{ fontFamily: 'Manrope_700Bold' }}>Entry:</Text> {selectedPlace.entryFee > 0 ? `₹${selectedPlace.entryFee}` : 'Free Entry'} · {selectedPlace.openHours}
+                    </Text>
+                  )}
+                  {selectedPlace.category === 'hotel' && (
+                    <Text style={[styles.snippetText, { color: theme.text }]} numberOfLines={1}>
+                      🏨 <Text style={{ fontFamily: 'Manrope_700Bold' }}>Stay:</Text> ₹{selectedPlace.pricePerNight} / night · {selectedPlace.openHours}
+                    </Text>
+                  )}
+                  {selectedPlace.category === 'artisan' && (
+                    <Text style={[styles.snippetText, { color: theme.text }]} numberOfLines={1}>
+                      🎨 <Text style={{ fontFamily: 'Manrope_700Bold' }}>Crafts:</Text> {selectedPlace.crafts ? selectedPlace.crafts.join(', ') : 'Traditional Handicrafts'}
+                    </Text>
+                  )}
+                  {selectedPlace.category === 'transit' && (
+                    <Text style={[styles.snippetText, { color: theme.text }]} numberOfLines={1}>
+                      🚆 <Text style={{ fontFamily: 'Manrope_700Bold' }}>Transit:</Text> {selectedPlace.fare || 'Standard Transit Tariff'}
+                    </Text>
+                  )}
+                  {selectedPlace.category === 'emergency' && (
+                    <Text style={[styles.snippetText, { color: theme.text }]} numberOfLines={1}>
+                      👮 <Text style={{ fontFamily: 'Manrope_700Bold' }}>Police:</Text> Dial 112 for immediate assistance
+                    </Text>
+                  )}
+                </View>
+
+                {/* Action Buttons: Call + Instagram Bookmark + Start Directions + Add to Trip */}
+                <View style={styles.sheetActionRow}>
+                  {selectedPlace.phone ? (
+                    <TouchableOpacity
+                      onPress={() => handleCallEmergency(selectedPlace.phone)}
+                      style={[styles.actionIconBtn, { backgroundColor: '#FEE2E2', borderColor: '#DC2626' }]}
+                    >
+                      <Ionicons name="call" size={18} color="#DC2626" />
+                    </TouchableOpacity>
+                  ) : null}
+
+                  {/* Instagram-Style Bookmark Save Button */}
+                  <TouchableOpacity
+                    onPress={() => {
+                      const nowSaved = toggleSavePlace(selectedPlace);
+                      setToastVisible(nowSaved);
+                    }}
+                    style={[
+                      styles.actionIconBtn,
+                      {
+                        backgroundColor: isCurrentSaved ? '#2563EB' : theme.cardSecondary,
+                        borderColor: isCurrentSaved ? '#2563EB' : theme.border,
+                      },
+                    ]}
+                  >
+                    <Ionicons
+                      name={isCurrentSaved ? 'bookmark' : 'bookmark-outline'}
+                      size={18}
+                      color={isCurrentSaved ? '#FFFFFF' : theme.text}
+                    />
+                  </TouchableOpacity>
+
+                  {/* Start Google Maps Turn-by-Turn Navigation */}
+                  <Button
+                    title="Directions"
+                    variant="primary"
+                    size="small"
+                    icon="navigate"
+                    onPress={() => handleStartNavigation(selectedPlace)}
+                    style={styles.sheetBtnPrimary}
+                  />
+
+                  {/* Add to Travel Plan */}
+                  <Button
+                    title="Add to Trip"
+                    variant="outline"
+                    size="small"
+                    icon="add-circle-outline"
+                    onPress={() =>
+                      Alert.alert(
+                        'Added to Travel Plan',
+                        `${selectedPlace.name} has been added to your smart itinerary.`
+                      )
+                    }
+                    style={styles.sheetBtnOutline}
+                  />
+                </View>
+              </View>
+            )
           )}
         </View>
       ) : (
@@ -587,6 +821,7 @@ export const SmartMapScreen = ({ navigation, route }) => {
 
           {places.map((place) => {
             const sym = place.symbolConfig || { symbol: '📍', color: theme.primary, bg: theme.primaryLight };
+            const isSaved = isPlaceSaved(place.id);
             return (
               <TouchableOpacity
                 key={place.id}
@@ -607,9 +842,25 @@ export const SmartMapScreen = ({ navigation, route }) => {
                       </Text>
                     </View>
 
-                    <Text style={[styles.cardDistance, { color: theme.primary }]}>
-                      {place.distanceKm} km
-                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Text style={[styles.cardDistance, { color: theme.primary }]}>
+                        {place.distanceKm} km
+                      </Text>
+                      {/* Instagram Bookmark in list item */}
+                      <TouchableOpacity
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          const nowSaved = toggleSavePlace(place);
+                          setToastVisible(nowSaved);
+                        }}
+                      >
+                        <Ionicons
+                          name={isSaved ? 'bookmark' : 'bookmark-outline'}
+                          size={16}
+                          color={isSaved ? '#2563EB' : theme.textSecondary}
+                        />
+                      </TouchableOpacity>
+                    </View>
                   </View>
 
                   <Text style={[styles.cardName, { color: theme.text }]} numberOfLines={1}>
@@ -627,10 +878,17 @@ export const SmartMapScreen = ({ navigation, route }) => {
                     </View>
 
                     <Text style={[styles.cardEta, { color: theme.textMuted }]}>
-                      🚶 {place.walkMinutes}m · 🚗 {place.driveMinutes}m
+                      🚗 {place.driveMinutes}m · 🚶 {place.walkMinutes}m
                     </Text>
 
-                    {place.crowdLevel && <CrowdIndicator level={place.crowdLevel} compact />}
+                    {/* 1-Touch Start Directions */}
+                    <TouchableOpacity
+                      onPress={() => handleStartNavigation(place)}
+                      style={styles.cardDirectBtn}
+                    >
+                      <Ionicons name="navigate" size={13} color="#FFFFFF" />
+                      <Text style={styles.cardDirectText}>Directions</Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
               </TouchableOpacity>
@@ -638,6 +896,70 @@ export const SmartMapScreen = ({ navigation, route }) => {
           })}
         </ScrollView>
       )}
+
+      {/* Floating Instagram-Style Saved Toast Popup */}
+      <SavedToast
+        visible={toastVisible}
+        place={selectedPlace}
+        collectionName="All Saved"
+        onViewSaved={() => {
+          setToastVisible(false);
+          navigation.navigate('TripsTab', { initialTab: 'saved' });
+        }}
+        onDismiss={() => setToastVisible(false)}
+      />
+
+      {/* Turn-by-Turn Step Directions Modal */}
+      <Modal visible={showStepsModal} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalBox, { backgroundColor: theme.card }]}>
+            <View style={styles.modalHeader}>
+              <View style={styles.modalHeaderTitleWrap}>
+                <Ionicons name="navigate" size={20} color="#16A34A" />
+                <Text style={[styles.modalTitle, { color: theme.text }]}>Turn-by-Turn Directions</Text>
+              </View>
+              <TouchableOpacity onPress={() => setShowStepsModal(false)}>
+                <Ionicons name="close" size={22} color={theme.text} />
+              </TouchableOpacity>
+            </View>
+
+            {selectedPlace && (
+              <View style={[styles.stepDestinationBanner, { backgroundColor: theme.cardSecondary }]}>
+                <Text style={[styles.stepDestName, { color: theme.text }]}>Destination: {selectedPlace.name}</Text>
+                <Text style={[styles.stepDestDetails, { color: theme.textSecondary }]}>
+                  {selectedPlace.distanceKm} km · {currentDurationMins} mins via Coastal Arterial
+                </Text>
+              </View>
+            )}
+
+            <ScrollView style={{ maxHeight: 360 }}>
+              {turnSteps.map((step, idx) => (
+                <View key={step.id} style={[styles.stepItemRow, { borderBottomColor: theme.border }]}>
+                  <View style={styles.stepIconBubble}>
+                    <Ionicons name={step.icon} size={18} color="#16A34A" />
+                  </View>
+                  <View style={styles.stepTextWrap}>
+                    <Text style={[styles.stepInstruction, { color: theme.text }]}>{step.instruction}</Text>
+                    <Text style={[styles.stepDistance, { color: theme.primary }]}>{step.distance}</Text>
+                  </View>
+                </View>
+              ))}
+            </ScrollView>
+
+            <View style={styles.stepModalActions}>
+              <Button
+                title="Launch Google Maps App"
+                variant="primary"
+                icon="logo-google"
+                onPress={() => {
+                  setShowStepsModal(false);
+                  handleOpenGoogleMapsApp(selectedPlace);
+                }}
+              />
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       {/* Preset City Switcher Modal */}
       <Modal visible={showCityPicker} transparent animationType="slide">
@@ -751,6 +1073,235 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+
+  /* Google Maps Navigation Top Header */
+  gmapsTopHeader: {
+    backgroundColor: '#065F46',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  gmapsTopContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  gmapsManeuverCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#047857',
+    borderWidth: 2,
+    borderColor: '#34D399',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  gmapsInstructionWrap: {
+    flex: 1,
+  },
+  gmapsDistanceNext: {
+    color: '#34D399',
+    fontSize: 12,
+    fontFamily: 'Manrope_700Bold',
+    textTransform: 'uppercase',
+  },
+  gmapsManeuverText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontFamily: 'Manrope_700Bold',
+  },
+  gmapsTowardText: {
+    color: '#E2E8F0',
+    fontSize: 11.5,
+    fontFamily: 'Manrope_500Medium',
+  },
+  gmapsVoiceBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#047857',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  /* Google Maps Bottom HUD */
+  gmapsBottomHUD: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    borderTopLeftRadius: 22,
+    borderTopRightRadius: 22,
+    borderTopWidth: 1,
+    padding: 16,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+  },
+  gmapsEtaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+  gmapsEtaMain: {
+    flex: 1,
+  },
+  gmapsDurationBig: {
+    fontSize: 24,
+    fontFamily: 'Manrope_800ExtraBold',
+    color: '#10B981',
+  },
+  gmapsDistanceClock: {
+    fontSize: 12,
+    fontFamily: 'Manrope_600SemiBold',
+    marginTop: 1,
+  },
+  gmapsCloseBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#FEE2E2',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  trafficTagRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 10,
+  },
+  trafficPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#DCFCE7',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  trafficText: {
+    color: '#15803D',
+    fontSize: 11,
+    fontFamily: 'Manrope_700Bold',
+  },
+  destNameHeader: {
+    fontSize: 12,
+    fontFamily: 'Manrope_600SemiBold',
+    flex: 1,
+  },
+  travelModesBar: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 12,
+  },
+  travelModeBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    paddingVertical: 7,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  travelModeText: {
+    fontSize: 11.5,
+    fontFamily: 'Manrope_700Bold',
+  },
+  gmapsActionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  gmapsStepBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  gmapsStepText: {
+    fontSize: 13,
+    fontFamily: 'Manrope_700Bold',
+  },
+  gmapsLaunchBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 7,
+    backgroundColor: '#2563EB',
+    paddingVertical: 11,
+    borderRadius: 12,
+    elevation: 3,
+  },
+  gmapsLaunchText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontFamily: 'Manrope_700Bold',
+  },
+
+  /* Step Directions Modal */
+  modalHeaderTitleWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  stepDestinationBanner: {
+    padding: 10,
+    borderRadius: 10,
+    marginBottom: 12,
+  },
+  stepDestName: {
+    fontSize: 13,
+    fontFamily: 'Manrope_700Bold',
+  },
+  stepDestDetails: {
+    fontSize: 11,
+    fontFamily: 'Manrope_500Medium',
+    marginTop: 2,
+  },
+  stepItemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 11,
+    borderBottomWidth: 1,
+  },
+  stepIconBubble: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: '#DCFCE7',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepTextWrap: {
+    flex: 1,
+  },
+  stepInstruction: {
+    fontSize: 13,
+    fontFamily: 'Manrope_600SemiBold',
+    lineHeight: 18,
+  },
+  stepDistance: {
+    fontSize: 11,
+    fontFamily: 'Manrope_700Bold',
+    marginTop: 2,
+  },
+  stepModalActions: {
+    marginTop: 14,
+  },
+
   permissionBanner: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1118,11 +1669,25 @@ const styles = StyleSheet.create({
   cardFooter: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'space-between',
   },
   cardEta: {
     fontSize: 10,
     fontFamily: 'Manrope_500Medium',
+  },
+  cardDirectBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#2563EB',
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  cardDirectText: {
+    color: '#FFFFFF',
+    fontSize: 10.5,
+    fontFamily: 'Manrope_700Bold',
   },
   modalOverlay: {
     flex: 1,
@@ -1133,7 +1698,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 18,
-    maxHeight: height * 0.7,
+    maxHeight: height * 0.75,
   },
   modalHeader: {
     flexDirection: 'row',

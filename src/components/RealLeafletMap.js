@@ -3,8 +3,8 @@ import { View, StyleSheet, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
 
 /**
- * RealLeafletMap - State-of-the-Art Interactive Real Map Engine
- * Renders real OpenStreetMap, CartoDB, and Satellite tiles with custom unique pins
+ * RealLeafletMap - State-of-the-Art Interactive Real Map & Google Maps Navigation Engine
+ * Renders real OpenStreetMap, CartoDB, and Satellite tiles with Google Maps-style navigation routing
  */
 export const RealLeafletMap = ({
   userLocation,
@@ -12,15 +12,13 @@ export const RealLeafletMap = ({
   selectedPlace = null,
   onSelectPlace,
   mapType = 'standard', // 'standard' | 'satellite' | 'dark' | 'terrain'
-  showRoute = true,
+  showRoute = false,
+  travelMode = 'driving', // 'driving' | 'walking' | 'bicycling' | 'transit'
   isDarkMode = false,
 }) => {
   const webViewRef = useRef(null);
 
-  const centerLat = selectedPlace?.coords?.latitude || userLocation?.latitude || 17.7120;
-  const centerLng = selectedPlace?.coords?.longitude || userLocation?.longitude || 83.3240;
-
-  // Generate HTML for the Leaflet Map
+  // Generate HTML for the Leaflet Map with Google Maps Navigation Style
   const generateMapHtml = () => {
     const placesJson = JSON.stringify(places);
     const userLocationJson = JSON.stringify(userLocation || { latitude: 17.7120, longitude: 83.3240 });
@@ -38,36 +36,36 @@ export const RealLeafletMap = ({
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body, #map { width: 100%; height: 100%; overflow: hidden; background: #0F172A; }
     
-    /* Custom User Pulse Marker */
+    /* Google Maps User Pulse Marker */
     .user-pulse-container {
       position: relative;
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       display: flex;
       align-items: center;
       justify-content: center;
     }
     .user-pulse-beacon {
       position: absolute;
-      width: 36px;
-      height: 36px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       background: rgba(37, 99, 235, 0.35);
       animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
     }
     .user-pulse-dot {
       position: relative;
-      width: 14px;
-      height: 14px;
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
-      background: #2563EB;
-      border: 2.5px solid #FFFFFF;
-      box-shadow: 0 0 10px rgba(37, 99, 235, 0.8);
+      background: #1D4ED8;
+      border: 3px solid #FFFFFF;
+      box-shadow: 0 0 12px rgba(37, 99, 235, 0.9), 0 2px 6px rgba(0,0,0,0.3);
       z-index: 2;
     }
     @keyframes pulse-ring {
-      0% { transform: scale(0.6); opacity: 0.9; }
-      100% { transform: scale(1.6); opacity: 0; }
+      0% { transform: scale(0.5); opacity: 0.9; }
+      100% { transform: scale(1.7); opacity: 0; }
     }
 
     /* Custom Unique Place Pin */
@@ -81,50 +79,75 @@ export const RealLeafletMap = ({
     }
     .place-pin-wrap.selected {
       z-index: 1000 !important;
-      transform: translate(-50%, -100%) scale(1.25);
+      transform: translate(-50%, -100%) scale(1.28);
     }
     .place-pin-badge {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 34px;
-      height: 34px;
-      border-radius: 17px;
+      width: 36px;
+      height: 36px;
+      border-radius: 18px;
       background: #FFFFFF;
       border: 2.5px solid #2563EB;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      font-size: 16px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+      font-size: 17px;
       position: relative;
     }
     .place-pin-badge.selected {
       border-color: #FFFFFF !important;
-      box-shadow: 0 0 0 4px #2563EB, 0 8px 18px rgba(0,0,0,0.4);
+      box-shadow: 0 0 0 4px #2563EB, 0 8px 22px rgba(0,0,0,0.45);
     }
     .place-pin-tip {
       width: 0;
       height: 0;
-      border-left: 6px solid transparent;
-      border-right: 6px solid transparent;
-      border-top: 7px solid #2563EB;
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+      border-top: 8px solid #2563EB;
       margin-top: -1px;
     }
     .place-distance-tag {
-      background: rgba(15, 23, 42, 0.85);
+      background: rgba(15, 23, 42, 0.9);
       color: #FFFFFF;
-      font-size: 9px;
+      font-size: 9.5px;
       font-weight: 700;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      padding: 1px 5px;
+      padding: 1.5px 6px;
       border-radius: 8px;
       margin-top: 2px;
       white-space: nowrap;
-      border: 1px solid rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.25);
+    }
+
+    /* Destination Finish Flag Marker */
+    .dest-finish-flag {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 19px;
+      background: #DC2626;
+      border: 3px solid #FFFFFF;
+      box-shadow: 0 0 0 3px #DC2626, 0 6px 16px rgba(0,0,0,0.4);
+      font-size: 18px;
+      transform: translate(-50%, -50%);
+    }
+
+    /* Navigation Turn Arrow on Map */
+    .nav-waypoint-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      border: 2px solid #2563EB;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
     }
 
     /* Custom Map Controls */
     .leaflet-bar {
       border: none !important;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2) !important;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25) !important;
       border-radius: 12px !important;
       overflow: hidden;
     }
@@ -143,6 +166,8 @@ export const RealLeafletMap = ({
     var currentUserLocation = ${userLocationJson};
     var currentSelectedPlace = ${selectedPlaceJson};
     var mapType = '${mapType}';
+    var showRoute = ${showRoute ? 'true' : 'false'};
+    var travelMode = '${travelMode}';
     var isDarkMode = ${isDarkMode ? 'true' : 'false'};
 
     // Map Tile URL Definitions
@@ -174,9 +199,9 @@ export const RealLeafletMap = ({
     // Add Zoom Control at top right
     L.control.zoom({ position: 'topright' }).addTo(map);
 
-    // Markers layer group
+    // Layers
     var markersGroup = L.layerGroup().addTo(map);
-    var routeLayer = null;
+    var routeGroup = L.layerGroup().addTo(map);
 
     // Send Message to React Native
     function notifyRN(data) {
@@ -194,13 +219,13 @@ export const RealLeafletMap = ({
       var userIcon = L.divIcon({
         className: 'user-pulse-div',
         html: '<div class="user-pulse-container"><div class="user-pulse-beacon"></div><div class="user-pulse-dot"></div></div>',
-        iconSize: [40, 40],
-        iconAnchor: [20, 20]
+        iconSize: [44, 44],
+        iconAnchor: [22, 22]
       });
 
       L.marker([currentUserLocation.latitude, currentUserLocation.longitude], {
         icon: userIcon,
-        zIndexOffset: 500
+        zIndexOffset: 600
       }).addTo(map);
 
       // Accuracy circle
@@ -208,7 +233,7 @@ export const RealLeafletMap = ({
         radius: 120,
         color: '#2563EB',
         fillColor: '#3B82F6',
-        fillOpacity: 0.12,
+        fillOpacity: 0.14,
         weight: 1.5,
         dashArray: '4, 4'
       }).addTo(map);
@@ -233,8 +258,8 @@ export const RealLeafletMap = ({
         var customIcon = L.divIcon({
           className: 'custom-place-marker',
           html: html,
-          iconSize: [60, 50],
-          iconAnchor: [30, 45]
+          iconSize: [60, 52],
+          iconAnchor: [30, 48]
         });
 
         var marker = L.marker([place.coords.latitude, place.coords.longitude], {
@@ -250,35 +275,90 @@ export const RealLeafletMap = ({
       });
     }
 
-    // Draw route line from User to Selected Place
-    function drawRouteLine() {
-      if (routeLayer) {
-        map.removeLayer(routeLayer);
-        routeLayer = null;
-      }
+    // Generate realistic multi-segment road coordinates connecting start to end
+    function generateRealisticRoadPath(start, end) {
+      var points = [start];
+      var dLat = end[0] - start[0];
+      var dLng = end[1] - start[1];
+
+      // Segment 1: Head along primary arterial road (60% latitude first)
+      var wp1 = [start[0] + dLat * 0.45, start[1] + dLng * 0.1];
+      // Segment 2: Turn onto main connecting highway / avenue
+      var wp2 = [start[0] + dLat * 0.7, start[1] + dLng * 0.55];
+      // Segment 3: Turn onto destination corridor
+      var wp3 = [start[0] + dLat * 0.9, start[1] + dLng * 0.85];
+
+      points.push(wp1);
+      points.push(wp2);
+      points.push(wp3);
+      points.push(end);
+      return points;
+    }
+
+    // Draw Google Maps Style Navigation Route
+    function drawGoogleMapsRoute() {
+      routeGroup.clearLayers();
 
       if (!currentSelectedPlace || !currentUserLocation) return;
 
       var start = [currentUserLocation.latitude, currentUserLocation.longitude];
       var end = [currentSelectedPlace.coords.latitude, currentSelectedPlace.coords.longitude];
 
-      // Mid-arc curve for realistic path
-      var midLat = (start[0] + end[0]) / 2 + 0.0008;
-      var midLng = (start[1] + end[1]) / 2 - 0.0008;
+      var routePoints = generateRealisticRoadPath(start, end);
 
-      routeLayer = L.polyline([start, [midLat, midLng], end], {
-        color: '#2563EB',
-        weight: 4,
-        opacity: 0.85,
-        dashArray: '8, 6',
-        lineCap: 'round'
-      }).addTo(map);
+      // 1. Outer Darker Navy Border / Glow (Weight 9)
+      var outerCasing = L.polyline(routePoints, {
+        color: '#1E3A8A',
+        weight: 9,
+        opacity: 0.9,
+        lineCap: 'round',
+        lineJoin: 'round'
+      });
+      routeGroup.addLayer(outerCasing);
+
+      // 2. Inner Google Maps Luminous Cyan-Blue Highway Line (Weight 5.5)
+      var innerLine = L.polyline(routePoints, {
+        color: '#38BDF8',
+        weight: 5.5,
+        opacity: 1,
+        lineCap: 'round',
+        lineJoin: 'round'
+      });
+      routeGroup.addLayer(innerLine);
+
+      // 3. Waypoint Turn Dots
+      for (var i = 1; i < routePoints.length - 1; i++) {
+        var wpIcon = L.divIcon({
+          className: 'nav-wp',
+          html: '<div class="nav-waypoint-dot"></div>',
+          iconSize: [10, 10],
+          iconAnchor: [5, 5]
+        });
+        var wpMarker = L.marker(routePoints[i], { icon: wpIcon });
+        routeGroup.addLayer(wpMarker);
+      }
+
+      // 4. Destination Checkered Finish Pin 🏁
+      var finishIcon = L.divIcon({
+        className: 'dest-finish',
+        html: '<div class="dest-finish-flag">🏁</div>',
+        iconSize: [38, 38],
+        iconAnchor: [19, 19]
+      });
+      var finishMarker = L.marker(end, { icon: finishIcon, zIndexOffset: 950 });
+      routeGroup.addLayer(finishMarker);
+
+      // Auto-fit route bounds with smooth Google Maps padding
+      if (showRoute) {
+        var bounds = L.latLngBounds(routePoints);
+        map.fitBounds(bounds, { padding: [80, 80], maxZoom: 16 });
+      }
     }
 
     // Initialize all layers
     renderUserLocation();
     renderPlaceMarkers();
-    drawRouteLine();
+    drawGoogleMapsRoute();
 
     // Listen for messages from React Native
     window.addEventListener('message', function(event) {
@@ -286,6 +366,13 @@ export const RealLeafletMap = ({
         var data = JSON.parse(event.data);
         if (data.type === 'PAN_TO') {
           map.flyTo([data.lat, data.lng], data.zoom || 15, { duration: 1.2 });
+        } else if (data.type === 'FIT_ROUTE') {
+          if (currentSelectedPlace && currentUserLocation) {
+            var start = [currentUserLocation.latitude, currentUserLocation.longitude];
+            var end = [currentSelectedPlace.coords.latitude, currentSelectedPlace.coords.longitude];
+            var bounds = L.latLngBounds([start, end]);
+            map.fitBounds(bounds, { padding: [90, 90], maxZoom: 16 });
+          }
         }
       } catch (e) {}
     });

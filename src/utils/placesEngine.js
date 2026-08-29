@@ -7,7 +7,7 @@ export const PLACE_CATEGORIES = [
   { id: 'all', label: 'All Places', icon: 'map-outline', color: '#6366F1', bg: '#EEF2FF', count: 0 },
   { id: 'restaurant', label: 'Restaurants & Cafes', icon: 'restaurant-outline', color: '#EA580C', bg: '#FFEDD5', count: 0 },
   { id: 'hospital', label: 'Hospitals & Medical', icon: 'medkit-outline', color: '#DC2626', bg: '#FEE2E2', count: 0 },
-  { id: 'famous', label: 'Famous Places & Sights', icon: 'landmark-outline', color: '#0D9488', bg: '#CCFBF1', count: 0 },
+  { id: 'famous', label: 'Famous Places & Sights', icon: 'compass-outline', color: '#0D9488', bg: '#CCFBF1', count: 0 },
   { id: 'hotel', label: 'Hotels & Eco-Stays', icon: 'bed-outline', color: '#2563EB', bg: '#EFF6FF', count: 0 },
   { id: 'artisan', label: 'Artisans & Crafts', icon: 'color-palette-outline', color: '#9333EA', bg: '#F3E8FF', count: 0 },
   { id: 'transit', label: 'Transit & EV Hubs', icon: 'train-outline', color: '#16A34A', bg: '#DCFCE7', count: 0 },

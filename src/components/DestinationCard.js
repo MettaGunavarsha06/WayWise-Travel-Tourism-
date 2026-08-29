@@ -2,12 +2,21 @@ import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
+import { useTrips } from '../context/TripContext';
 import { CrowdIndicator } from './CrowdIndicator';
 import { EcoScoreBadge } from './EcoScoreBadge';
 import { formatCurrency } from '../utils/helpers';
 
 export const DestinationCard = ({ destination, onPress, style, horizontal = false }) => {
   const { theme } = useTheme();
+  const { toggleSavePlace, isPlaceSaved } = useTrips();
+
+  const isSaved = isPlaceSaved(destination.id);
+
+  const handleSavePress = (e) => {
+    e.stopPropagation();
+    toggleSavePlace(destination);
+  };
 
   if (horizontal) {
     return (
@@ -26,11 +35,25 @@ export const DestinationCard = ({ destination, onPress, style, horizontal = fals
       >
         <View style={styles.hImageWrap}>
           <Image source={{ uri: destination.image }} style={styles.horizontalImage} resizeMode="cover" />
+          
           {/* Overlay rating badge */}
           <View style={styles.hOverlayRating}>
             <Ionicons name="star" size={11} color="#F59E0B" />
             <Text style={styles.hOverlayRatingText}>{destination.rating}</Text>
           </View>
+
+          {/* Instagram-Style Bookmark Save Icon */}
+          <TouchableOpacity
+            onPress={handleSavePress}
+            style={[styles.hOverlayBookmark, isSaved && { backgroundColor: '#2563EB' }]}
+            activeOpacity={0.8}
+          >
+            <Ionicons
+              name={isSaved ? 'bookmark' : 'bookmark-outline'}
+              size={14}
+              color={isSaved ? '#FFFFFF' : '#FFFFFF'}
+            />
+          </TouchableOpacity>
         </View>
 
         <View style={styles.horizontalContent}>
@@ -92,9 +115,28 @@ export const DestinationCard = ({ destination, onPress, style, horizontal = fals
           </View>
         )}
 
-        <View style={styles.overlayRating}>
-          <Ionicons name="star" size={12} color="#F59E0B" />
-          <Text style={styles.overlayRatingText}>{destination.rating}</Text>
+        {/* Top Right Badges: Rating + Bookmark */}
+        <View style={styles.topRightBadgeGroup}>
+          <View style={styles.overlayRating}>
+            <Ionicons name="star" size={12} color="#F59E0B" />
+            <Text style={styles.overlayRatingText}>{destination.rating}</Text>
+          </View>
+
+          {/* Instagram-Style Bookmark Button */}
+          <TouchableOpacity
+            onPress={handleSavePress}
+            style={[
+              styles.overlayBookmark,
+              isSaved && { backgroundColor: '#2563EB', borderColor: '#2563EB' },
+            ]}
+            activeOpacity={0.8}
+          >
+            <Ionicons
+              name={isSaved ? 'bookmark' : 'bookmark-outline'}
+              size={15}
+              color={isSaved ? '#FFFFFF' : '#FFFFFF'}
+            />
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -183,10 +225,15 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontFamily: 'Manrope_700Bold',
   },
-  overlayRating: {
+  topRightBadgeGroup: {
     position: 'absolute',
     top: 12,
     right: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  overlayRating: {
     backgroundColor: 'rgba(15, 23, 42, 0.82)',
     flexDirection: 'row',
     alignItems: 'center',
@@ -199,6 +246,14 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 11,
     fontFamily: 'Manrope_700Bold',
+  },
+  overlayBookmark: {
+    backgroundColor: 'rgba(15, 23, 42, 0.82)',
+    width: 28,
+    height: 28,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   content: {
     padding: 14,
@@ -296,7 +351,7 @@ const styles = StyleSheet.create({
   hOverlayRating: {
     position: 'absolute',
     top: 10,
-    right: 10,
+    left: 10,
     backgroundColor: 'rgba(15, 23, 42, 0.82)',
     flexDirection: 'row',
     alignItems: 'center',
@@ -309,6 +364,17 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 11,
     fontFamily: 'Manrope_700Bold',
+  },
+  hOverlayBookmark: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: 'rgba(15, 23, 42, 0.82)',
+    width: 26,
+    height: 26,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   horizontalContent: {
     padding: 12,

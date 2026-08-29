@@ -250,11 +250,11 @@ export const WeatherScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top']}>
-      {/* Top App Header & Vatavaranam Engine Badge */}
+      {/* Top App Header & Weather Engine Badge */}
       <View style={[styles.topBar, { borderBottomColor: theme.border }]}>
         <View style={styles.brandRow}>
           <View style={[styles.liveDot, { backgroundColor: '#10B981' }]} />
-          <Text style={[styles.brandTitle, { color: theme.text }]}>Vatavaranam X</Text>
+          <Text style={[styles.brandTitle, { color: theme.text }]}>Weather</Text>
           <View style={[styles.engineBadge, { backgroundColor: theme.primaryLight }]}>
             <Text style={[styles.engineBadgeText, { color: theme.primary }]}>LIVE TELEMETRY</Text>
           </View>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,9 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
+  Modal,
+  TextInput,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,13 +21,29 @@ import { CrowdIndicator } from '../../components/CrowdIndicator';
 import { EcoScoreBadge } from '../../components/EcoScoreBadge';
 import { BusinessCard } from '../../components/BusinessCard';
 import { Button } from '../../components/Button';
+import { SavedToast } from '../../components/SavedToast';
 import { formatCurrency } from '../../utils/helpers';
 
 export const DestinationDetailScreen = ({ route, navigation }) => {
   const { destination } = route.params;
   const { theme } = useTheme();
-  const { createTrip } = useTrips();
+  const {
+    createTrip,
+    toggleSavePlace,
+    isPlaceSaved,
+    savedCollections,
+    createCollection,
+  } = useTrips();
   const { getBusinessesByDestination } = useBusinesses();
+
+  const [isLiked, setIsLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(destination.reviews ? destination.reviews + 420 : 1840);
+  const [toastVisible, setToastVisible] = useState(false);
+  const [activeCollectionName, setActiveCollectionName] = useState('All Saved');
+  const [showCollectionModal, setShowCollectionModal] = useState(false);
+  const [newCollectionName, setNewCollectionName] = useState('');
+
+  const isSaved = isPlaceSaved(destination.id);
 
   const destinationWeather = weatherData[destination.id] || defaultWeather;
   const destinationCrowd = crowdData[destination.id];
@@ -37,22 +56,78 @@ export const DestinationDetailScreen = ({ route, navigation }) => {
     });
   };
 
+  // Instagram-style Save Toggle
+  const handleToggleSave = () => {
+    const nowSaved = toggleSavePlace(destination, activeCollectionName);
+    if (nowSaved) {
+      setToastVisible(true);
+    } else {
+      setToastVisible(false);
+    }
+  };
+
+  const handleSelectCollection = (colName) => {
+    setActiveCollectionName(colName);
+    toggleSavePlace(destination, colName);
+    setShowCollectionModal(false);
+    setToastVisible(true);
+  };
+
+  const handleCreateNewCollection = () => {
+    if (!newCollectionName.trim()) return;
+    createCollection(newCollectionName.trim());
+    handleSelectCollection(newCollectionName.trim());
+    setNewCollectionName('');
+  };
+
+  const handleToggleLike = () => {
+    setIsLiked(!isLiked);
+    setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       {/* Top Banner Image with Navigation Bar */}
       <View style={styles.bannerContainer}>
-        <Image source={{ uri: destination.banner || destination.image }} style={styles.bannerImage} resizeMode="cover" />
+        <Image
+          source={{ uri: destination.banner || destination.image }}
+          style={styles.bannerImage}
+          resizeMode="cover"
+        />
         <View style={styles.overlayNav}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.circleBtn}
-          >
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.circleBtn}>
             <Ionicons name="arrow-back" size={20} color="#0F172A" />
           </TouchableOpacity>
+
+          {/* Instagram-Style Actions: Like, Save to Collection, and Map */}
           <View style={styles.rightNavBtns}>
-            <TouchableOpacity style={styles.circleBtn}>
-              <Ionicons name="heart-outline" size={20} color="#0F172A" />
+            {/* Heart / Like Button */}
+            <TouchableOpacity onPress={handleToggleLike} style={styles.circleBtn}>
+              <Ionicons
+                name={isLiked ? 'heart' : 'heart-outline'}
+                size={20}
+                color={isLiked ? '#EF4444' : '#0F172A'}
+              />
             </TouchableOpacity>
+
+            {/* Instagram Bookmark / Saved Button */}
+            <TouchableOpacity
+              onPress={handleToggleSave}
+              onLongPress={() => setShowCollectionModal(true)}
+              style={[
+                styles.circleBtn,
+                isSaved && { backgroundColor: '#2563EB' },
+              ]}
+              activeOpacity={0.8}
+            >
+              <Ionicons
+                name={isSaved ? 'bookmark' : 'bookmark-outline'}
+                size={20}
+                color={isSaved ? '#FFFFFF' : '#0F172A'}
+              />
+            </TouchableOpacity>
+
+            {/* Smart Map Shortcut */}
             <TouchableOpacity
               onPress={() => navigation.navigate('SmartMap', { selectedDestId: destination.id })}
               style={styles.circleBtn}
@@ -85,6 +160,25 @@ export const DestinationDetailScreen = ({ route, navigation }) => {
               <Text style={styles.ratingText}>{destination.rating}</Text>
               <Text style={styles.reviewText}>({destination.reviews})</Text>
             </View>
+          </View>
+
+          {/* Social Proof Row (Likes & Saved Indicator) */}
+          <View style={styles.socialProofRow}>
+            <View style={styles.socialItem}>
+              <Ionicons name="heart" size={13} color="#EF4444" />
+              <Text style={[styles.socialText, { color: theme.textSecondary }]}>
+                {likeCount.toLocaleString()} travelers liked this
+              </Text>
+            </View>
+            {isSaved && (
+              <TouchableOpacity
+                onPress={() => setShowCollectionModal(true)}
+                style={styles.savedBadgePill}
+              >
+                <Ionicons name="bookmark" size={11} color="#2563EB" />
+                <Text style={styles.savedBadgeText}>Saved in {activeCollectionName}</Text>
+              </TouchableOpacity>
+            )}
           </View>
 
           {/* Crowd & Eco Badges */}
@@ -220,24 +314,6 @@ export const DestinationDetailScreen = ({ route, navigation }) => {
           ))}
         </View>
 
-        {/* Weather-Protected Alternatives */}
-        {destination.indoorAlternatives && (
-          <View style={[styles.card, { backgroundColor: '#F0FDF4', borderColor: '#BBF7D0' }]}>
-            <Text style={[styles.cardTitle, { color: '#166534' }]}>
-              Weather-Adapted Indoor Experiences
-            </Text>
-            <Text style={[styles.indoorSubtitle, { color: '#15803D' }]}>
-              Sheltered cultural destinations if rainfall or high heat occurs:
-            </Text>
-            {destination.indoorAlternatives.map((alt, idx) => (
-              <View key={idx} style={styles.indoorItem}>
-                <Text style={styles.indoorName}>{alt.name}</Text>
-                <Text style={styles.indoorDesc}>{alt.desc}</Text>
-              </View>
-            ))}
-          </View>
-        )}
-
         {/* Nearby Local Businesses */}
         {nearbyBizList.length > 0 && (
           <>
@@ -252,6 +328,94 @@ export const DestinationDetailScreen = ({ route, navigation }) => {
 
         <View style={{ height: 90 }} />
       </ScrollView>
+
+      {/* Floating Instagram-Style Saved Toast Popup */}
+      <SavedToast
+        visible={toastVisible}
+        place={destination}
+        collectionName={activeCollectionName}
+        onChangeCollection={() => setShowCollectionModal(true)}
+        onViewSaved={() => {
+          setToastVisible(false);
+          navigation.navigate('TripsTab', { initialTab: 'saved' });
+        }}
+        onDismiss={() => setToastVisible(false)}
+      />
+
+      {/* Instagram-Style Save to Collection Picker Modal */}
+      <Modal visible={showCollectionModal} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalBox, { backgroundColor: theme.card }]}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, { color: theme.text }]}>Save to Collection</Text>
+              <TouchableOpacity onPress={() => setShowCollectionModal(false)}>
+                <Ionicons name="close" size={22} color={theme.text} />
+              </TouchableOpacity>
+            </View>
+
+            {/* List Existing Collections */}
+            <ScrollView style={{ maxHeight: 220 }}>
+              {savedCollections.map((col) => {
+                const isSelected = activeCollectionName === col;
+                return (
+                  <TouchableOpacity
+                    key={col}
+                    onPress={() => handleSelectCollection(col)}
+                    style={[
+                      styles.collectionItem,
+                      {
+                        backgroundColor: isSelected ? theme.primaryLight : theme.cardSecondary,
+                        borderColor: isSelected ? theme.primary : theme.border,
+                      },
+                    ]}
+                  >
+                    <Ionicons
+                      name="bookmark"
+                      size={18}
+                      color={isSelected ? theme.primary : theme.textSecondary}
+                    />
+                    <Text
+                      style={[
+                        styles.collectionName,
+                        { color: isSelected ? theme.primary : theme.text },
+                      ]}
+                    >
+                      {col}
+                    </Text>
+                    {isSelected && (
+                      <Ionicons name="checkmark-circle" size={18} color={theme.primary} />
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+
+            {/* Create New Collection Input */}
+            <View style={styles.newColRow}>
+              <TextInput
+                placeholder="New collection name (e.g. Summer 2026)"
+                placeholderTextColor={theme.textMuted}
+                value={newCollectionName}
+                onChangeText={setNewCollectionName}
+                style={[
+                  styles.newColInput,
+                  {
+                    color: theme.text,
+                    backgroundColor: theme.cardSecondary,
+                    borderColor: theme.border,
+                  },
+                ]}
+              />
+              <TouchableOpacity
+                onPress={handleCreateNewCollection}
+                style={styles.newColBtn}
+              >
+                <Ionicons name="add" size={20} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       {/* Bottom Sticky Action Bar */}
       <View style={[styles.bottomBar, { backgroundColor: theme.card, borderTopColor: theme.border }]}>
@@ -303,17 +467,17 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   circleBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: 'rgba(255, 255, 255, 0.94)',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.2,
     shadowRadius: 4,
-    elevation: 3,
+    elevation: 4,
   },
   gemTag: {
     position: 'absolute',
@@ -341,7 +505,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 10,
+    marginBottom: 6,
   },
   title: {
     fontSize: 22,
@@ -352,6 +516,35 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: 'Manrope_500Medium',
     marginTop: 2,
+  },
+  socialProofRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  socialItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  socialText: {
+    fontSize: 11.5,
+    fontFamily: 'Manrope_500Medium',
+  },
+  savedBadgePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#EFF6FF',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  savedBadgeText: {
+    fontSize: 11,
+    fontFamily: 'Manrope_700Bold',
+    color: '#2563EB',
   },
   ratingBox: {
     flexDirection: 'row',
@@ -401,11 +594,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: 'Manrope_700Bold',
     marginBottom: 8,
-  },
-  cardSubtitle: {
-    fontSize: 12,
-    fontFamily: 'Manrope_400Regular',
-    marginBottom: 12,
   },
   descText: {
     fontSize: 13,
@@ -541,25 +729,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: 'Manrope_700Bold',
   },
-  indoorSubtitle: {
-    fontSize: 12,
-    fontFamily: 'Manrope_400Regular',
-    marginBottom: 10,
-  },
-  indoorItem: {
-    marginVertical: 4,
-  },
-  indoorName: {
-    fontSize: 13,
-    fontFamily: 'Manrope_700Bold',
-    color: '#166534',
-  },
-  indoorDesc: {
-    fontSize: 11.5,
-    fontFamily: 'Manrope_400Regular',
-    color: '#15803D',
-    marginTop: 1,
-  },
   bottomBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -584,5 +753,64 @@ const styles = StyleSheet.create({
   },
   planBtn: {
     minWidth: 150,
+  },
+
+  /* Collection Picker Modal */
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'flex-end',
+  },
+  modalBox: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 18,
+    maxHeight: 450,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 14,
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontFamily: 'Manrope_700Bold',
+  },
+  collectionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 8,
+  },
+  collectionName: {
+    fontSize: 13.5,
+    fontFamily: 'Manrope_600SemiBold',
+    flex: 1,
+  },
+  newColRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 12,
+  },
+  newColInput: {
+    flex: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    fontSize: 13,
+    fontFamily: 'Manrope_500Medium',
+  },
+  newColBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: '#2563EB',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
