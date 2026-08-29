@@ -31,16 +31,10 @@ export const DestinationDetailScreen = ({ route, navigation }) => {
   const nearbyBizList = getBusinessesByDestination(destination.id);
 
   const handlePlanTripHere = () => {
-    createTrip({
-      destinationId: destination.id,
-      destinationName: destination.name,
-      days: 4,
-      travelers: 2,
-      totalBudget: destination.estimatedCost || 15000,
-      interests: ['Nature', 'History', 'Culture', 'Beaches'],
-      travelPreference: 'Comfortable',
+    navigation.navigate('TripPlannerWizard', {
+      initialDestination: destination,
+      startAtBudget: true,
     });
-    navigation.navigate('ItineraryDetail');
   };
 
   return (

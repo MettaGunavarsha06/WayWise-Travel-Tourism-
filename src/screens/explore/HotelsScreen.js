@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -12,28 +13,51 @@ import { useTheme } from '../../context/ThemeContext';
 import { hotels } from '../../data/hotels';
 import { HotelCard } from '../../components/HotelCard';
 
-const priceRanges = ['All', 'Under ₹2,500', '₹2,500 - ₹4,000', 'Above ₹4,000'];
+const priceRanges = ['All', 'Under ₹2,500', '₹2,500 - ₹4,500', 'Above ₹4,500'];
 
 export const HotelsScreen = ({ navigation }) => {
   const { theme } = useTheme();
+  const [searchCity, setSearchCity] = useState('');
+  const [selectedCity, setSelectedCity] = useState('All Cities');
   const [selectedPrice, setSelectedPrice] = useState('All');
   const [ecoOnly, setEcoOnly] = useState(false);
   const [minRating45, setMinRating45] = useState(false);
 
-  const filteredHotels = hotels.filter((h) => {
-    let matchesPrice = true;
-    if (selectedPrice === 'Under ₹2,500') matchesPrice = h.pricePerNight < 2500;
-    if (selectedPrice === '₹2,500 - ₹4,000') matchesPrice = h.pricePerNight >= 2500 && h.pricePerNight <= 4000;
-    if (selectedPrice === 'Above ₹4,000') matchesPrice = h.pricePerNight > 4000;
+  // Extract all unique destination cities
+  const uniqueCities = useMemo(() => {
+    const citySet = new Set(hotels.map((h) => h.destinationName));
+    return ['All Cities', ...Array.from(citySet)];
+  }, []);
 
-    let matchesEco = true;
-    if (ecoOnly) matchesEco = h.sustainabilityScore >= 90;
+  const filteredHotels = useMemo(() => {
+    return hotels.filter((h) => {
+      const q = searchCity.toLowerCase().trim();
+      const matchesSearch =
+        !q ||
+        h.destinationName.toLowerCase().includes(q) ||
+        h.name.toLowerCase().includes(q) ||
+        h.type.toLowerCase().includes(q) ||
+        h.address.toLowerCase().includes(q);
 
-    let matchesRating = true;
-    if (minRating45) matchesRating = h.rating >= 4.7;
+      let matchesCity = true;
+      if (selectedCity !== 'All Cities') {
+        matchesCity = h.destinationName.toLowerCase() === selectedCity.toLowerCase();
+      }
 
-    return matchesPrice && matchesEco && matchesRating;
-  });
+      let matchesPrice = true;
+      if (selectedPrice === 'Under ₹2,500') matchesPrice = h.pricePerNight < 2500;
+      if (selectedPrice === '₹2,500 - ₹4,500') matchesPrice = h.pricePerNight >= 2500 && h.pricePerNight <= 4500;
+      if (selectedPrice === 'Above ₹4,500') matchesPrice = h.pricePerNight > 4500;
+
+      let matchesEco = true;
+      if (ecoOnly) matchesEco = h.sustainabilityScore >= 90;
+
+      let matchesRating = true;
+      if (minRating45) matchesRating = h.rating >= 4.7;
+
+      return matchesSearch && matchesCity && matchesPrice && matchesEco && matchesRating;
+    });
+  }, [searchCity, selectedCity, selectedPrice, ecoOnly, minRating45]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
@@ -42,25 +66,85 @@ export const HotelsScreen = ({ navigation }) => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color={theme.text} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.text }]}>Verified Eco-Stays &amp; Homestays</Text>
+        <Text style={[styles.headerTitle, { color: theme.text }]}>All India Verified Eco-Stays</Text>
         <View style={{ width: 30 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        {/* City Search Bar */}
+        <View
+          style={[
+            styles.searchBar,
+            {
+              backgroundColor: theme.card,
+              borderColor: theme.border,
+              shadowColor: theme.shadow,
+            },
+          ]}
+        >
+          <Ionicons name="search-outline" size={18} color={theme.primary} style={{ marginRight: 8 }} />
+          <TextInput
+            value={searchCity}
+            onChangeText={setSearchCity}
+            placeholder="Search hotels by city (e.g. Manali, Goa, Jaipur, Mumbai)..."
+            placeholderTextColor={theme.textMuted}
+            style={[styles.searchInput, { color: theme.text, fontFamily: 'Manrope_400Regular' }]}
+          />
+          {searchCity.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchCity('')}>
+              <Ionicons name="close-circle" size={18} color={theme.textMuted} />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* City Filter Pills */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.citiesScroll}
+        >
+          {uniqueCities.map((city) => {
+            const isSelected = selectedCity === city;
+            return (
+              <TouchableOpacity
+                key={city}
+                onPress={() => setSelectedCity(city)}
+                style={[
+                  styles.cityPill,
+                  {
+                    backgroundColor: isSelected ? theme.primary : theme.card,
+                    borderColor: isSelected ? theme.primary : theme.border,
+                  },
+                ]}
+                activeOpacity={0.8}
+              >
+                <Text
+                  style={[
+                    styles.cityPillText,
+                    { color: isSelected ? '#FFFFFF' : theme.textSecondary },
+                  ]}
+                >
+                  {city}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+
         {/* Eco Stays Guarantee Banner */}
         <View style={[styles.ecoBanner, { backgroundColor: '#F0FDF4', borderColor: '#BBF7D0' }]}>
           <Ionicons name="leaf-outline" size={22} color="#166534" style={{ marginRight: 10, marginTop: 2 }} />
           <View style={{ flex: 1 }}>
             <Text style={[styles.ecoBannerTitle, { color: '#166534' }]}>
-              Certified Green Tourism Partners
+              Certified Green Tourism Accommodations
             </Text>
             <Text style={[styles.ecoBannerDesc, { color: '#15803D' }]}>
-              All listed accommodations are audited for solar adoption, zero-plastic amenities, and local community profit-sharing.
+              Audited for solar adoption, zero single-use plastic, water recycling, and local farm-to-table dining across all Indian cities.
             </Text>
           </View>
         </View>
 
-        {/* Filters */}
+        {/* Secondary Filter Pills */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersScroll}>
           {priceRanges.map((p) => {
             const isSelected = selectedPrice === p;
@@ -133,17 +217,52 @@ export const HotelsScreen = ({ navigation }) => {
           <Text style={[styles.listHeading, { color: theme.text }]}>
             Available Properties ({filteredHotels.length})
           </Text>
+          {(selectedCity !== 'All Cities' || searchCity.length > 0) && (
+            <TouchableOpacity
+              onPress={() => {
+                setSelectedCity('All Cities');
+                setSearchCity('');
+                setSelectedPrice('All');
+                setEcoOnly(false);
+                setMinRating45(false);
+              }}
+            >
+              <Text style={{ fontSize: 12, color: theme.primary, fontFamily: 'Manrope_600SemiBold' }}>
+                Reset Filters
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Hotels List */}
-        {filteredHotels.map((hotel) => (
-          <HotelCard
-            key={hotel.id}
-            hotel={hotel}
-            onPress={() => navigation.navigate('HotelDetail', { hotel })}
-            onBookPress={() => navigation.navigate('HotelDetail', { hotel })}
-          />
-        ))}
+        {filteredHotels.length === 0 ? (
+          <View style={[styles.emptyBox, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <Ionicons name="bed-outline" size={40} color={theme.textMuted} />
+            <Text style={[styles.emptyTitle, { color: theme.text }]}>No hotels found</Text>
+            <Text style={[styles.emptySub, { color: theme.textSecondary }]}>
+              Try clearing filters or searching for another Indian city (e.g. Manali, Goa, Jaipur, Vizag, Mumbai).
+            </Text>
+            <TouchableOpacity
+              style={[styles.resetBtn, { backgroundColor: theme.primary }]}
+              onPress={() => {
+                setSelectedCity('All Cities');
+                setSearchCity('');
+                setSelectedPrice('All');
+              }}
+            >
+              <Text style={styles.resetBtnText}>View All Hotels</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          filteredHotels.map((hotel) => (
+            <HotelCard
+              key={hotel.id}
+              hotel={hotel}
+              onPress={() => navigation.navigate('HotelDetail', { hotel })}
+              onBookPress={() => navigation.navigate('HotelDetail', { hotel })}
+            />
+          ))
+        )}
 
         <View style={{ height: 40 }} />
       </ScrollView>
@@ -173,6 +292,38 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 16,
   },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    height: 46,
+    marginBottom: 12,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 13,
+    height: '100%',
+  },
+  citiesScroll: {
+    gap: 8,
+    paddingBottom: 12,
+  },
+  cityPill: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 18,
+    borderWidth: 1,
+  },
+  cityPillText: {
+    fontSize: 12,
+    fontFamily: 'Manrope_600SemiBold',
+  },
   ecoBanner: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -182,14 +333,14 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   ecoBannerTitle: {
-    fontSize: 14,
+    fontSize: 13.5,
     fontFamily: 'Manrope_700Bold',
     marginBottom: 3,
   },
   ecoBannerDesc: {
-    fontSize: 12,
+    fontSize: 11.5,
     fontFamily: 'Manrope_400Regular',
-    lineHeight: 18,
+    lineHeight: 17,
   },
   filtersScroll: {
     gap: 8,
@@ -202,14 +353,48 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   filterPillText: {
-    fontSize: 12.5,
+    fontSize: 12,
     fontFamily: 'Manrope_600SemiBold',
   },
   listHeadingRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 12,
   },
   listHeading: {
     fontSize: 15,
+    fontFamily: 'Manrope_700Bold',
+  },
+  emptyBox: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 20,
+  },
+  emptyTitle: {
+    fontSize: 15,
+    fontFamily: 'Manrope_700Bold',
+    marginTop: 10,
+    marginBottom: 4,
+  },
+  emptySub: {
+    fontSize: 12,
+    fontFamily: 'Manrope_400Regular',
+    textAlign: 'center',
+    lineHeight: 18,
+    marginBottom: 14,
+  },
+  resetBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  resetBtnText: {
+    color: '#FFFFFF',
+    fontSize: 12,
     fontFamily: 'Manrope_700Bold',
   },
 });

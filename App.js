@@ -21,7 +21,7 @@ import { NotificationProvider } from './src/context/NotificationContext';
 import { AppNavigator } from './src/navigation/AppNavigator';
 
 // Keep splash screen visible until fonts are loaded
-SplashScreen.preventAutoHideAsync();
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 function RootApp() {
   const { isDark } = useTheme();
@@ -43,9 +43,15 @@ export default function App() {
     Manrope_800ExtraBold,
   });
 
+  useEffect(() => {
+    if (fontsLoaded || fontError) {
+      SplashScreen.hideAsync().catch(() => {});
+    }
+  }, [fontsLoaded, fontError]);
+
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded || fontError) {
-      await SplashScreen.hideAsync();
+      await SplashScreen.hideAsync().catch(() => {});
     }
   }, [fontsLoaded, fontError]);
 

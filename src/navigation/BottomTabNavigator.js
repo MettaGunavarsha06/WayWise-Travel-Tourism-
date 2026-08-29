@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { HomeScreen } from '../screens/home/HomeScreen';
-import { ExploreScreen } from '../screens/explore/ExploreScreen';
+import { WeatherScreen } from '../screens/weather/WeatherScreen';
 import { MyTripsScreen } from '../screens/planner/MyTripsScreen';
 import { SmartMapScreen } from '../screens/map/SmartMapScreen';
 import { ProfileScreen } from '../screens/profile/ProfileScreen';
@@ -48,8 +48,8 @@ export const BottomTabNavigator = () => {
             case 'HomeTab':
               iconName = focused ? 'home' : 'home-outline';
               break;
-            case 'ExploreTab':
-              iconName = focused ? 'compass' : 'compass-outline';
+            case 'WeatherTab':
+              iconName = focused ? 'partly-sunny' : 'partly-sunny-outline';
               break;
             case 'TripsTab':
               iconName = focused ? 'calendar' : 'calendar-outline';
@@ -73,9 +73,9 @@ export const BottomTabNavigator = () => {
         options={{ tabBarLabel: 'Home' }}
       />
       <Tab.Screen
-        name="ExploreTab"
-        component={ExploreScreen}
-        options={{ tabBarLabel: t('explore') || 'Explore' }}
+        name="WeatherTab"
+        component={WeatherScreen}
+        options={{ tabBarLabel: t('weather') || 'Weather' }}
       />
       <Tab.Screen
         name="TripsTab"
