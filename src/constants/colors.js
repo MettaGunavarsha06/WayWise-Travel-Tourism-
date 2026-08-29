@@ -1,64 +1,64 @@
 // WayWise Design System — Multi-Theme Visual Tokens
-// Includes: Glass Horizon (iOS Glassmorphism), Vintage Voyager (Heritage Maps + Modern Luxury), Obsidian Dark, and Emerald Nature
+// Includes: Glass Horizon (Floating Glassmorphism), Vintage Voyager (Heritage Maps + Modern Luxury), Obsidian Dark, and Emerald Nature
 
 export const GlassHorizonTheme = {
   name: 'glass_horizon',
   displayName: 'Glass Horizon',
-  subtitle: 'Apple iOS Glassmorphism · Translucent Frost & Azure',
+  subtitle: 'Floating Glassmorphism · Translucent Frost & Azure',
   mode: 'glass_horizon',
   isDark: false,
 
   // === Primary Brand: Luminous Azure & Oceanic Cyan ===
   primary: '#0284C7',        // Luminous azure blue
   primaryDark: '#0369A1',    // Deep ocean blue
-  primaryLight: '#E0F2FE',   // Translucent crystal cyan tint
+  primaryLight: 'rgba(2, 132, 199, 0.12)', // Subtle translucent azure tint
   primaryMid: '#0EA5E9',     // Sky blue
 
   // === Secondary ===
   secondary: '#38BDF8',      // Bright azure cyan
-  secondaryLight: '#F0F9FF', // Ultra-soft sky ice
+  secondaryLight: 'rgba(56, 189, 248, 0.15)',
 
   // === Accent ===
   accent: '#06B6D4',        // Vibrant cyan
-  accentLight: '#CFFAFE',
+  accentLight: 'rgba(6, 182, 212, 0.15)',
 
-  // === Backgrounds & Surfaces (Glassmorphic Translucent) ===
-  background: '#F0F9FF',     // Crisp frosted sky tint
-  card: '#FFFFFF',           // Translucent glossy card
-  cardSecondary: '#E0F2FE',  // Frosted cyan secondary surface
-  surface: '#FFFFFF',
-  surfaceElevated: '#F8FCFF',
+  // === Backgrounds & Surfaces (Floating Semi-Transparent Frosted Glass) ===
+  background: '#D6EAF8',     // Luminous sky blue wallpaper so translucent cards float vividly
+  card: 'rgba(255, 255, 255, 0.72)',          // Semi-transparent frosted glass surface
+  cardSecondary: 'rgba(255, 255, 255, 0.50)', // Layered semi-transparent frosted card
+  surface: 'rgba(255, 255, 255, 0.75)',
+  surfaceElevated: 'rgba(255, 255, 255, 0.88)',
 
   // === Text (High Contrast Oceanic Navy) ===
   text: '#0C4A6E',           // Deep oceanic navy
   textSecondary: '#0369A1',  // Medium cyan-navy
-  textMuted: '#64748B',      // Slate muted
+  textMuted: '#52799B',      // Slate muted
 
-  // === Borders (Glossy Crystal Borders) ===
-  border: '#BAE6FD',         // Crisp sky ice border
-  borderLight: '#E0F2FE',
+  // === Borders (Glossy Crystal Specular White Rim) ===
+  border: 'rgba(255, 255, 255, 0.90)',        // Crisp white specular glass border
+  borderLight: 'rgba(255, 255, 255, 0.55)',
 
   // === Semantic Colors ===
   error: '#EF4444',
-  errorLight: '#FEE2E2',
+  errorLight: 'rgba(239, 68, 68, 0.15)',
   success: '#0EA5E9',
-  successLight: '#E0F2FE',
+  successLight: 'rgba(14, 165, 233, 0.15)',
   warning: '#F59E0B',
-  warningLight: '#FEF3C7',
+  warningLight: 'rgba(245, 158, 11, 0.15)',
   info: '#0284C7',
-  infoLight: '#E0F2FE',
+  infoLight: 'rgba(2, 132, 199, 0.15)',
 
   // === Eco / Sustainability ===
   ecoGreen: '#0284C7',
-  ecoGreenLight: '#E0F2FE',
+  ecoGreenLight: 'rgba(2, 132, 199, 0.12)',
   ecoGreenMid: '#38BDF8',
 
   // === UI Chrome ===
-  glassBg: 'rgba(255, 255, 255, 0.92)',
-  glassBorder: 'rgba(56, 189, 248, 0.35)',
-  shadow: '#0284C7',
-  tabBar: '#FFFFFF',
-  tabBarInactive: '#64748B',
+  glassBg: 'rgba(255, 255, 255, 0.70)',
+  glassBorder: 'rgba(255, 255, 255, 0.95)',
+  shadow: 'rgba(2, 132, 199, 0.30)',
+  tabBar: 'rgba(255, 255, 255, 0.82)',
+  tabBarInactive: '#52799B',
   statusBar: 'dark',
 };
 
@@ -249,15 +249,15 @@ export const THEMES_LIST = [
   {
     id: 'glass_horizon',
     name: 'Glass Horizon',
-    tagline: 'Apple iOS Glassmorphism · Translucent Frost & Azure',
-    badge: 'Modern Glass',
+    tagline: 'Floating Glassmorphism · Translucent Frost & Azure',
+    badge: 'Floating Glass',
     theme: GlassHorizonTheme,
     primaryColor: '#0284C7',
-    bgColor: '#F0F9FF',
+    bgColor: '#D6EAF8',
     accentColor: '#38BDF8',
-    cardColor: '#FFFFFF',
+    cardColor: 'rgba(255, 255, 255, 0.72)',
     icon: 'cube-outline',
-    description: 'Ultra-modern frosted glass surfaces, oceanic cyan gradients, and crisp iOS-inspired luxury aesthetics.',
+    description: 'Floating semi-transparent frosted glass surfaces, luminous cyan reflections, and sleek luxury travel aesthetics.',
   },
   {
     id: 'vintage_voyager',
