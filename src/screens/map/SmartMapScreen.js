@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import {
   Linking,
   ActivityIndicator,
   Platform,
+  FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -37,6 +38,7 @@ import { SavedToast } from '../../components/SavedToast';
 import { formatCurrency } from '../../utils/helpers';
 
 const { width, height } = Dimensions.get('window');
+const CARD_WIDTH = width * 0.84;
 
 const RADIUS_OPTIONS = [
   { label: 'All', value: 30 },
@@ -63,6 +65,7 @@ const TRAVEL_MODES = [
 export const SmartMapScreen = ({ navigation, route }) => {
   const { theme, isDark } = useTheme();
   const { toggleSavePlace, isPlaceSaved } = useTrips();
+  const carouselRef = useRef(null);
   
   // Location States
   const [userCoords, setUserCoords] = useState(DEFAULT_COORDINATES);
@@ -88,6 +91,7 @@ export const SmartMapScreen = ({ navigation, route }) => {
   const [isVoiceMuted, setIsVoiceMuted] = useState(false);
   const [showStepsModal, setShowStepsModal] = useState(false);
   const [toastVisible, setToastVisible] = useState(false);
+  const [carouselCollapsed, setCarouselCollapsed] = useState(false);
 
   // Compute Places around user coordinates
   const { places, allPlaces, categoryCounts } = useMemo(() => {
@@ -99,11 +103,14 @@ export const SmartMapScreen = ({ navigation, route }) => {
     checkInitialPermissions();
   }, []);
 
-  // When category changes, auto-select the nearest place in that category
+  // When category or places change, auto-select first place and scroll carousel to start
   useEffect(() => {
     if (places && places.length > 0) {
       if (!selectedPlace || !places.some((p) => p.id === selectedPlace.id)) {
         setSelectedPlace(places[0]);
+      }
+      if (carouselRef.current && carouselRef.current.scrollToOffset) {
+        carouselRef.current.scrollToOffset({ offset: 0, animated: true });
       }
     } else {
       setSelectedPlace(null);
@@ -246,66 +253,65 @@ export const SmartMapScreen = ({ navigation, route }) => {
     ];
   }, [selectedPlace]);
 
-  const currentSymbol = selectedPlace?.symbolConfig || {
-    icon: 'location',
-    symbol: '📍',
-    color: theme.primary,
-    bg: theme.primaryLight,
-  };
-
-  const isCurrentSaved = selectedPlace ? isPlaceSaved(selectedPlace.id) : false;
-
   // Dynamic category title & banner info
   const categoryHeaderInfo = useMemo(() => {
+    const currentCatObj = PLACE_CATEGORIES.find((c) => c.id === selectedCategory) || PLACE_CATEGORIES[0];
     switch (selectedCategory) {
       case 'famous':
         return {
-          title: `🏛️ Famous Places & Sights (${places.length} around you)`,
-          subtitle: 'Historical monuments, hilltop viewpoints, beaches & museums',
+          title: `🏛️ Famous Places & Sights (${places.length} nearby)`,
+          subtitle: 'Swipe cards below to view all monuments & viewpoints',
           color: '#0D9488',
           bg: '#CCFBF1',
+          icon: 'compass',
         };
       case 'hospital':
         return {
-          title: `🏥 Hospitals & Emergency Care (${places.length} around you)`,
-          subtitle: '24/7 Multi-specialty trauma, government hospitals & ambulances',
+          title: `🏥 Hospitals & Emergency Care (${places.length} nearby)`,
+          subtitle: 'Swipe cards below for 24/7 trauma centers & helplines',
           color: '#DC2626',
           bg: '#FEE2E2',
+          icon: 'medkit',
         };
       case 'restaurant':
         return {
-          title: `🍽️ Restaurants & Cafes (${places.length} around you)`,
-          subtitle: 'Authentic coastal dining, thalis, biryanis & organic cafes',
+          title: `🍽️ Restaurants & Dining (${places.length} nearby)`,
+          subtitle: 'Swipe cards below for authentic coastal dining & thalis',
           color: '#EA580C',
           bg: '#FFEDD5',
+          icon: 'restaurant',
         };
       case 'hotel':
         return {
-          title: `🏨 Hotels & Eco-Stays (${places.length} around you)`,
-          subtitle: 'Verified sustainable eco-resorts, beach villas & homestays',
+          title: `🏨 Hotels & Eco-Stays (${places.length} nearby)`,
+          subtitle: 'Swipe cards below for verified resorts & beach villas',
           color: '#2563EB',
           bg: '#EFF6FF',
+          icon: 'bed',
         };
       case 'artisan':
         return {
-          title: `🎨 Artisans & Handicrafts (${places.length} around you)`,
-          subtitle: 'Traditional wooden lacquer, handloom silk & tribal craft studios',
+          title: `🎨 Artisans & Handicrafts (${places.length} nearby)`,
+          subtitle: 'Swipe cards below for lacquer wood & silk weaving',
           color: '#9333EA',
           bg: '#F3E8FF',
+          icon: 'color-palette',
         };
       case 'transit':
         return {
-          title: `🚆 Transit & Clean EV Hubs (${places.length} around you)`,
-          subtitle: 'Electric shuttles, railway terminals & supercharging hubs',
+          title: `🚆 Transit & Clean EV Hubs (${places.length} nearby)`,
+          subtitle: 'Swipe cards below for electric shuttles & charging',
           color: '#16A34A',
           bg: '#DCFCE7',
+          icon: 'train',
         };
       case 'emergency':
         return {
-          title: `👮 Police & Safety Patrols (${places.length} around you)`,
-          subtitle: 'Tourist police assistance & coastal safety helpdesks',
+          title: `👮 Police & Safety Patrols (${places.length} nearby)`,
+          subtitle: 'Swipe cards below for tourist police & safety helpdesks',
           color: '#1E293B',
           bg: '#F1F5F9',
+          icon: 'shield-checkmark',
         };
       default:
         return {
@@ -313,6 +319,7 @@ export const SmartMapScreen = ({ navigation, route }) => {
           subtitle: `Showing all places within ${selectedRadius} km`,
           color: theme.primary,
           bg: theme.primaryLight,
+          icon: 'map',
         };
     }
   }, [selectedCategory, places.length, selectedRadius, theme]);
@@ -543,16 +550,6 @@ export const SmartMapScreen = ({ navigation, route }) => {
               );
             })}
           </ScrollView>
-
-          {/* Active Category Status Banner */}
-          <View style={[styles.activeCategoryInfoRow, { backgroundColor: categoryHeaderInfo.bg }]}>
-            <Text style={[styles.activeCategoryTitle, { color: categoryHeaderInfo.color }]}>
-              {categoryHeaderInfo.title}
-            </Text>
-            <Text style={[styles.activeCategorySub, { color: categoryHeaderInfo.color }]} numberOfLines={1}>
-              {categoryHeaderInfo.subtitle}
-            </Text>
-          </View>
         </View>
       )}
 
@@ -566,6 +563,13 @@ export const SmartMapScreen = ({ navigation, route }) => {
             selectedPlace={selectedPlace}
             onSelectPlace={(place) => {
               setSelectedPlace(place);
+              // Auto-scroll carousel to selected place index
+              const idx = places.findIndex((p) => p.id === place.id);
+              if (idx !== -1 && carouselRef.current && carouselRef.current.scrollToIndex) {
+                try {
+                  carouselRef.current.scrollToIndex({ index: idx, animated: true, viewPosition: 0.5 });
+                } catch (e) {}
+              }
             }}
             mapType={mapLayer}
             showRoute={navigationActive}
@@ -718,170 +722,188 @@ export const SmartMapScreen = ({ navigation, route }) => {
               </View>
             </View>
           ) : (
-            /* Standard Bottom Selected Place Details Card */
-            selectedPlace && (
-              <View style={[styles.bottomSheet, { backgroundColor: theme.card, borderTopColor: theme.border }]}>
-                <View style={styles.sheetHandle} />
-
-                <View style={styles.sheetMainRow}>
-                  <Image
-                    source={{ uri: selectedPlace.image }}
-                    style={styles.sheetPlaceImage}
-                    resizeMode="cover"
-                  />
-
-                  <View style={styles.sheetDetails}>
-                    {/* Category Symbol & Subcategory */}
-                    <View style={styles.subCategoryRow}>
-                      <View
-                        style={[
-                          styles.symbolBadge,
-                          {
-                            backgroundColor: currentSymbol.bg,
-                            borderColor: currentSymbol.color,
-                          },
-                        ]}
-                      >
-                        <Text style={styles.symbolEmoji}>{currentSymbol.symbol}</Text>
-                        <Text style={[styles.symbolLabel, { color: currentSymbol.color }]}>
-                          {selectedPlace.subCategory}
-                        </Text>
-                      </View>
-
-                      <Text style={[styles.distanceText, { color: theme.primary }]}>
-                        {selectedPlace.distanceKm} km away
-                      </Text>
-                    </View>
-
-                    {/* Name */}
-                    <Text style={[styles.sheetPlaceName, { color: theme.text }]} numberOfLines={1}>
-                      {selectedPlace.name}
+            /* ALL PLACES SHOWN ONE BY ONE IN A BOTTOM SWIPEABLE CAROUSEL */
+            places.length > 0 && (
+              <View style={styles.bottomMultiPlacesWrap}>
+                {/* Header Row: Category summary & collapse toggle */}
+                <View style={[styles.carouselHeaderRow, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                  <View style={styles.carouselHeaderLeft}>
+                    <View style={[styles.catHeaderDot, { backgroundColor: categoryHeaderInfo.color }]} />
+                    <Text style={[styles.carouselHeaderText, { color: theme.text }]} numberOfLines={1}>
+                      {categoryHeaderInfo.title}
                     </Text>
-
-                    {/* ETA & Rating */}
-                    <View style={styles.etaRow}>
-                      <View style={styles.ratingBadge}>
-                        <Ionicons name="star" size={12} color="#F59E0B" />
-                        <Text style={styles.ratingText}>{selectedPlace.rating}</Text>
-                        <Text style={[styles.reviewsText, { color: theme.textMuted }]}>
-                          ({selectedPlace.reviews})
-                        </Text>
-                      </View>
-
-                      <Text style={[styles.etaDot, { color: theme.textMuted }]}>•</Text>
-                      <Text style={[styles.etaText, { color: theme.textSecondary }]}>
-                        🚗 {selectedPlace.driveMinutes} min drive · 🚶 {selectedPlace.walkMinutes} min
-                      </Text>
-                    </View>
-
-                    {/* Crowd & Eco Badges */}
-                    <View style={styles.badgesRow}>
-                      {selectedPlace.crowdLevel && (
-                        <CrowdIndicator level={selectedPlace.crowdLevel} compact />
-                      )}
-                      {selectedPlace.ecoScore && (
-                        <EcoScoreBadge score={selectedPlace.ecoScore} size="small" />
-                      )}
-                    </View>
                   </View>
-                </View>
-
-                {/* Special Info (Cuisine / Specialty / Emergency / Entry Fee) */}
-                <View style={[styles.infoSnippet, { backgroundColor: theme.cardSecondary }]}>
-                  {selectedPlace.category === 'restaurant' && (
-                    <Text style={[styles.snippetText, { color: theme.text }]} numberOfLines={1}>
-                      🍴 <Text style={{ fontFamily: 'Manrope_700Bold' }}>Cuisine:</Text> {selectedPlace.cuisine} ({selectedPlace.priceRange})
-                    </Text>
-                  )}
-                  {selectedPlace.category === 'hospital' && (
-                    <Text style={[styles.snippetText, { color: '#DC2626' }]} numberOfLines={1}>
-                      🚨 <Text style={{ fontFamily: 'Manrope_700Bold' }}>24/7 Emergency:</Text> {selectedPlace.specialty} · Helpline: {selectedPlace.emergencyHelpline || '108 / 112'}
-                    </Text>
-                  )}
-                  {selectedPlace.category === 'famous' && (
-                    <Text style={[styles.snippetText, { color: theme.text }]} numberOfLines={1}>
-                      🎟️ <Text style={{ fontFamily: 'Manrope_700Bold' }}>Entry:</Text> {selectedPlace.entryFee > 0 ? `₹${selectedPlace.entryFee}` : 'Free Entry'} · {selectedPlace.openHours}
-                    </Text>
-                  )}
-                  {selectedPlace.category === 'hotel' && (
-                    <Text style={[styles.snippetText, { color: theme.text }]} numberOfLines={1}>
-                      🏨 <Text style={{ fontFamily: 'Manrope_700Bold' }}>Stay:</Text> ₹{selectedPlace.pricePerNight} / night · {selectedPlace.openHours}
-                    </Text>
-                  )}
-                  {selectedPlace.category === 'artisan' && (
-                    <Text style={[styles.snippetText, { color: theme.text }]} numberOfLines={1}>
-                      🎨 <Text style={{ fontFamily: 'Manrope_700Bold' }}>Crafts:</Text> {selectedPlace.crafts ? selectedPlace.crafts.join(', ') : 'Traditional Handicrafts'}
-                    </Text>
-                  )}
-                  {selectedPlace.category === 'transit' && (
-                    <Text style={[styles.snippetText, { color: theme.text }]} numberOfLines={1}>
-                      🚆 <Text style={{ fontFamily: 'Manrope_700Bold' }}>Transit:</Text> {selectedPlace.fare || 'Standard Transit Tariff'}
-                    </Text>
-                  )}
-                  {selectedPlace.category === 'emergency' && (
-                    <Text style={[styles.snippetText, { color: theme.text }]} numberOfLines={1}>
-                      👮 <Text style={{ fontFamily: 'Manrope_700Bold' }}>Police:</Text> Dial 112 for immediate assistance
-                    </Text>
-                  )}
-                </View>
-
-                {/* Action Buttons: Call + Instagram Bookmark + Start Directions + Add to Trip */}
-                <View style={styles.sheetActionRow}>
-                  {selectedPlace.phone ? (
-                    <TouchableOpacity
-                      onPress={() => handleCallEmergency(selectedPlace.phone)}
-                      style={[styles.actionIconBtn, { backgroundColor: '#FEE2E2', borderColor: '#DC2626' }]}
-                    >
-                      <Ionicons name="call" size={18} color="#DC2626" />
-                    </TouchableOpacity>
-                  ) : null}
-
-                  {/* Instagram-Style Bookmark Save Button */}
+                  
                   <TouchableOpacity
-                    onPress={() => {
-                      const nowSaved = toggleSavePlace(selectedPlace);
-                      setToastVisible(nowSaved);
-                    }}
-                    style={[
-                      styles.actionIconBtn,
-                      {
-                        backgroundColor: isCurrentSaved ? '#2563EB' : theme.cardSecondary,
-                        borderColor: isCurrentSaved ? '#2563EB' : theme.border,
-                      },
-                    ]}
+                    onPress={() => setCarouselCollapsed(!carouselCollapsed)}
+                    style={styles.collapseToggleBtn}
                   >
                     <Ionicons
-                      name={isCurrentSaved ? 'bookmark' : 'bookmark-outline'}
+                      name={carouselCollapsed ? 'chevron-up' : 'chevron-down'}
                       size={18}
-                      color={isCurrentSaved ? '#FFFFFF' : theme.text}
+                      color={theme.textSecondary}
                     />
                   </TouchableOpacity>
-
-                  {/* Start Google Maps Turn-by-Turn Navigation */}
-                  <Button
-                    title="Directions"
-                    variant="primary"
-                    size="small"
-                    icon="navigate"
-                    onPress={() => handleStartNavigation(selectedPlace)}
-                    style={styles.sheetBtnPrimary}
-                  />
-
-                  {/* Add to Travel Plan */}
-                  <Button
-                    title="Add to Trip"
-                    variant="outline"
-                    size="small"
-                    icon="add-circle-outline"
-                    onPress={() =>
-                      Alert.alert(
-                        'Added to Travel Plan',
-                        `${selectedPlace.name} has been added to your smart itinerary.`
-                      )
-                    }
-                    style={styles.sheetBtnOutline}
-                  />
                 </View>
+
+                {/* Horizontal Scrollable Carousel showing ALL places one by one */}
+                {!carouselCollapsed && (
+                  <FlatList
+                    ref={carouselRef}
+                    data={places}
+                    keyExtractor={(item) => item.id}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    snapToInterval={CARD_WIDTH + 12}
+                    decelerationRate="fast"
+                    contentContainerStyle={styles.carouselScrollContent}
+                    renderItem={({ item: place }) => {
+                      const isSelected = selectedPlace?.id === place.id;
+                      const sym = place.symbolConfig || { symbol: '📍', color: theme.primary, bg: theme.primaryLight };
+                      const isSaved = isPlaceSaved(place.id);
+
+                      return (
+                        <TouchableOpacity
+                          activeOpacity={0.92}
+                          onPress={() => setSelectedPlace(place)}
+                          style={[
+                            styles.carouselCard,
+                            {
+                              backgroundColor: theme.card,
+                              borderColor: isSelected ? theme.primary : theme.border,
+                              borderWidth: isSelected ? 2.5 : 1,
+                              shadowColor: theme.shadow,
+                            },
+                          ]}
+                        >
+                          {/* Card Top Row: Thumbnail + Info */}
+                          <View style={styles.cCardMainRow}>
+                            <View style={styles.cImageWrap}>
+                              <Image source={{ uri: place.image }} style={styles.cPlaceImage} resizeMode="cover" />
+                              
+                              {/* Symbol Badge */}
+                              <View style={[styles.cSymbolBadge, { backgroundColor: sym.bg, borderColor: sym.color }]}>
+                                <Text style={styles.cSymbolEmoji}>{sym.symbol}</Text>
+                              </View>
+                            </View>
+
+                            <View style={styles.cDetailsWrap}>
+                              {/* Subcategory & Distance */}
+                              <View style={styles.cSubCatRow}>
+                                <Text style={[styles.cSubCatText, { color: sym.color }]} numberOfLines={1}>
+                                  {place.subCategory}
+                                </Text>
+                                <Text style={[styles.cDistText, { color: theme.primary }]}>
+                                  {place.distanceKm} km away
+                                </Text>
+                              </View>
+
+                              {/* Place Name */}
+                              <Text style={[styles.cPlaceName, { color: theme.text }]} numberOfLines={1}>
+                                {place.name}
+                              </Text>
+
+                              {/* Rating & ETA */}
+                              <View style={styles.cEtaRow}>
+                                <View style={styles.cRatingBox}>
+                                  <Ionicons name="star" size={11} color="#F59E0B" />
+                                  <Text style={styles.cRatingText}>{place.rating}</Text>
+                                  <Text style={[styles.cReviewsText, { color: theme.textMuted }]}>
+                                    ({place.reviews})
+                                  </Text>
+                                </View>
+                                <Text style={[styles.cEtaText, { color: theme.textSecondary }]}>
+                                  🚗 {place.driveMinutes}m · 🚶 {place.walkMinutes}m
+                                </Text>
+                              </View>
+                            </View>
+                          </View>
+
+                          {/* Specific Category Snippet Info */}
+                          <View style={[styles.cSnippetBox, { backgroundColor: theme.cardSecondary }]}>
+                            {place.category === 'hospital' && (
+                              <Text style={[styles.cSnippetText, { color: '#DC2626' }]} numberOfLines={1}>
+                                🚨 {place.specialty || '24x7 Emergency Care'} · {place.bedsAvailable ? `${place.bedsAvailable} Beds` : 'Ambulance On-Duty'}
+                              </Text>
+                            )}
+                            {place.category === 'famous' && (
+                              <Text style={[styles.cSnippetText, { color: theme.text }]} numberOfLines={1}>
+                                🏛️ {place.openHours} · {place.entryFee > 0 ? `Entry ₹${place.entryFee}` : 'Free Entry'}
+                              </Text>
+                            )}
+                            {place.category === 'restaurant' && (
+                              <Text style={[styles.cSnippetText, { color: theme.text }]} numberOfLines={1}>
+                                🍴 {place.cuisine} · {place.priceRange} (Avg ₹{place.avgCostForTwo} for 2)
+                              </Text>
+                            )}
+                            {place.category === 'hotel' && (
+                              <Text style={[styles.cSnippetText, { color: theme.text }]} numberOfLines={1}>
+                                🏨 {place.openHours} · ₹{place.pricePerNight}/night
+                              </Text>
+                            )}
+                            {place.category === 'artisan' && (
+                              <Text style={[styles.cSnippetText, { color: theme.text }]} numberOfLines={1}>
+                                🎨 {place.crafts ? place.crafts.join(', ') : 'Authentic Handicrafts'}
+                              </Text>
+                            )}
+                            {place.category === 'transit' && (
+                              <Text style={[styles.cSnippetText, { color: theme.text }]} numberOfLines={1}>
+                                🚆 {place.fare || 'Standard Clean Transit Fare'}
+                              </Text>
+                            )}
+                            {place.category === 'emergency' && (
+                              <Text style={[styles.cSnippetText, { color: theme.text }]} numberOfLines={1}>
+                                👮 Dial 112 for 24/7 tourist safety assistance
+                              </Text>
+                            )}
+                          </View>
+
+                          {/* Card Action Buttons: Call Helpline + Save Bookmark + Directions */}
+                          <View style={styles.cActionsRow}>
+                            {place.phone ? (
+                              <TouchableOpacity
+                                onPress={() => handleCallEmergency(place.phone)}
+                                style={[styles.cActionIconBtn, { backgroundColor: '#FEE2E2', borderColor: '#DC2626' }]}
+                              >
+                                <Ionicons name="call" size={15} color="#DC2626" />
+                              </TouchableOpacity>
+                            ) : null}
+
+                            {/* Instagram Bookmark Button */}
+                            <TouchableOpacity
+                              onPress={() => {
+                                const nowSaved = toggleSavePlace(place);
+                                setToastVisible(nowSaved);
+                              }}
+                              style={[
+                                styles.cActionIconBtn,
+                                {
+                                  backgroundColor: isSaved ? '#2563EB' : theme.cardSecondary,
+                                  borderColor: isSaved ? '#2563EB' : theme.border,
+                                },
+                              ]}
+                            >
+                              <Ionicons
+                                name={isSaved ? 'bookmark' : 'bookmark-outline'}
+                                size={15}
+                                color={isSaved ? '#FFFFFF' : theme.text}
+                              />
+                            </TouchableOpacity>
+
+                            {/* 1-Touch Directions Button */}
+                            <TouchableOpacity
+                              onPress={() => handleStartNavigation(place)}
+                              style={styles.cDirectionsBtn}
+                            >
+                              <Ionicons name="navigate" size={14} color="#FFFFFF" />
+                              <Text style={styles.cDirectionsText}>Start Directions</Text>
+                            </TouchableOpacity>
+                          </View>
+                        </TouchableOpacity>
+                      );
+                    }}
+                  />
+                )}
               </View>
             )
           )}
@@ -1324,6 +1346,176 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope_700Bold',
   },
 
+  /* Bottom Multi-Place Carousel & List Wrapper */
+  bottomMultiPlacesWrap: {
+    position: 'absolute',
+    bottom: 12,
+    left: 0,
+    right: 0,
+    zIndex: 90,
+  },
+  carouselHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginHorizontal: 14,
+    marginBottom: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+    elevation: 4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+  },
+  carouselHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    flex: 1,
+  },
+  catHeaderDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  carouselHeaderText: {
+    fontSize: 12,
+    fontFamily: 'Manrope_700Bold',
+  },
+  collapseToggleBtn: {
+    padding: 2,
+  },
+  carouselScrollContent: {
+    paddingHorizontal: 14,
+    gap: 12,
+  },
+  carouselCard: {
+    width: CARD_WIDTH,
+    borderRadius: 16,
+    padding: 12,
+    elevation: 6,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
+  },
+  cCardMainRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  cImageWrap: {
+    width: 68,
+    height: 68,
+    borderRadius: 12,
+    position: 'relative',
+  },
+  cPlaceImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 12,
+  },
+  cSymbolBadge: {
+    position: 'absolute',
+    bottom: -4,
+    right: -4,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 2,
+  },
+  cSymbolEmoji: {
+    fontSize: 11,
+  },
+  cDetailsWrap: {
+    flex: 1,
+    justifyContent: 'space-between',
+  },
+  cSubCatRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  cSubCatText: {
+    fontSize: 11,
+    fontFamily: 'Manrope_700Bold',
+    flex: 1,
+  },
+  cDistText: {
+    fontSize: 11,
+    fontFamily: 'Manrope_700Bold',
+  },
+  cPlaceName: {
+    fontSize: 14,
+    fontFamily: 'Manrope_700Bold',
+    marginVertical: 1,
+  },
+  cEtaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  cRatingBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  cRatingText: {
+    fontSize: 11,
+    fontFamily: 'Manrope_700Bold',
+    color: '#D97706',
+  },
+  cReviewsText: {
+    fontSize: 9.5,
+    fontFamily: 'Manrope_500Medium',
+  },
+  cEtaText: {
+    fontSize: 10.5,
+    fontFamily: 'Manrope_500Medium',
+  },
+  cSnippetBox: {
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 8,
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  cSnippetText: {
+    fontSize: 11,
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  cActionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  cActionIconBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cDirectionsBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#2563EB',
+    paddingVertical: 7,
+    borderRadius: 8,
+  },
+  cDirectionsText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontFamily: 'Manrope_700Bold',
+  },
+
   /* Step Directions Modal */
   modalHeaderTitleWrap: {
     flexDirection: 'row',
@@ -1494,22 +1686,6 @@ const styles = StyleSheet.create({
     fontSize: 10.5,
     fontFamily: 'Manrope_700Bold',
   },
-  activeCategoryInfoRow: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  activeCategoryTitle: {
-    fontSize: 12,
-    fontFamily: 'Manrope_700Bold',
-  },
-  activeCategorySub: {
-    fontSize: 11,
-    fontFamily: 'Manrope_500Medium',
-    maxWidth: width * 0.45,
-  },
   mapArea: {
     flex: 1,
     position: 'relative',
@@ -1561,134 +1737,6 @@ const styles = StyleSheet.create({
   layerOptionText: {
     fontSize: 12,
     fontFamily: 'Manrope_600SemiBold',
-    flex: 1,
-  },
-  bottomSheet: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    borderTopWidth: 1,
-    padding: 14,
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-  },
-  sheetHandle: {
-    width: 38,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: 'rgba(0,0,0,0.15)',
-    alignSelf: 'center',
-    marginBottom: 10,
-  },
-  sheetMainRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  sheetPlaceImage: {
-    width: 82,
-    height: 82,
-    borderRadius: 14,
-  },
-  sheetDetails: {
-    flex: 1,
-  },
-  subCategoryRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 2,
-  },
-  symbolBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 10,
-    borderWidth: 1,
-  },
-  symbolEmoji: {
-    fontSize: 12,
-  },
-  symbolLabel: {
-    fontSize: 10.5,
-    fontFamily: 'Manrope_700Bold',
-  },
-  distanceText: {
-    fontSize: 11,
-    fontFamily: 'Manrope_700Bold',
-  },
-  sheetPlaceName: {
-    fontSize: 15,
-    fontFamily: 'Manrope_700Bold',
-    marginVertical: 2,
-  },
-  etaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: 4,
-  },
-  ratingBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-  },
-  ratingText: {
-    fontSize: 11,
-    fontFamily: 'Manrope_700Bold',
-    color: '#D97706',
-  },
-  reviewsText: {
-    fontSize: 10,
-    fontFamily: 'Manrope_500Medium',
-  },
-  etaDot: {
-    fontSize: 10,
-  },
-  etaText: {
-    fontSize: 10.5,
-    fontFamily: 'Manrope_500Medium',
-  },
-  badgesRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  infoSnippet: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-    marginTop: 8,
-    marginBottom: 10,
-  },
-  snippetText: {
-    fontSize: 11.5,
-    fontFamily: 'Manrope_500Medium',
-  },
-  sheetActionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  actionIconBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  sheetBtnPrimary: {
-    flex: 1.2,
-  },
-  sheetBtnOutline: {
     flex: 1,
   },
   listView: {
