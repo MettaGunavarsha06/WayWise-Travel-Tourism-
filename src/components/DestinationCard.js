@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import { useTrips } from '../context/TripContext';
 import { CrowdIndicator } from './CrowdIndicator';
 import { EcoScoreBadge } from './EcoScoreBadge';
@@ -9,6 +10,7 @@ import { formatCurrency } from '../utils/helpers';
 
 export const DestinationCard = ({ destination, onPress, style, horizontal = false }) => {
   const { theme } = useTheme();
+  const { t } = useLanguage();
   const { toggleSavePlace, isPlaceSaved } = useTrips();
 
   const isSaved = isPlaceSaved(destination.id);
@@ -84,7 +86,7 @@ export const DestinationCard = ({ destination, onPress, style, horizontal = fals
               </Text>
             </View>
             <Text style={[styles.duration, { color: theme.primary, fontFamily: 'Manrope_700Bold' }]}>
-              Explore →
+              {t('exploreArrow') || 'Explore →'}
             </Text>
           </View>
         </View>

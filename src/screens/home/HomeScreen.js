@@ -20,15 +20,15 @@ import { GemmaAIFloatingButton } from '../../components/GemmaAIFloatingButton';
 import { GemmaAssistantModal } from '../../components/GemmaAssistantModal';
 
 const FILTER_CATEGORIES = [
-  'All India',
-  'Hills & Snow',
-  'Royal Heritage',
-  'Beaches & Coast',
-  'Spiritual',
-  'Eco Nature',
-  'South India',
-  'North India',
-  'East & Islands',
+  { id: 'All India', key: 'allIndia' },
+  { id: 'Hills & Snow', key: 'hillsSnow' },
+  { id: 'Royal Heritage', key: 'royalHeritage' },
+  { id: 'Beaches & Coast', key: 'beachesCoast' },
+  { id: 'Spiritual', key: 'spiritual' },
+  { id: 'Eco Nature', key: 'ecoNature' },
+  { id: 'South India', key: 'southIndia' },
+  { id: 'North India', key: 'northIndia' },
+  { id: 'East & Islands', key: 'eastIslands' },
 ];
 
 export const HomeScreen = ({ navigation }) => {
@@ -140,7 +140,7 @@ export const HomeScreen = ({ navigation }) => {
               onChangeText={setSearchQuery}
               onFocus={() => setSearchFocused(true)}
               onBlur={() => setSearchFocused(false)}
-              placeholder="Search all places in India (e.g. Manali, Goa, Jaipur, Kerala)..."
+              placeholder={t('searchAllPlaces') || 'Search all places in India (e.g. Manali, Goa, Jaipur, Kerala)...'}
               placeholderTextColor={theme.textMuted}
               style={[styles.searchInput, { color: theme.text, fontFamily: 'Manrope_400Regular' }]}
             />
@@ -158,10 +158,11 @@ export const HomeScreen = ({ navigation }) => {
             contentContainerStyle={styles.filterScroll}
           >
             {FILTER_CATEGORIES.map((cat) => {
-              const isActive = selectedFilter === cat;
+              const isActive = selectedFilter === cat.id;
+              const catLabel = t(cat.key) || cat.id;
               return (
                 <TouchableOpacity
-                  key={cat}
+                  key={cat.id}
                   style={[
                     styles.filterChip,
                     {
@@ -169,7 +170,7 @@ export const HomeScreen = ({ navigation }) => {
                       borderColor: isActive ? theme.primary : theme.border,
                     },
                   ]}
-                  onPress={() => setSelectedFilter(cat)}
+                  onPress={() => setSelectedFilter(cat.id)}
                   activeOpacity={0.8}
                 >
                   <Text
@@ -178,7 +179,7 @@ export const HomeScreen = ({ navigation }) => {
                       { color: isActive ? '#FFFFFF' : theme.textSecondary },
                     ]}
                   >
-                    {cat}
+                    {catLabel}
                   </Text>
                 </TouchableOpacity>
               );
@@ -209,14 +210,14 @@ export const HomeScreen = ({ navigation }) => {
                 style={[styles.clearFilterBtn, { backgroundColor: theme.cardSecondary }]}
               >
                 <Ionicons name="close" size={14} color={theme.textSecondary} />
-                <Text style={[styles.clearFilterText, { color: theme.textSecondary }]}>Reset</Text>
+                <Text style={[styles.clearFilterText, { color: theme.textSecondary }]}>{t('reset') || 'Reset'}</Text>
               </TouchableOpacity>
             </View>
 
             {filteredDestinations.length === 0 ? (
               <View style={[styles.emptyBox, { backgroundColor: theme.card, borderColor: theme.border }]}>
                 <Ionicons name="compass-outline" size={44} color={theme.textMuted} />
-                <Text style={[styles.emptyTitle, { color: theme.text }]}>No matching destinations found</Text>
+                <Text style={[styles.emptyTitle, { color: theme.text }]}>{t('noResultsFound') || 'No matching destinations found'}</Text>
                 <Text style={[styles.emptySub, { color: theme.textSecondary }]}>
                   Try searching for another state, city (e.g. Manali, Varanasi, Goa, Kerala), or choose "All India".
                 </Text>
@@ -227,7 +228,7 @@ export const HomeScreen = ({ navigation }) => {
                     setSelectedFilter('All India');
                   }}
                 >
-                  <Text style={styles.resetSearchBtnText}>View All Destinations</Text>
+                  <Text style={styles.resetSearchBtnText}>{t('viewAllDestinations') || 'View All Destinations'}</Text>
                 </TouchableOpacity>
               </View>
             ) : (
@@ -245,9 +246,9 @@ export const HomeScreen = ({ navigation }) => {
             {/* Spotlight: Featured Heritage Attraction (Amer Fort) */}
             <View style={styles.sectionHeader}>
               <View>
-                <Text style={[styles.sectionTitle, { color: theme.text }]}>Featured Heritage Attraction</Text>
+                <Text style={[styles.sectionTitle, { color: theme.text }]}>{t('featuredAttraction') || 'Featured Heritage Attraction'}</Text>
                 <Text style={[styles.sectionSubtitle, { color: theme.textSecondary }]}>
-                  Iconic landmarks and historic architecture
+                  {t('featuredAttractionSub') || 'Iconic landmarks and historic architecture'}
                 </Text>
               </View>
             </View>
@@ -309,7 +310,7 @@ export const HomeScreen = ({ navigation }) => {
                     onPress={() => navigation.navigate('DestinationDetail', { destination: jaipurDest })}
                     style={[styles.exploreBtn, { backgroundColor: theme.primaryLight }]}
                   >
-                    <Text style={[styles.exploreBtnText, { color: theme.primaryDark }]}>Explore Jaipur</Text>
+                    <Text style={[styles.exploreBtnText, { color: theme.primaryDark }]}>{t('exploreJaipur') || 'Explore Jaipur'}</Text>
                     <Ionicons name="arrow-forward" size={14} color={theme.primaryDark} />
                   </TouchableOpacity>
                 </View>
@@ -329,10 +330,10 @@ export const HomeScreen = ({ navigation }) => {
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.ecoTitle, { color: theme.text }]}>
-                    Sustainable Travel Verification
+                    {t('sustainableVerification') || 'Sustainable Travel Verification'}
                   </Text>
                   <Text style={[styles.ecoSub, { color: theme.textSecondary }]}>
-                    Certified eco-stays, low-emission transit &amp; local artisan cooperatives
+                    {t('sustainableVerificationSub') || 'Certified eco-stays, low-emission transit & local artisan cooperatives'}
                   </Text>
                 </View>
               </View>
@@ -343,16 +344,16 @@ export const HomeScreen = ({ navigation }) => {
 
             {/* Quick Travel Services Navigation */}
             <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle, { color: theme.text }]}>Explore Services</Text>
+              <Text style={[styles.sectionTitle, { color: theme.text }]}>{t('exploreServices') || 'Explore Services'}</Text>
             </View>
             <View style={styles.quickGrid}>
               {[
-                { label: 'Trip Planner', icon: 'map-outline', bg: theme.primaryLight, color: theme.primary, screen: 'TripPlannerWizard' },
+                { label: t('createAITrip') || 'Trip Planner', icon: 'map-outline', bg: theme.primaryLight, color: theme.primary, screen: 'TripPlannerWizard' },
                 { label: t('hotels') || 'Hotels', icon: 'bed-outline', bg: '#EFF6FF', color: '#2563EB', screen: 'Hotels' },
                 { label: t('transport') || 'Transit', icon: 'train-outline', bg: '#FFF7ED', color: '#C2410C', screen: 'Transport' },
-                { label: 'Artisans', icon: 'storefront-outline', bg: '#FDF4FF', color: '#9333EA', screen: 'LocalBusiness' },
-                { label: 'Hidden Gems', icon: 'compass-outline', bg: '#F0FDF4', color: theme.primary, screen: 'HiddenGems' },
-                { label: 'Budget', icon: 'wallet-outline', bg: '#ECFEFF', color: '#0891B2', screen: 'BudgetOptimizer' },
+                { label: t('artisans') || 'Artisans', icon: 'storefront-outline', bg: '#FDF4FF', color: '#9333EA', screen: 'LocalBusiness' },
+                { label: t('hiddenGems') || 'Hidden Gems', icon: 'compass-outline', bg: '#F0FDF4', color: theme.primary, screen: 'HiddenGems' },
+                { label: t('optimizeBudget') || 'Budget', icon: 'wallet-outline', bg: '#ECFEFF', color: '#0891B2', screen: 'BudgetOptimizer' },
               ].map((item) => (
                 <TouchableOpacity
                   key={item.label}
@@ -375,7 +376,7 @@ export const HomeScreen = ({ navigation }) => {
                   {t('recommended') || 'Recommended Destinations'}
                 </Text>
                 <Text style={[styles.sectionSubtitle, { color: theme.textSecondary }]}>
-                  Handpicked destinations across India with balanced crowd density
+                  {t('recommendedSub') || 'Handpicked destinations across India with balanced crowd density'}
                 </Text>
               </View>
             </View>
@@ -402,7 +403,7 @@ export const HomeScreen = ({ navigation }) => {
                   {t('hiddenGems') || 'Hidden Gems of India'}
                 </Text>
                 <Text style={[styles.sectionSubtitle, { color: theme.textSecondary }]}>
-                  Peaceful offbeat destinations away from tourist congestion
+                  {t('hiddenGemsSub') || 'Peaceful offbeat destinations away from tourist congestion'}
                 </Text>
               </View>
               <TouchableOpacity onPress={() => navigation.navigate('HiddenGems')}>
@@ -434,7 +435,7 @@ export const HomeScreen = ({ navigation }) => {
                   {t('trending') || 'All Travel Destinations Across India'}
                 </Text>
                 <Text style={[styles.sectionSubtitle, { color: theme.textSecondary }]}>
-                  Explore iconic heritage, nature, and coastal hubs ({destinations.length} places)
+                  {t('trendingSub') || 'Explore iconic heritage, nature, and coastal hubs'} ({destinations.length} places)
                 </Text>
               </View>
             </View>
