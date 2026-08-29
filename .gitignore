@@ -11,6 +11,7 @@ npm-debug.*
 .system_generated/
 web-build/
 expo_qr.png
+expo_qr_code.png
 expo_qr.svg
 open_qr.html
 gen_qr.js

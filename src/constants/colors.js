@@ -62,56 +62,56 @@ export const LightTheme = {
 export const DarkTheme = {
   mode: 'dark',
 
-  // === Primary Brand: Forest Green (brighter for dark bg) ===
-  primary: '#4CAF50',
-  primaryDark: '#2E7D32',
-  primaryLight: '#1B3A1B',
-  primaryMid: '#43A047',
+  // === Primary Brand: Vibrant Emerald / Forest (Clean on black background) ===
+  primary: '#10B981',        // Vibrant emerald green — buttons, active states
+  primaryDark: '#059669',    // Deep emerald green — emphasis
+  primaryLight: 'rgba(16, 185, 129, 0.16)', // Subtle emerald tint for chips/badges
+  primaryMid: '#34D399',     // Mid emerald
 
-  // === Secondary Greens ===
-  secondary: '#66BB6A',
-  secondaryLight: '#1B3A1B',
+  // === Secondary ===
+  secondary: '#34D399',      // Fresh light emerald
+  secondaryLight: 'rgba(52, 211, 153, 0.16)',
 
   // === Accent ===
-  accent: '#FBBF24',
-  accentLight: '#3D2A00',
+  accent: '#F59E0B',
+  accentLight: 'rgba(245, 158, 11, 0.16)',
 
-  // === Backgrounds & Surfaces ===
-  background: '#0D1A0D',     // Very dark green-black
-  card: '#162316',
-  cardSecondary: '#1C2E1C',
-  surface: '#1C2E1C',
-  surfaceElevated: '#1F321F',
+  // === Backgrounds & Surfaces (Pure Black & Neutral Charcoal) ===
+  background: '#09090B',     // Deep obsidian black
+  card: '#121215',           // Dark neutral card surface
+  cardSecondary: '#18181C',  // Secondary dark surface
+  surface: '#121215',
+  surfaceElevated: '#1E1E24',
 
-  // === Text ===
-  text: '#E8F5E9',
-  textSecondary: '#A5C8A0',
-  textMuted: '#5A7A57',
+  // === Text (Clean Neutral Grays & Whites) ===
+  text: '#F4F4F5',           // Crisp near-white
+  textSecondary: '#A1A1AA',  // Clean neutral light gray
+  textMuted: '#71717A',      // Muted neutral gray
 
   // === Borders ===
-  border: '#2A4A2A',
-  borderLight: '#1C2E1C',
+  border: '#27272A',         // Clean subtle border
+  borderLight: '#1E1E24',    // Very subtle border
 
   // === Semantic Colors ===
-  error: '#EF5350',
-  errorLight: '#3B0000',
-  success: '#66BB6A',
-  successLight: '#1B3A1B',
-  warning: '#FFA726',
-  warningLight: '#3D2000',
-  info: '#42A5F5',
-  infoLight: '#0D1E3D',
+  error: '#EF4444',
+  errorLight: 'rgba(239, 68, 68, 0.16)',
+  success: '#10B981',
+  successLight: 'rgba(16, 185, 129, 0.16)',
+  warning: '#F59E0B',
+  warningLight: 'rgba(245, 158, 11, 0.16)',
+  info: '#3B82F6',
+  infoLight: 'rgba(59, 130, 246, 0.16)',
 
   // === Eco / Sustainability ===
-  ecoGreen: '#66BB6A',
-  ecoGreenLight: '#1B3A1B',
-  ecoGreenMid: '#2E5C2E',
+  ecoGreen: '#10B981',
+  ecoGreenLight: 'rgba(16, 185, 129, 0.16)',
+  ecoGreenMid: '#059669',
 
   // === UI Chrome ===
-  glassBg: 'rgba(22, 35, 22, 0.88)',
-  glassBorder: 'rgba(42, 74, 42, 0.8)',
+  glassBg: 'rgba(18, 18, 21, 0.92)',
+  glassBorder: 'rgba(39, 39, 42, 0.8)',
   shadow: '#000000',
-  tabBar: '#101A10',
-  tabBarInactive: '#4A6A47',
+  tabBar: '#09090B',
+  tabBarInactive: '#71717A',
   statusBar: 'light',
 };

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,21 +6,66 @@ import {
   TouchableOpacity,
   Modal,
   FlatList,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Location from 'expo-location';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
+import { getLiveTelemetry } from '../utils/weatherService';
 
-export const Header = ({ onSOSPress, onNotificationsPress }) => {
+export const Header = ({ onSOSPress, onNotificationsPress, onWeatherPress }) => {
   const { theme, isDark, toggleTheme } = useTheme();
   const { currentLanguage, languages, setLanguage, t } = useLanguage();
   const { user, role, toggleRole } = useAuth();
   const { unreadCount } = useNotifications();
   const insets = useSafeAreaInsets();
   const [langModalVisible, setLangModalVisible] = useState(false);
+  const [liveTemp, setLiveTemp] = useState(null);
+  const [liveIcon, setLiveIcon] = useState('partly-sunny-outline');
+  const [liveCity, setLiveCity] = useState('');
+  const [loadingWeather, setLoadingWeather] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchLiveWeather = async () => {
+      try {
+        setLoadingWeather(true);
+        let coords = { lat: 17.6868, lon: 83.2185 }; // Default Vizag
+        try {
+          const { status } = await Location.requestForegroundPermissionsAsync();
+          if (status === 'granted') {
+            const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Low });
+            if (loc && loc.coords) {
+              coords = { lat: loc.coords.latitude, lon: loc.coords.longitude };
+            }
+          }
+        } catch (locErr) {
+          // fallback to default coords
+        }
+
+        const data = await getLiveTelemetry({ lat: coords.lat, lon: coords.lon });
+        if (data && isMounted) {
+          setLiveTemp(data.temperature);
+          setLiveIcon(data.iconName || 'partly-sunny-outline');
+          setLiveCity(data.city || '');
+        }
+      } catch (err) {
+        // Fallback default
+        if (isMounted) setLiveTemp(29);
+      } finally {
+        if (isMounted) setLoadingWeather(false);
+      }
+    };
+
+    fetchLiveWeather();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const currentLangObj = languages.find((l) => l.code === currentLanguage) || languages[0];
 
@@ -118,7 +163,7 @@ export const Header = ({ onSOSPress, onNotificationsPress }) => {
         </View>
       </View>
 
-      {/* Greeting & Weather Row — Tourist Mode Only */}
+      {/* Greeting & Real Live Weather Row — Tourist Mode Only */}
       {role === 'tourist' && (
         <View style={styles.greetingRow}>
           <View style={styles.greetingTextContainer}>
@@ -133,11 +178,24 @@ export const Header = ({ onSOSPress, onNotificationsPress }) => {
             </View>
           </View>
 
-          {/* Weather Widget */}
-          <View style={[styles.weatherWidget, { backgroundColor: theme.primaryLight, borderColor: theme.border }]}>
-            <Ionicons name="partly-sunny-outline" size={16} color={theme.primary} />
-            <Text style={[styles.weatherTemp, { color: theme.primaryDark }]}>29°C</Text>
-          </View>
+          {/* Real Live Weather Telemetry Widget */}
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={onWeatherPress}
+            style={[styles.weatherWidget, { backgroundColor: theme.primaryLight, borderColor: theme.border }]}
+          >
+            {loadingWeather ? (
+              <ActivityIndicator size="small" color={theme.primary} />
+            ) : (
+              <>
+                <Ionicons name={liveIcon || 'partly-sunny-outline'} size={16} color={theme.primary} />
+                <Text style={[styles.weatherTemp, { color: theme.primaryDark }]}>
+                  {liveTemp !== null ? `${liveTemp}°C` : '28°C'}
+                </Text>
+                <View style={styles.liveIndicatorDot} />
+              </>
+            )}
+          </TouchableOpacity>
         </View>
       )}
 
@@ -307,11 +365,17 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     borderRadius: 10,
     borderWidth: 1,
-    gap: 5,
+    gap: 6,
   },
   weatherTemp: {
     fontSize: 13,
     fontFamily: 'Manrope_700Bold',
+  },
+  liveIndicatorDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#22C55E',
   },
   modalOverlay: {
     flex: 1,

@@ -17,6 +17,7 @@ import { DigitalPassScreen } from '../screens/planner/DigitalPassScreen';
 import { MyTripsScreen } from '../screens/planner/MyTripsScreen';
 
 import { ExploreScreen } from '../screens/explore/ExploreScreen';
+import { WeatherScreen } from '../screens/weather/WeatherScreen';
 import { HotelsScreen } from '../screens/explore/HotelsScreen';
 import { HotelDetailScreen } from '../screens/explore/HotelDetailScreen';
 import { TransportScreen } from '../screens/explore/TransportScreen';
@@ -68,6 +69,7 @@ export const AppNavigator = () => {
             <Stack.Screen name="MyTrips" component={MyTripsScreen} />
 
             <Stack.Screen name="Explore" component={ExploreScreen} />
+            <Stack.Screen name="Weather" component={WeatherScreen} />
             <Stack.Screen name="Hotels" component={HotelsScreen} />
             <Stack.Screen name="HotelDetail" component={HotelDetailScreen} />
             <Stack.Screen name="Transport" component={TransportScreen} />

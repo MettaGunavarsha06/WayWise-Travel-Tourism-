@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
+  TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,7 +14,6 @@ import { useTheme } from '../../context/ThemeContext';
 import { useTrips } from '../../context/TripContext';
 import { destinations } from '../../data/destinations';
 import { Button } from '../../components/Button';
-import { Input } from '../../components/Input';
 import { formatCurrency } from '../../utils/helpers';
 
 const interestOptions = [
@@ -36,20 +36,45 @@ const travelPreferences = [
   { id: 'Fastest', label: 'Express Transit', desc: 'Point-to-point express routes', icon: 'flash-outline' },
 ];
 
-const budgetPresets = [8000, 12000, 15000, 20000, 30000];
+// Quick Budget Options requested by user
+const quickBudgetOptions = [
+  { amount: 5000, label: '₹5,000', tag: 'Backpacker' },
+  { amount: 10000, label: '₹10,000', tag: 'Standard' },
+  { amount: 15000, label: '₹15,000', tag: 'Recommended' },
+  { amount: 25000, label: '₹25,000', tag: 'Comfort' },
+  { amount: 50000, label: '₹50,000', tag: 'Luxury' },
+];
 
-export const TripPlannerWizardScreen = ({ navigation }) => {
+export const TripPlannerWizardScreen = ({ route, navigation }) => {
   const { theme } = useTheme();
   const { createTrip } = useTrips();
 
-  const [step, setStep] = useState(1);
-  const [selectedDestination, setSelectedDestination] = useState(destinations[0]);
+  const initialDest = route?.params?.initialDestination || destinations[0];
+  const startAtBudget = route?.params?.startAtBudget || false;
+
+  const [step, setStep] = useState(startAtBudget ? 2 : 1);
+  const [selectedDestination, setSelectedDestination] = useState(initialDest);
+  const [budget, setBudget] = useState(initialDest.estimatedCost || 15000);
+  const [customBudgetInput, setCustomBudgetInput] = useState(
+    (initialDest.estimatedCost || 15000).toString()
+  );
   const [days, setDays] = useState(4);
   const [travelers, setTravelers] = useState(2);
-  const [budget, setBudget] = useState(15000);
   const [selectedInterests, setSelectedInterests] = useState(['Nature', 'History', 'Beaches']);
   const [selectedPreference, setSelectedPreference] = useState('Comfortable');
   const [generating, setGenerating] = useState(false);
+
+  useEffect(() => {
+    if (route?.params?.initialDestination) {
+      setSelectedDestination(route.params.initialDestination);
+      const est = route.params.initialDestination.estimatedCost || 15000;
+      setBudget(est);
+      setCustomBudgetInput(est.toString());
+      if (route.params.startAtBudget) {
+        setStep(2);
+      }
+    }
+  }, [route?.params]);
 
   const toggleInterest = (interestId) => {
     if (selectedInterests.includes(interestId)) {
@@ -59,6 +84,21 @@ export const TripPlannerWizardScreen = ({ navigation }) => {
     } else {
       setSelectedInterests([...selectedInterests, interestId]);
     }
+  };
+
+  const handleCustomBudgetChange = (text) => {
+    // Only allow digits
+    const cleaned = text.replace(/[^0-9]/g, '');
+    setCustomBudgetInput(cleaned);
+    const num = parseInt(cleaned, 10);
+    if (!isNaN(num) && num > 0) {
+      setBudget(num);
+    }
+  };
+
+  const handleQuickBudgetSelect = (amount) => {
+    setBudget(amount);
+    setCustomBudgetInput(amount.toString());
   };
 
   const handleNext = () => {
@@ -115,7 +155,7 @@ export const TripPlannerWizardScreen = ({ navigation }) => {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Step 1: Destination */}
+        {/* Step 1: Destination Selection */}
         {step === 1 && (
           <View style={styles.stepContainer}>
             <Text style={[styles.stepHeading, { color: theme.text }]}>Where do you want to explore?</Text>
@@ -130,7 +170,12 @@ export const TripPlannerWizardScreen = ({ navigation }) => {
                   <TouchableOpacity
                     key={dest.id}
                     activeOpacity={0.8}
-                    onPress={() => setSelectedDestination(dest)}
+                    onPress={() => {
+                      setSelectedDestination(dest);
+                      const est = dest.estimatedCost || 15000;
+                      setBudget(est);
+                      setCustomBudgetInput(est.toString());
+                    }}
                     style={[
                       styles.destCard,
                       {
@@ -161,8 +206,131 @@ export const TripPlannerWizardScreen = ({ navigation }) => {
           </View>
         )}
 
-        {/* Step 2: Number of Days */}
+        {/* Step 2: Budget Selection (Placed right after selecting trip place) */}
         {step === 2 && (
+          <View style={styles.stepContainer}>
+            <Text style={[styles.stepHeading, { color: theme.text }]}>
+              What is your budget for {selectedDestination.name}?
+            </Text>
+            <Text style={[styles.stepSub, { color: theme.textSecondary }]}>
+              Total target budget for lodging, travel, activities, and local food.
+            </Text>
+
+            {/* Target Budget Display Card */}
+            <View
+              style={[
+                styles.budgetDisplayCard,
+                { backgroundColor: theme.primaryLight, borderColor: theme.primary },
+              ]}
+            >
+              <Text style={[styles.budgetLabel, { color: theme.primaryDark }]}>
+                Selected Trip Budget
+              </Text>
+              <Text style={[styles.budgetValue, { color: theme.primaryDark }]}>
+                {formatCurrency(budget)}
+              </Text>
+              <View style={styles.budgetPerPersonRow}>
+                <Ionicons name="people-outline" size={14} color={theme.textSecondary} />
+                <Text style={[styles.budgetPerPerson, { color: theme.textSecondary }]}>
+                  ≈ {formatCurrency(Math.round(budget / travelers))} per traveler ({travelers} travelers)
+                </Text>
+              </View>
+            </View>
+
+            {/* Custom Budget Input in ₹ */}
+            <View style={styles.customInputSection}>
+              <Text style={[styles.sectionSubtitle, { color: theme.text }]}>
+                Custom Budget Input (in ₹)
+              </Text>
+              <View
+                style={[
+                  styles.customInputWrap,
+                  { backgroundColor: theme.card, borderColor: theme.border },
+                ]}
+              >
+                <View style={[styles.rupeeSymbolBox, { backgroundColor: theme.primaryLight }]}>
+                  <Text style={[styles.rupeeSymbol, { color: theme.primaryDark }]}>₹</Text>
+                </View>
+                <TextInput
+                  value={customBudgetInput}
+                  onChangeText={handleCustomBudgetChange}
+                  keyboardType="numeric"
+                  placeholder="Enter amount in ₹ (e.g. 15000)"
+                  placeholderTextColor={theme.textMuted}
+                  style={[styles.customTextInput, { color: theme.text }]}
+                />
+                {customBudgetInput.length > 0 && (
+                  <TouchableOpacity onPress={() => handleCustomBudgetChange('')}>
+                    <Ionicons name="close-circle" size={18} color={theme.textMuted} />
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+
+            {/* Quick Options Requested: ₹5,000, ₹10,000, ₹15,000, ₹25,000, ₹50,000 */}
+            <View style={styles.quickOptionsSection}>
+              <Text style={[styles.sectionSubtitle, { color: theme.text }]}>
+                Quick Budget Options
+              </Text>
+              <View style={styles.quickOptionsGrid}>
+                {quickBudgetOptions.map((opt) => {
+                  const isSelected = budget === opt.amount;
+                  return (
+                    <TouchableOpacity
+                      key={opt.amount}
+                      onPress={() => handleQuickBudgetSelect(opt.amount)}
+                      style={[
+                        styles.quickOptionCard,
+                        {
+                          backgroundColor: isSelected ? theme.primary : theme.card,
+                          borderColor: isSelected ? theme.primary : theme.border,
+                        },
+                      ]}
+                      activeOpacity={0.8}
+                    >
+                      <Text
+                        style={[
+                          styles.quickOptionAmount,
+                          { color: isSelected ? '#FFFFFF' : theme.text },
+                        ]}
+                      >
+                        {opt.label}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.quickOptionTag,
+                          { color: isSelected ? 'rgba(255,255,255,0.85)' : theme.textSecondary },
+                        ]}
+                      >
+                        {opt.tag}
+                      </Text>
+                      {isSelected && (
+                        <View style={styles.quickOptionCheck}>
+                          <Ionicons name="checkmark-circle" size={16} color="#FFFFFF" />
+                        </View>
+                      )}
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+
+            {/* Destination Budget Context Info */}
+            <View style={[styles.infoBanner, { backgroundColor: theme.cardSecondary }]}>
+              <Ionicons name="information-circle-outline" size={20} color={theme.primary} />
+              <Text style={[styles.infoText, { color: theme.textSecondary }]}>
+                Average recommended budget for {selectedDestination.name} is{' '}
+                <Text style={{ fontWeight: '700', color: theme.text }}>
+                  {formatCurrency(selectedDestination.estimatedCost || 15000)}
+                </Text>
+                .
+              </Text>
+            </View>
+          </View>
+        )}
+
+        {/* Step 3: Number of Days */}
+        {step === 3 && (
           <View style={styles.stepContainer}>
             <Text style={[styles.stepHeading, { color: theme.text }]}>How many days are you traveling?</Text>
             <Text style={[styles.stepSub, { color: theme.textSecondary }]}>
@@ -205,14 +373,16 @@ export const TripPlannerWizardScreen = ({ navigation }) => {
             <View style={[styles.infoBanner, { backgroundColor: theme.cardSecondary }]}>
               <Ionicons name="time-outline" size={20} color={theme.primary} />
               <Text style={[styles.infoText, { color: theme.textSecondary }]}>
-                Selected: <Text style={{ fontWeight: '700', color: theme.text }}>{days} Days Itinerary</Text> for {selectedDestination.name}.
+                Selected:{' '}
+                <Text style={{ fontWeight: '700', color: theme.text }}>{days} Days Itinerary</Text> for{' '}
+                {selectedDestination.name}.
               </Text>
             </View>
           </View>
         )}
 
-        {/* Step 3: Number of Travelers */}
-        {step === 3 && (
+        {/* Step 4: Number of Travelers */}
+        {step === 4 && (
           <View style={styles.stepContainer}>
             <Text style={[styles.stepHeading, { color: theme.text }]}>How many travelers in your group?</Text>
             <Text style={[styles.stepSub, { color: theme.textSecondary }]}>
@@ -244,52 +414,6 @@ export const TripPlannerWizardScreen = ({ navigation }) => {
                     ]}
                   >
                     {count} {count === 1 ? 'Solo' : 'Persons'}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {/* Step 4: Budget */}
-        {step === 4 && (
-          <View style={styles.stepContainer}>
-            <Text style={[styles.stepHeading, { color: theme.text }]}>What is your target budget?</Text>
-            <Text style={[styles.stepSub, { color: theme.textSecondary }]}>
-              Total budget for lodging, travel, activities, and dining.
-            </Text>
-
-            <View style={[styles.budgetDisplayCard, { backgroundColor: theme.primaryLight, borderColor: theme.primary }]}>
-              <Text style={[styles.budgetLabel, { color: theme.primaryDark }]}>Target Budget</Text>
-              <Text style={[styles.budgetValue, { color: theme.primaryDark }]}>
-                {formatCurrency(budget)}
-              </Text>
-              <Text style={[styles.budgetPerPerson, { color: theme.textSecondary }]}>
-                ≈ {formatCurrency(Math.round(budget / travelers))} per traveler
-              </Text>
-            </View>
-
-            <Text style={[styles.subHeading, { color: theme.text }]}>Quick Select</Text>
-            <View style={styles.presetsRow}>
-              {budgetPresets.map((val) => (
-                <TouchableOpacity
-                  key={val}
-                  onPress={() => setBudget(val)}
-                  style={[
-                    styles.presetPill,
-                    {
-                      backgroundColor: budget === val ? theme.primary : theme.card,
-                      borderColor: budget === val ? theme.primary : theme.border,
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.presetText,
-                      { color: budget === val ? '#FFFFFF' : theme.text },
-                    ]}
-                  >
-                    {formatCurrency(val)}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -367,7 +491,12 @@ export const TripPlannerWizardScreen = ({ navigation }) => {
                       },
                     ]}
                   >
-                    <View style={[styles.prefIcon, { backgroundColor: isSelected ? theme.primary : theme.cardSecondary }]}>
+                    <View
+                      style={[
+                        styles.prefIcon,
+                        { backgroundColor: isSelected ? theme.primary : theme.cardSecondary },
+                      ]}
+                    >
                       <Ionicons
                         name={pref.icon}
                         size={20}
@@ -400,10 +529,10 @@ export const TripPlannerWizardScreen = ({ navigation }) => {
         <View style={{ height: 90 }} />
       </ScrollView>
 
-      {/* Bottom Sticky Next Button */}
+      {/* Bottom Sticky Continue Button */}
       <View style={[styles.bottomBar, { backgroundColor: theme.card, borderTopColor: theme.border }]}>
         <Button
-          title={step === 6 ? 'Generate Itinerary' : 'Continue'}
+          title={step === 6 ? 'Generate AI Itinerary' : 'Continue'}
           variant="primary"
           size="large"
           loading={generating}
@@ -454,54 +583,156 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   stepContainer: {
-    paddingBottom: 10,
+    paddingBottom: 20,
   },
   stepHeading: {
-    fontSize: 18,
+    fontSize: 19,
     fontFamily: 'Manrope_700Bold',
-    letterSpacing: -0.2,
-    marginBottom: 4,
+    marginBottom: 6,
   },
   stepSub: {
-    fontSize: 12.5,
+    fontSize: 13,
     fontFamily: 'Manrope_400Regular',
-    lineHeight: 18,
-    marginBottom: 16,
+    lineHeight: 19,
+    marginBottom: 18,
   },
+  sectionSubtitle: {
+    fontSize: 13.5,
+    fontFamily: 'Manrope_700Bold',
+    marginBottom: 8,
+  },
+
+  // Step 1: Destination Grid
   destGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 12,
   },
   destCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    width: '48%',
     borderRadius: 14,
-    padding: 10,
-    gap: 12,
+    overflow: 'hidden',
+    position: 'relative',
   },
   destImg: {
-    width: 60,
-    height: 60,
-    borderRadius: 10,
-  },
-  destTextWrap: {
-    flex: 1,
-  },
-  destName: {
-    fontSize: 15,
-    fontFamily: 'Manrope_700Bold',
-  },
-  destState: {
-    fontSize: 12,
-    fontFamily: 'Manrope_400Regular',
-    marginTop: 2,
+    width: '100%',
+    height: 100,
   },
   checkCircle: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  destTextWrap: {
+    padding: 10,
+  },
+  destName: {
+    fontSize: 13,
+    fontFamily: 'Manrope_700Bold',
+  },
+  destState: {
+    fontSize: 11,
+    fontFamily: 'Manrope_400Regular',
+    marginTop: 2,
+  },
+
+  // Step 2: Budget
+  budgetDisplayCard: {
+    borderRadius: 16,
+    borderWidth: 1.5,
+    padding: 18,
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  budgetLabel: {
+    fontSize: 12,
+    fontFamily: 'Manrope_600SemiBold',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  budgetValue: {
+    fontSize: 32,
+    fontFamily: 'Manrope_800ExtraBold',
+    letterSpacing: -0.5,
+  },
+  budgetPerPersonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginTop: 6,
+  },
+  budgetPerPerson: {
+    fontSize: 12,
+    fontFamily: 'Manrope_500Medium',
+  },
+  customInputSection: {
+    marginBottom: 20,
+  },
+  customInputWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    height: 50,
+  },
+  rupeeSymbolBox: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  rupeeSymbol: {
+    fontSize: 16,
+    fontFamily: 'Manrope_800ExtraBold',
+  },
+  customTextInput: {
+    flex: 1,
+    fontSize: 16,
+    fontFamily: 'Manrope_600SemiBold',
+    height: '100%',
+  },
+  quickOptionsSection: {
+    marginBottom: 16,
+  },
+  quickOptionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  quickOptionCard: {
+    width: '31%',
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 6,
+    alignItems: 'center',
+    position: 'relative',
+  },
+  quickOptionAmount: {
+    fontSize: 13.5,
+    fontFamily: 'Manrope_700Bold',
+  },
+  quickOptionTag: {
+    fontSize: 10,
+    fontFamily: 'Manrope_500Medium',
+    marginTop: 3,
+  },
+  quickOptionCheck: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+  },
+
+  // Step 3: Days
   daysSelector: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -510,9 +741,9 @@ const styles = StyleSheet.create({
   },
   dayPill: {
     width: '30%',
+    paddingVertical: 16,
     borderRadius: 12,
     borderWidth: 1,
-    paddingVertical: 14,
     alignItems: 'center',
   },
   dayNum: {
@@ -524,95 +755,48 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope_500Medium',
     marginTop: 2,
   },
-  infoBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    padding: 12,
-    borderRadius: 10,
-  },
-  infoText: {
-    fontSize: 12.5,
-    fontFamily: 'Manrope_400Regular',
-  },
+
+  // Step 4: Travelers
   travelerRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 10,
   },
   travelerCard: {
-    width: '30%',
+    width: '48%',
+    paddingVertical: 16,
+    paddingHorizontal: 12,
     borderRadius: 12,
     borderWidth: 1,
-    paddingVertical: 14,
     alignItems: 'center',
     gap: 6,
   },
   travelerCount: {
-    fontSize: 12,
-    fontFamily: 'Manrope_600SemiBold',
-  },
-  budgetDisplayCard: {
-    padding: 20,
-    borderRadius: 16,
-    borderWidth: 1,
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  budgetLabel: {
-    fontSize: 12,
-    fontFamily: 'Manrope_600SemiBold',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  budgetValue: {
-    fontSize: 32,
-    fontFamily: 'Manrope_800ExtraBold',
-    marginVertical: 4,
-  },
-  budgetPerPerson: {
-    fontSize: 12,
-    fontFamily: 'Manrope_400Regular',
-  },
-  subHeading: {
-    fontSize: 14,
-    fontFamily: 'Manrope_700Bold',
-    marginBottom: 10,
-  },
-  presetsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  presetPill: {
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderRadius: 10,
-    borderWidth: 1,
-  },
-  presetText: {
     fontSize: 13,
-    fontFamily: 'Manrope_600SemiBold',
+    fontFamily: 'Manrope_700Bold',
   },
+
+  // Step 5: Interests
   interestGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 10,
   },
   interestCard: {
-    width: '48%',
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 1,
     gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 20,
+    borderWidth: 1,
   },
   interestLabel: {
     fontSize: 12.5,
     fontFamily: 'Manrope_600SemiBold',
-    flex: 1,
   },
+
+  // Step 6: Travel Preferences
   prefList: {
     gap: 12,
   },
@@ -624,23 +808,45 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   prefIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
+    width: 44,
+    height: 44,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
   prefLabel: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: 'Manrope_700Bold',
+    marginBottom: 2,
   },
   prefDesc: {
     fontSize: 11.5,
     fontFamily: 'Manrope_400Regular',
-    marginTop: 2,
+    lineHeight: 16,
+  },
+
+  // Banners & Bottom Bar
+  infoBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    padding: 12,
+    borderRadius: 10,
+    marginTop: 8,
+  },
+  infoText: {
+    fontSize: 12,
+    fontFamily: 'Manrope_400Regular',
+    flex: 1,
+    lineHeight: 17,
   },
   bottomBar: {
-    padding: 16,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderTopWidth: 1,
   },
   fullBtn: {
