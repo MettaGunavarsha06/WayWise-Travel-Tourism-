@@ -1,64 +1,67 @@
 // WayWise Design System — Multi-Theme Visual Tokens
-// Includes: Glass Horizon (Floating Glassmorphism), Vintage Voyager (Heritage Maps + Modern Luxury), Obsidian Dark, and Emerald Nature
+// Includes: Premium Glassmorphism (Deep Navy, Soft Blue, Frosted White, Warm Gold),
+// Vintage Voyager (Heritage Maps + Modern Luxury), Obsidian Dark, and Emerald Nature
 
 export const GlassHorizonTheme = {
   name: 'glass_horizon',
-  displayName: 'Glass Horizon',
-  subtitle: 'Floating Glassmorphism · Translucent Frost & Azure',
+  displayName: 'Glassmorphism Luxe',
+  subtitle: 'Frosted Glass · Deep Navy, Soft Blue & Warm Gold',
   mode: 'glass_horizon',
   isDark: false,
 
-  // === Primary Brand: Luminous Azure & Oceanic Cyan ===
-  primary: '#0284C7',        // Luminous azure blue
-  primaryDark: '#0369A1',    // Deep ocean blue
-  primaryLight: 'rgba(2, 132, 199, 0.12)', // Subtle translucent azure tint
-  primaryMid: '#0EA5E9',     // Sky blue
+  // === Primary Brand: Deep Classic Navy ===
+  primary: '#1E3A5F',        // Deep classic navy — elegant luxury buttons & active states
+  primaryDark: '#0A192F',    // Deepest navy
+  primaryLight: 'rgba(30, 58, 95, 0.08)', // Subtle luxury navy wash
+  primaryMid: '#2C5282',     // Medium navy
 
-  // === Secondary ===
-  secondary: '#38BDF8',      // Bright azure cyan
-  secondaryLight: 'rgba(56, 189, 248, 0.15)',
+  // === Secondary: Soft Atmospheric Blue ===
+  secondary: '#4A7BB0',      // Soft classic blue
+  secondaryLight: 'rgba(74, 123, 176, 0.10)',
 
-  // === Accent ===
-  accent: '#06B6D4',        // Vibrant cyan
-  accentLight: 'rgba(6, 182, 212, 0.15)',
+  // === Accent: Subtle Warm Gold ===
+  accent: '#C5A059',        // Subtle warm gold — classic luxury accent
+  accentLight: 'rgba(197, 160, 89, 0.14)',
 
-  // === Backgrounds & Surfaces (Floating Semi-Transparent Frosted Glass) ===
-  background: '#D6EAF8',     // Luminous sky blue wallpaper so translucent cards float vividly
-  card: 'rgba(255, 255, 255, 0.72)',          // Semi-transparent frosted glass surface
-  cardSecondary: 'rgba(255, 255, 255, 0.50)', // Layered semi-transparent frosted card
-  surface: 'rgba(255, 255, 255, 0.75)',
-  surfaceElevated: 'rgba(255, 255, 255, 0.88)',
+  // === Backgrounds & Surfaces (Frosted Glass & Semi-Transparent Surfaces) ===
+  background: '#E8F0F7',     // Soft atmospheric mist background for deep layered glass depth
+  card: 'rgba(255, 255, 255, 0.76)',          // Frosted glass card with subtle transparency
+  cardSecondary: 'rgba(255, 255, 255, 0.52)', // Translucent layered glass card
+  surface: 'rgba(255, 255, 255, 0.78)',
+  surfaceElevated: 'rgba(255, 255, 255, 0.90)',
 
-  // === Text (High Contrast Oceanic Navy) ===
-  text: '#0C4A6E',           // Deep oceanic navy
-  textSecondary: '#0369A1',  // Medium cyan-navy
-  textMuted: '#52799B',      // Slate muted
+  // === Text: Deep Navy & Slate ===
+  text: '#0A192F',           // Deep luxury navy — rich readability
+  textSecondary: '#334E68',  // Refined slate navy
+  textMuted: '#627D98',      // Muted atmospheric blue-gray
 
-  // === Borders (Glossy Crystal Specular White Rim) ===
-  border: 'rgba(255, 255, 255, 0.90)',        // Crisp white specular glass border
-  borderLight: 'rgba(255, 255, 255, 0.55)',
+  // === Borders: Thin White Specular Glass Rims ===
+  border: 'rgba(255, 255, 255, 0.85)',        // Thin crisp white frosted glass border
+  borderLight: 'rgba(255, 255, 255, 0.50)',
 
   // === Semantic Colors ===
-  error: '#EF4444',
-  errorLight: 'rgba(239, 68, 68, 0.15)',
-  success: '#0EA5E9',
-  successLight: 'rgba(14, 165, 233, 0.15)',
-  warning: '#F59E0B',
-  warningLight: 'rgba(245, 158, 11, 0.15)',
-  info: '#0284C7',
-  infoLight: 'rgba(2, 132, 199, 0.15)',
+  error: '#D32F2F',
+  errorLight: 'rgba(211, 47, 47, 0.10)',
+  success: '#1E3A5F',
+  successLight: 'rgba(30, 58, 95, 0.10)',
+  warning: '#C5A059',
+  warningLight: 'rgba(197, 160, 89, 0.15)',
+  info: '#4A7BB0',
+  infoLight: 'rgba(74, 123, 176, 0.12)',
 
-  // === Eco / Sustainability ===
-  ecoGreen: '#0284C7',
-  ecoGreenLight: 'rgba(2, 132, 199, 0.12)',
-  ecoGreenMid: '#38BDF8',
+  // === Eco / Sustainability / Accents ===
+  ecoGreen: '#1E3A5F',
+  ecoGreenLight: 'rgba(30, 58, 95, 0.08)',
+  ecoGreenMid: '#4A7BB0',
+  gold: '#C5A059',
+  goldLight: 'rgba(197, 160, 89, 0.14)',
 
-  // === UI Chrome ===
-  glassBg: 'rgba(255, 255, 255, 0.70)',
-  glassBorder: 'rgba(255, 255, 255, 0.95)',
-  shadow: 'rgba(2, 132, 199, 0.30)',
-  tabBar: 'rgba(255, 255, 255, 0.82)',
-  tabBarInactive: '#52799B',
+  // === UI Chrome: Frosted Glass Elements ===
+  glassBg: 'rgba(255, 255, 255, 0.76)',
+  glassBorder: 'rgba(255, 255, 255, 0.90)',
+  shadow: 'rgba(10, 25, 47, 0.10)',
+  tabBar: 'rgba(255, 255, 255, 0.88)',
+  tabBarInactive: '#627D98',
   statusBar: 'dark',
 };
 
@@ -248,16 +251,16 @@ export const LightTheme = {
 export const THEMES_LIST = [
   {
     id: 'glass_horizon',
-    name: 'Glass Horizon',
-    tagline: 'Floating Glassmorphism · Translucent Frost & Azure',
-    badge: 'Floating Glass',
+    name: 'Glassmorphism Luxe',
+    tagline: 'Frosted Glass · Deep Navy, Soft Blue & Warm Gold',
+    badge: 'Premium Glass',
     theme: GlassHorizonTheme,
-    primaryColor: '#0284C7',
-    bgColor: '#D6EAF8',
-    accentColor: '#38BDF8',
-    cardColor: 'rgba(255, 255, 255, 0.72)',
-    icon: 'cube-outline',
-    description: 'Floating semi-transparent frosted glass surfaces, luminous cyan reflections, and sleek luxury travel aesthetics.',
+    primaryColor: '#1E3A5F',
+    bgColor: '#E8F0F7',
+    accentColor: '#C5A059',
+    cardColor: 'rgba(255, 255, 255, 0.76)',
+    icon: 'diamond-outline',
+    description: 'Classic luxury frosted glass cards with thin white specular borders, deep navy typography, soft blue surfaces, and subtle warm gold accents.',
   },
   {
     id: 'vintage_voyager',
