@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Modal,
-  FlatList,
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,6 +15,9 @@ import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import { getLiveTelemetry } from '../utils/weatherService';
+import { getTimeBasedGreeting } from '../utils/helpers';
+import { MiniSketchedWondersLoop } from './MiniSketchedWondersLoop';
+import { FloatingPressable } from './FloatingPressable';
 
 export const Header = ({ onSOSPress, onNotificationsPress, onWeatherPress }) => {
   const { theme, isDark, toggleTheme } = useTheme();
@@ -81,7 +83,7 @@ export const Header = ({ onSOSPress, onNotificationsPress, onWeatherPress }) => 
         },
       ]}
     >
-      {/* Top Bar: Brand, Role Switcher, Controls */}
+      {/* Top Bar: Brand, Sketch Wonders Loop, Role Switcher, Controls */}
       <View style={styles.topRow}>
         {/* WayWise Brand */}
         <View style={styles.brandContainer}>
@@ -96,10 +98,16 @@ export const Header = ({ onSOSPress, onNotificationsPress, onWeatherPress }) => 
           </View>
         </View>
 
+        {/* Sketched Animated Car & 7 World Wonders Loop (Stretching from WayWise to Tourist) */}
+        <View style={styles.sketchRibbonStretch}>
+          <MiniSketchedWondersLoop />
+        </View>
+
         <View style={styles.controlsRow}>
           {/* Role Switcher Pill */}
-          <TouchableOpacity
-            activeOpacity={0.7}
+          <FloatingPressable
+            activeScale={1.1}
+            liftY={-3}
             onPress={toggleRole}
             style={[
               styles.rolePill,
@@ -124,20 +132,24 @@ export const Header = ({ onSOSPress, onNotificationsPress, onWeatherPress }) => 
             >
               {role === 'authority_admin' ? 'Admin' : 'Tourist'}
             </Text>
-          </TouchableOpacity>
+          </FloatingPressable>
 
           {/* Language Selector */}
-          <TouchableOpacity
+          <FloatingPressable
+            activeScale={1.12}
+            liftY={-3}
             onPress={() => setLangModalVisible(true)}
             style={[styles.iconButton, { backgroundColor: theme.cardSecondary, borderColor: theme.border }]}
           >
             <Text style={[styles.langCode, { color: theme.text }]}>
               {currentLangObj.code.toUpperCase()}
             </Text>
-          </TouchableOpacity>
+          </FloatingPressable>
 
           {/* Theme Toggle */}
-          <TouchableOpacity
+          <FloatingPressable
+            activeScale={1.12}
+            liftY={-3}
             onPress={toggleTheme}
             style={[styles.iconButton, { backgroundColor: theme.cardSecondary, borderColor: theme.border }]}
           >
@@ -146,10 +158,12 @@ export const Header = ({ onSOSPress, onNotificationsPress, onWeatherPress }) => 
               size={16}
               color={isDark ? '#FBBF24' : theme.text}
             />
-          </TouchableOpacity>
+          </FloatingPressable>
 
           {/* Notifications */}
-          <TouchableOpacity
+          <FloatingPressable
+            activeScale={1.12}
+            liftY={-3}
             onPress={onNotificationsPress}
             style={[styles.iconButton, { backgroundColor: theme.cardSecondary, borderColor: theme.border }]}
           >
@@ -159,7 +173,7 @@ export const Header = ({ onSOSPress, onNotificationsPress, onWeatherPress }) => 
                 <Text style={styles.badgeText}>{unreadCount}</Text>
               </View>
             )}
-          </TouchableOpacity>
+          </FloatingPressable>
         </View>
       </View>
 
@@ -168,7 +182,7 @@ export const Header = ({ onSOSPress, onNotificationsPress, onWeatherPress }) => 
         <View style={styles.greetingRow}>
           <View style={styles.greetingTextContainer}>
             <Text style={[styles.greeting, { color: theme.text }]}>
-              {t('greeting') || `Good morning, ${user?.name || 'Gunavarsha'}`}
+              {getTimeBasedGreeting(t, user?.name || 'Gunavarsha')}
             </Text>
             <View style={styles.ecoRow}>
               <Ionicons name="leaf" size={12} color={theme.ecoGreen} />
@@ -210,13 +224,12 @@ export const Header = ({ onSOSPress, onNotificationsPress, onWeatherPress }) => 
             <Text style={[styles.modalTitle, { color: theme.text }]}>
               Choose Language / భాష
             </Text>
-            <FlatList
-              data={languages}
-              keyExtractor={(item) => item.code}
-              renderItem={({ item }) => {
+            <View style={styles.langListWrap}>
+              {languages.map((item) => {
                 const isSelected = item.code === currentLanguage;
                 return (
                   <TouchableOpacity
+                    key={item.code}
                     onPress={() => {
                       setLanguage(item.code);
                       setLangModalVisible(false);
@@ -244,8 +257,8 @@ export const Header = ({ onSOSPress, onNotificationsPress, onWeatherPress }) => 
                     )}
                   </TouchableOpacity>
                 );
-              }}
-            />
+              })}
+            </View>
           </View>
         </TouchableOpacity>
       </Modal>
@@ -263,11 +276,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: 6,
   },
   brandContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 7,
+  },
+  sketchRibbonStretch: {
+    flex: 1,
+    height: 38,
+    marginHorizontal: 6,
+    justifyContent: 'center',
   },
   logoIcon: {
     width: 34,

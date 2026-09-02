@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -107,6 +108,13 @@ export const AIAssistantScreen = ({ navigation }) => {
       speakText(response.text);
     } catch (err) {
       setLoading(false);
+      const errMsg = {
+        id: `msg_err_${Date.now()}`,
+        sender: 'ai',
+        text: `⚠️ Gemini Request Failed: ${err.message || 'Unable to connect to backend server'}.`,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      };
+      setMessages((prev) => [...prev, errMsg]);
     }
   };
 
@@ -140,7 +148,7 @@ export const AIAssistantScreen = ({ navigation }) => {
           <View>
             <Text style={[styles.headerTitle, { color: theme.text }]}>Travel Assistant</Text>
             <Text style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
-              WayWise Smart Concierge
+              WayWise AI Concierge • Gemini 2.5 Flash
             </Text>
           </View>
         </View>
@@ -216,8 +224,12 @@ export const AIAssistantScreen = ({ navigation }) => {
                           styles.userBubble,
                           {
                             backgroundColor: theme.primary,
-                            borderColor: theme.mode === 'glass_horizon' ? 'rgba(255, 255, 255, 0.40)' : 'transparent',
-                            borderWidth: theme.mode === 'glass_horizon' ? 1 : 0,
+                            borderColor:
+                              theme.mode === 'glass_horizon' || theme.mode === 'liquid_glass'
+                                ? 'rgba(255, 255, 255, 0.40)'
+                                : 'transparent',
+                            borderWidth:
+                              theme.mode === 'glass_horizon' || theme.mode === 'liquid_glass' ? 1 : 0,
                           },
                         ]
                       : [
@@ -263,6 +275,22 @@ export const AIAssistantScreen = ({ navigation }) => {
               </View>
             );
           })}
+
+          {loading && (
+            <View style={[styles.msgRow, styles.aiRow]}>
+              <View style={[styles.msgAvatar, { backgroundColor: theme.primaryLight }]}>
+                <Ionicons name="compass-outline" size={14} color={theme.primary} />
+              </View>
+              <View style={[styles.bubble, styles.aiBubble, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <ActivityIndicator size="small" color={theme.primary} />
+                  <Text style={{ color: theme.textSecondary, fontSize: 12.5, fontFamily: 'Manrope_500Medium' }}>
+                    Gemini is thinking...
+                  </Text>
+                </View>
+              </View>
+            </View>
+          )}
         </ScrollView>
 
         {/* Input Row */}

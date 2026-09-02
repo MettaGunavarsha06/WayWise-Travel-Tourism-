@@ -15,7 +15,7 @@ import {
   Platform,
   FlatList,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 import { useLanguage } from '../../context/LanguageContext';
@@ -66,8 +66,11 @@ const TRAVEL_MODES = [
 export const SmartMapScreen = ({ navigation, route }) => {
   const { theme, isDark } = useTheme();
   const { t } = useLanguage();
-  const { toggleSavePlace, isPlaceSaved } = useTrips();
+  const { toggleSavePlace, isPlaceSaved } = useTrips?.() || {};
   const carouselRef = useRef(null);
+  const mapRef = useRef(null);
+  const insets = useSafeAreaInsets();
+  const tabBarHeight = (insets.bottom > 0 ? insets.bottom + 8 : 18) + 64;
 
   const getCategoryLabel = (catId, defaultLabel) => {
     switch (catId) {
@@ -574,6 +577,7 @@ export const SmartMapScreen = ({ navigation, route }) => {
         <View style={styles.mapArea}>
           {/* Real Leaflet Map Engine with Category Filtering & Route */}
           <RealLeafletMap
+            ref={mapRef}
             userLocation={userCoords}
             places={places}
             selectedPlace={selectedPlace}
@@ -593,12 +597,31 @@ export const SmartMapScreen = ({ navigation, route }) => {
             isDarkMode={isDark}
           />
 
-          {/* Floating Map Controls (Layers, Recenter) */}
+          {/* Floating Map Controls (Layers, Recenter, Zoom In/Out) */}
           <View style={[styles.floatingControls, navigationActive && { top: 80 }]}>
+            {/* Zoom In Button */}
+            <TouchableOpacity
+              onPress={() => mapRef.current?.zoomIn?.()}
+              style={[styles.fabBtn, { backgroundColor: theme.card, shadowColor: theme.shadow }]}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="add" size={22} color={theme.text} />
+            </TouchableOpacity>
+
+            {/* Zoom Out Button */}
+            <TouchableOpacity
+              onPress={() => mapRef.current?.zoomOut?.()}
+              style={[styles.fabBtn, { backgroundColor: theme.card, shadowColor: theme.shadow }]}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="remove" size={22} color={theme.text} />
+            </TouchableOpacity>
+
             {/* Map Layer Switcher Button */}
             <TouchableOpacity
               onPress={() => setShowLayerMenu(!showLayerMenu)}
               style={[styles.fabBtn, { backgroundColor: theme.card, shadowColor: theme.shadow }]}
+              activeOpacity={0.8}
             >
               <Ionicons name="layers-outline" size={20} color={theme.text} />
             </TouchableOpacity>
@@ -607,6 +630,7 @@ export const SmartMapScreen = ({ navigation, route }) => {
             <TouchableOpacity
               onPress={handleRequestLocation}
               style={[styles.fabBtn, { backgroundColor: theme.card, shadowColor: theme.shadow }]}
+              activeOpacity={0.8}
             >
               <Ionicons name="locate-outline" size={20} color="#2563EB" />
             </TouchableOpacity>
@@ -651,7 +675,7 @@ export const SmartMapScreen = ({ navigation, route }) => {
 
           {/* Google Maps Live Navigation Active Bottom Card */}
           {navigationActive && selectedPlace ? (
-            <View style={[styles.gmapsBottomHUD, { backgroundColor: theme.card, borderTopColor: theme.border }]}>
+            <View style={[styles.gmapsBottomHUD, { backgroundColor: theme.card, borderTopColor: theme.border, bottom: tabBarHeight + 6 }]}>
               <View style={styles.sheetHandle} />
 
               {/* ETA Duration, Distance & Arrival Clock */}
@@ -740,7 +764,7 @@ export const SmartMapScreen = ({ navigation, route }) => {
           ) : (
             /* ALL PLACES SHOWN ONE BY ONE IN A BOTTOM SWIPEABLE CAROUSEL */
             places.length > 0 && (
-              <View style={styles.bottomMultiPlacesWrap}>
+              <View style={[styles.bottomMultiPlacesWrap, { bottom: tabBarHeight + 10 }]} pointerEvents="box-none">
                 {/* Header Row: Category summary & collapse toggle */}
                 <View style={[styles.carouselHeaderRow, { backgroundColor: theme.card, borderColor: theme.border }]}>
                   <View style={styles.carouselHeaderLeft}>
@@ -753,6 +777,7 @@ export const SmartMapScreen = ({ navigation, route }) => {
                   <TouchableOpacity
                     onPress={() => setCarouselCollapsed(!carouselCollapsed)}
                     style={styles.collapseToggleBtn}
+                    hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                   >
                     <Ionicons
                       name={carouselCollapsed ? 'chevron-up' : 'chevron-down'}
@@ -773,15 +798,16 @@ export const SmartMapScreen = ({ navigation, route }) => {
                     snapToInterval={CARD_WIDTH + 12}
                     decelerationRate="fast"
                     contentContainerStyle={styles.carouselScrollContent}
+                    onScrollBeginDrag={() => navigation?.setTabScrollEnabled?.(false)}
+                    onScrollEndDrag={() => navigation?.setTabScrollEnabled?.(true)}
+                    onMomentumScrollEnd={() => navigation?.setTabScrollEnabled?.(true)}
                     renderItem={({ item: place }) => {
                       const isSelected = selectedPlace?.id === place.id;
                       const sym = place.symbolConfig || { symbol: '📍', color: theme.primary, bg: theme.primaryLight };
                       const isSaved = isPlaceSaved(place.id);
 
                       return (
-                        <TouchableOpacity
-                          activeOpacity={0.92}
-                          onPress={() => setSelectedPlace(place)}
+                        <View
                           style={[
                             styles.carouselCard,
                             {
@@ -792,8 +818,17 @@ export const SmartMapScreen = ({ navigation, route }) => {
                             },
                           ]}
                         >
-                          {/* Card Top Row: Thumbnail + Info */}
-                          <View style={styles.cCardMainRow}>
+                          {/* Card Top Row: Thumbnail + Info (Tappable to Select Place & Pan Map) */}
+                          <TouchableOpacity
+                            activeOpacity={0.88}
+                            onPress={() => {
+                              setSelectedPlace(place);
+                              if (place.latitude && place.longitude) {
+                                mapRef.current?.panTo?.(place.latitude, place.longitude, 16);
+                              }
+                            }}
+                            style={styles.cCardMainRow}
+                          >
                             <View style={styles.cImageWrap}>
                               <Image source={{ uri: place.image }} style={styles.cPlaceImage} resizeMode="cover" />
                               
@@ -833,7 +868,7 @@ export const SmartMapScreen = ({ navigation, route }) => {
                                 </Text>
                               </View>
                             </View>
-                          </View>
+                          </TouchableOpacity>
 
                           {/* Specific Category Snippet Info */}
                           <View style={[styles.cSnippetBox, { backgroundColor: theme.cardSecondary }]}>
@@ -915,7 +950,7 @@ export const SmartMapScreen = ({ navigation, route }) => {
                               <Text style={styles.cDirectionsText}>Start Directions</Text>
                             </TouchableOpacity>
                           </View>
-                        </TouchableOpacity>
+                        </View>
                       );
                     }}
                   />
@@ -926,7 +961,7 @@ export const SmartMapScreen = ({ navigation, route }) => {
         </View>
       ) : (
         /* List View Mode */
-        <ScrollView style={styles.listView} contentContainerStyle={styles.listContent}>
+        <ScrollView style={styles.listView} contentContainerStyle={[styles.listContent, { paddingBottom: tabBarHeight + 24 }]}>
           <Text style={[styles.listHeader, { color: theme.textSecondary }]}>
             Found {places.length} places around {cityName} ({selectedRadius} km radius)
           </Text>

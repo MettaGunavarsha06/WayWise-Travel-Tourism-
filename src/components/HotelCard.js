@@ -1,240 +1,260 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import React, { useState, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  Animated,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
-import { EcoScoreBadge } from './EcoScoreBadge';
-import { Button } from './Button';
 import { formatCurrency } from '../utils/helpers';
 
-export const HotelCard = ({ hotel, onPress, onBookPress, isSelected = false }) => {
-  const { theme } = useTheme();
+export const HotelCard = ({
+  hotel,
+  onPress,
+  onBookPress,
+  isSelected = false,
+}) => {
+  const { theme, isDark } = useTheme();
+  const [isLiked, setIsLiked] = useState(false);
+  const floatAnim = useRef(new Animated.Value(0)).current;
+
+  if (!hotel) return null;
+
+  const handleLike = (e) => {
+    e?.stopPropagation?.();
+    setIsLiked(!isLiked);
+  };
+
+  const handlePressIn = () => {
+    Animated.spring(floatAnim, {
+      toValue: 1,
+      bounciness: 8,
+      speed: 18,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(floatAnim, {
+      toValue: 0,
+      bounciness: 5,
+      speed: 14,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const cardScale = floatAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 1.03],
+  });
+
+  const cardTranslateY = floatAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -5],
+  });
 
   return (
-    <TouchableOpacity
-      activeOpacity={0.88}
-      onPress={onPress}
+    <Animated.View
       style={[
-        styles.card,
+        styles.mockupHotelCardWrap,
         {
-          backgroundColor: theme.card,
-          borderColor: isSelected ? theme.primary : theme.border,
-          borderWidth: isSelected ? 2 : 1,
-          shadowColor: theme.shadow,
+          transform: [{ scale: cardScale }, { translateY: cardTranslateY }],
         },
       ]}
     >
-      <View style={styles.imageContainer}>
-        <Image source={{ uri: hotel.image }} style={styles.image} resizeMode="cover" />
-        {hotel.isRecommended && (
-          <View style={[styles.recBadge, { backgroundColor: theme.primary }]}>
-            <Text style={styles.recBadgeText}>Recommended Stay</Text>
-          </View>
-        )}
-        <View style={styles.ratingBadge}>
-          <Ionicons name="star" size={12} color="#F59E0B" />
-          <Text style={styles.ratingText}>{hotel.rating}</Text>
-          <Text style={styles.reviewsText}>({hotel.reviewsCount})</Text>
-        </View>
-      </View>
-
-      <View style={styles.content}>
-        <View style={styles.titleRow}>
-          <Text style={[styles.name, { color: theme.text }]} numberOfLines={1}>
-            {hotel.name}
-          </Text>
-        </View>
-
-        <Text style={[styles.type, { color: theme.textSecondary }]}>
-          {hotel.type} · {hotel.destinationName}
-        </Text>
-
-        <View style={styles.distanceRow}>
-          <Ionicons name="location-outline" size={13} color={theme.textSecondary} />
-          <Text style={[styles.distanceText, { color: theme.textSecondary }]}>
-            {hotel.distanceFromAttraction}
-          </Text>
-        </View>
-
-        {/* Eco Score and Badges */}
-        <View style={styles.ecoRow}>
-          <EcoScoreBadge score={hotel.sustainabilityScore} size="small" />
-          {hotel.sustainabilityBadges?.[0] && (
-            <View style={[styles.ecoTag, { backgroundColor: theme.ecoGreenLight }]}>
-              <Text style={[styles.ecoTagText, { color: theme.ecoGreen }]}>
-                {hotel.sustainabilityBadges[0]}
-              </Text>
-            </View>
-          )}
-        </View>
-
-        {/* Facilities Pills */}
-        <View style={styles.facilitiesRow}>
-          {hotel.facilities?.slice(0, 3).map((facility, index) => (
-            <View
-              key={index}
-              style={[styles.facilityPill, { backgroundColor: theme.cardSecondary }]}
-            >
-              <Text style={[styles.facilityText, { color: theme.textSecondary }]}>
-                {facility}
-              </Text>
-            </View>
-          ))}
-        </View>
-
-        <View style={[styles.divider, { backgroundColor: theme.border }]} />
-
-        <View style={styles.footer}>
-          <View>
-            <Text style={[styles.priceLabel, { color: theme.textMuted }]}>Per Night</Text>
-            <Text style={[styles.price, { color: theme.primary }]}>
-              {formatCurrency(hotel.pricePerNight)}
-            </Text>
-          </View>
-
-          <Button
-            title={isSelected ? 'Selected' : 'Book Now'}
-            variant={isSelected ? 'outline' : 'primary'}
-            size="small"
-            onPress={onBookPress || onPress}
-            style={styles.bookBtn}
+      <TouchableOpacity
+        activeOpacity={0.92}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        onPress={onPress}
+        style={[
+          styles.touchableCardInner,
+          {
+            backgroundColor: isDark ? '#1C1E26' : theme.card,
+            borderColor: isSelected
+              ? theme.primary
+              : isDark
+              ? 'rgba(255, 255, 255, 0.10)'
+              : theme.border,
+            borderWidth: isSelected ? 2 : 1,
+          },
+        ]}
+      >
+        {/* Left Rounded Image Thumbnail with Hotel Badge */}
+        <View style={styles.thumbnailContainer}>
+          <Image
+            source={{
+              uri:
+                hotel.image ||
+                'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80',
+            }}
+            style={styles.thumbnailImg}
+            resizeMode="cover"
           />
+          <View style={styles.hotelPillBadge}>
+            <Text style={styles.hotelPillText}>Hotel</Text>
+          </View>
         </View>
-      </View>
-    </TouchableOpacity>
+
+        {/* Middle & Right Content */}
+        <View style={styles.hotelInfoWrap}>
+          {/* Title & Heart Button Row */}
+          <View style={styles.hotelHeaderRow}>
+            <Text
+              style={[styles.hotelName, { color: theme.text }]}
+              numberOfLines={1}
+            >
+              {hotel.name}
+            </Text>
+            <TouchableOpacity
+              onPress={handleLike}
+              activeOpacity={0.8}
+              style={styles.heartSmallBtn}
+            >
+              <Ionicons
+                name={isLiked ? 'heart' : 'heart-outline'}
+                size={17}
+                color={isLiked ? '#EF4444' : theme.textMuted}
+              />
+            </TouchableOpacity>
+          </View>
+
+          <Text
+            style={[styles.hotelSub, { color: theme.textSecondary }]}
+            numberOfLines={2}
+          >
+            {hotel.description ||
+              `Discover finest luxury stay in ${hotel.destinationName || 'India'}.`}
+          </Text>
+
+          {/* Bottom Price & Star Rating Row */}
+          <View style={styles.hotelBottomRow}>
+            <Text style={[styles.hotelPrice, { color: theme.text }]}>
+              {formatCurrency(hotel.pricePerNight || 3500)}
+              <Text style={[styles.perNightText, { color: theme.textMuted }]}>
+                /night
+              </Text>
+            </Text>
+
+            <View style={styles.starRatingBadge}>
+              <Ionicons name="star" size={11} color="#F59E0B" />
+              <Text style={styles.starRatingVal}>{hotel.rating || 4.8}</Text>
+            </View>
+          </View>
+        </View>
+      </TouchableOpacity>
+    </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
-  card: {
-    borderRadius: 16,
-    overflow: 'hidden',
+  mockupHotelCardWrap: {
     marginBottom: 16,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 2,
+    overflow: 'visible',
   },
-  imageContainer: {
-    height: 160,
+  touchableCardInner: {
+    borderRadius: 22,
+    flexDirection: 'row',
+    padding: 12,
+    alignItems: 'center',
     width: '100%',
-    position: 'relative',
-    backgroundColor: '#E2E8F0',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 6,
   },
-  image: {
+  thumbnailContainer: {
+    width: 105,
+    height: 105,
+    borderRadius: 18,
+    overflow: 'hidden',
+    position: 'relative',
+    backgroundColor: '#232733',
+  },
+  thumbnailImg: {
     width: '100%',
     height: '100%',
   },
-  recBadge: {
+  hotelPillBadge: {
     position: 'absolute',
-    top: 10,
-    left: 10,
+    top: 8,
+    left: 8,
+    backgroundColor: 'rgba(20, 23, 31, 0.75)',
     paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+    paddingVertical: 3,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.18)',
   },
-  recBadgeText: {
+  hotelPillText: {
     color: '#FFFFFF',
-    fontSize: 11,
+    fontSize: 10,
     fontFamily: 'Manrope_700Bold',
   },
-  ratingBadge: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    backgroundColor: 'rgba(15, 23, 42, 0.82)',
+  hotelInfoWrap: {
+    flex: 1,
+    marginLeft: 14,
+    justifyContent: 'center',
+  },
+  hotelHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    borderRadius: 6,
-    gap: 3,
+    justifyContent: 'space-between',
+    marginBottom: 4,
   },
-  ratingText: {
-    color: '#FFFFFF',
-    fontSize: 11,
-    fontFamily: 'Manrope_700Bold',
-  },
-  reviewsText: {
-    color: '#CBD5E1',
-    fontSize: 10,
-    fontFamily: 'Manrope_400Regular',
-  },
-  content: {
-    padding: 14,
-  },
-  titleRow: {
-    marginBottom: 2,
-  },
-  name: {
+  hotelName: {
     fontSize: 15,
     fontFamily: 'Manrope_700Bold',
     letterSpacing: -0.2,
+    flex: 1,
+    marginRight: 6,
   },
-  type: {
-    fontSize: 12,
-    fontFamily: 'Manrope_500Medium',
-    marginBottom: 6,
-  },
-  distanceRow: {
-    flexDirection: 'row',
+  heartSmallBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     alignItems: 'center',
-    gap: 4,
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  hotelSub: {
+    fontSize: 12,
+    fontFamily: 'Manrope_400Regular',
+    lineHeight: 16,
     marginBottom: 8,
   },
-  distanceText: {
-    fontSize: 11.5,
-    fontFamily: 'Manrope_400Regular',
-  },
-  ecoRow: {
+  hotelBottomRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 10,
+    justifyContent: 'space-between',
   },
-  ecoTag: {
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    borderRadius: 6,
+  hotelPrice: {
+    fontSize: 15,
+    fontFamily: 'Manrope_800ExtraBold',
   },
-  ecoTagText: {
+  perNightText: {
     fontSize: 11,
-    fontFamily: 'Manrope_600SemiBold',
+    fontFamily: 'Manrope_500Medium',
   },
-  facilitiesRow: {
+  starRatingBadge: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-    marginBottom: 10,
-  },
-  facilityPill: {
+    alignItems: 'center',
+    backgroundColor: '#1E2330',
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 6,
+    borderRadius: 12,
+    gap: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.10)',
   },
-  facilityText: {
+  starRatingVal: {
+    color: '#FFFFFF',
     fontSize: 11,
-    fontFamily: 'Manrope_400Regular',
-  },
-  divider: {
-    height: 1,
-    marginVertical: 10,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  priceLabel: {
-    fontSize: 10,
-    fontFamily: 'Manrope_500Medium',
-    textTransform: 'uppercase',
-    letterSpacing: 0.3,
-  },
-  price: {
-    fontSize: 16,
     fontFamily: 'Manrope_700Bold',
-  },
-  bookBtn: {
-    minWidth: 100,
   },
 });

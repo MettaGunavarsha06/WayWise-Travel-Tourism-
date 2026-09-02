@@ -30,6 +30,13 @@ export const Shadows = {
     shadowRadius: 8,
     elevation: 2,
   },
+  // High-fidelity liquid glass shadow with soft multi-layer diffusion
+  liquidGlass: {
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 18,
+    elevation: 6,
+  },
   // More prominent shadow for floating elements
   float: {
     shadowOffset: { width: 0, height: 4 },
@@ -47,11 +54,14 @@ export const Shadows = {
 };
 
 // Reusable card style factory — call with theme colors
-export const makeCardStyle = (theme) => ({
-  backgroundColor: theme.card,
-  borderColor: theme.border,
-  borderWidth: 1,
-  borderRadius: Radii.lg,
-  ...Shadows.card,
-  shadowColor: theme.shadow,
-});
+export const makeCardStyle = (theme) => {
+  const isLiquid = theme?.isLiquidGlass || theme?.mode === 'liquid_glass';
+  return {
+    backgroundColor: theme.card,
+    borderColor: theme.border,
+    borderWidth: isLiquid ? 1.5 : 1,
+    borderRadius: isLiquid ? Radii.xl : Radii.lg,
+    ...(isLiquid ? Shadows.liquidGlass : Shadows.card),
+    shadowColor: theme.shadow,
+  };
+};

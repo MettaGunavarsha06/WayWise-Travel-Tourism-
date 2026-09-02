@@ -1,8 +1,12 @@
 import React, { useCallback, useEffect } from 'react';
-import { View } from 'react-native';
+import { View, LogBox } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
+
+LogBox.ignoreLogs([
+  'VirtualizedLists should never be nested',
+]);
 import {
   useFonts,
   Manrope_400Regular,

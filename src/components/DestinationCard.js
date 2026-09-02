@@ -1,413 +1,300 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import React, { useState, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  Animated,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useTrips } from '../context/TripContext';
-import { CrowdIndicator } from './CrowdIndicator';
-import { EcoScoreBadge } from './EcoScoreBadge';
 import { getTranslatedDestination } from '../data/translations';
 import { formatCurrency } from '../utils/helpers';
 
-export const DestinationCard = ({ destination: rawDestination, onPress, style, horizontal = false }) => {
-  const { theme } = useTheme();
-  const { currentLanguage, t } = useLanguage();
-  const { toggleSavePlace, isPlaceSaved } = useTrips();
+export const DestinationCard = ({
+  destination: rawDestination,
+  onPress,
+  onBookmark,
+  style,
+  horizontal = false,
+}) => {
+  const { theme, isDark } = useTheme();
+  const { currentLanguage } = useLanguage?.() || { currentLanguage: 'en' };
+  const { toggleSavePlace, isPlaceSaved } = useTrips?.() || {};
 
-  const destination = getTranslatedDestination(rawDestination, currentLanguage);
+  const destination = rawDestination
+    ? getTranslatedDestination?.(rawDestination, currentLanguage) || rawDestination
+    : null;
 
-  const isSaved = isPlaceSaved(destination.id);
+  const [localLiked, setLocalLiked] = useState(false);
+  const floatAnim = useRef(new Animated.Value(0)).current;
 
-  const handleSavePress = (e) => {
-    e.stopPropagation();
-    toggleSavePlace(destination);
+  if (!destination) return null;
+
+  const isSaved = isPlaceSaved ? isPlaceSaved(destination.id) : localLiked;
+
+  const handleLike = (e) => {
+    e?.stopPropagation?.();
+    setLocalLiked(!localLiked);
+    if (toggleSavePlace) {
+      toggleSavePlace(destination);
+    }
+    if (onBookmark) onBookmark(destination);
   };
 
-  if (horizontal) {
-    return (
-      <TouchableOpacity
-        activeOpacity={0.88}
-        onPress={onPress}
-        style={[
-          styles.horizontalCard,
-          {
-            backgroundColor: theme.card,
-            borderColor: theme.border,
-            shadowColor: theme.shadow,
-          },
-          style,
-        ]}
-      >
-        <View style={styles.hImageWrap}>
-          <Image source={{ uri: destination.image }} style={styles.horizontalImage} resizeMode="cover" />
-          
-          {/* Overlay rating badge */}
-          <View style={styles.hOverlayRating}>
-            <Ionicons name="star" size={11} color="#F59E0B" />
-            <Text style={styles.hOverlayRatingText}>{destination.rating}</Text>
-          </View>
+  const handlePressIn = () => {
+    Animated.spring(floatAnim, {
+      toValue: 1,
+      bounciness: 8,
+      speed: 18,
+      useNativeDriver: true,
+    }).start();
+  };
 
-          {/* Instagram-Style Bookmark Save Icon */}
-          <TouchableOpacity
-            onPress={handleSavePress}
-            style={[styles.hOverlayBookmark, isSaved && { backgroundColor: '#2563EB' }]}
-            activeOpacity={0.8}
-          >
-            <Ionicons
-              name={isSaved ? 'bookmark' : 'bookmark-outline'}
-              size={14}
-              color={isSaved ? '#FFFFFF' : '#FFFFFF'}
-            />
-          </TouchableOpacity>
-        </View>
+  const handlePressOut = () => {
+    Animated.spring(floatAnim, {
+      toValue: 0,
+      bounciness: 5,
+      speed: 14,
+      useNativeDriver: true,
+    }).start();
+  };
 
-        <View style={styles.horizontalContent}>
-          <Text style={[styles.name, { color: theme.text }]} numberOfLines={1}>
-            {destination.name}
-          </Text>
-          <Text style={[styles.location, { color: theme.textSecondary }]} numberOfLines={1}>
-            <Ionicons name="location-outline" size={11} color={theme.textMuted} />{' '}
-            {destination.state}
-          </Text>
+  const cardScale = floatAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 1.03],
+  });
 
-          {destination.isHiddenGem && destination.alternativeTo ? (
-            <Text style={[styles.altTag, { color: theme.primary }]} numberOfLines={1}>
-              {destination.alternativeTo}
-            </Text>
-          ) : null}
-
-          <View style={styles.badgesRow}>
-            <CrowdIndicator level={destination.crowdLevel} compact />
-            <EcoScoreBadge score={destination.ecoScore} size="small" showLabel={false} />
-          </View>
-
-          <View style={styles.bottomRow}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <Ionicons name="time-outline" size={12} color={theme.textSecondary} />
-              <Text style={[styles.duration, { color: theme.textSecondary }]}>
-                {destination.duration}
-              </Text>
-            </View>
-            <Text style={[styles.duration, { color: theme.primary, fontFamily: 'Manrope_700Bold' }]}>
-              {t('exploreArrow') || 'Explore →'}
-            </Text>
-          </View>
-        </View>
-      </TouchableOpacity>
-    );
-  }
+  const cardTranslateY = floatAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -6],
+  });
 
   return (
-    <TouchableOpacity
-      activeOpacity={0.88}
-      onPress={onPress}
+    <Animated.View
       style={[
-        styles.card,
+        horizontal ? styles.horizontalHeroCardWrap : styles.heroCardWrap,
         {
-          backgroundColor: theme.card,
-          borderColor: theme.border,
-          shadowColor: theme.shadow,
+          transform: [{ scale: cardScale }, { translateY: cardTranslateY }],
         },
         style,
       ]}
     >
-      <View style={styles.imageContainer}>
-        <Image source={{ uri: destination.image }} style={styles.image} resizeMode="cover" />
+      <TouchableOpacity
+        activeOpacity={0.92}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        onPress={onPress}
+        style={[
+          styles.heroCardInner,
+          {
+            borderColor: isDark ? 'rgba(255, 255, 255, 0.12)' : theme.border,
+          },
+        ]}
+      >
+        {/* Full Cover Destination Photography */}
+        <Image
+          source={{
+            uri:
+              destination.image ||
+              'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=800&q=80',
+          }}
+          style={styles.heroImage}
+          resizeMode="cover"
+        />
 
-        {/* Hidden Gem badge */}
-        {destination.isHiddenGem && (
-          <View style={styles.hiddenGemBadge}>
-            <Ionicons name="compass-outline" size={12} color="#BBF7D0" style={{ marginRight: 4 }} />
-            <Text style={styles.hiddenGemText}>Hidden Gem</Text>
+        {/* Smooth Glass Scrim - Soft seamless gradient */}
+        <LinearGradient
+          colors={['transparent', 'rgba(0,0,0,0.10)', 'rgba(12,15,22,0.58)']}
+          locations={[0, 0.45, 1]}
+          style={StyleSheet.absoluteFillObject}
+        />
+
+        {/* Top Floating Glass Badges Row */}
+        <View style={styles.topRow}>
+          {/* Duration Glass Badge */}
+          <View style={styles.frostedPill}>
+            <Text style={styles.frostedPillText}>
+              {destination.duration || '3 Days, 2 Nights'}
+            </Text>
           </View>
-        )}
 
-        {/* Top Right Badges: Rating + Bookmark */}
-        <View style={styles.topRightBadgeGroup}>
-          <View style={styles.overlayRating}>
-            <Ionicons name="star" size={12} color="#F59E0B" />
-            <Text style={styles.overlayRatingText}>{destination.rating}</Text>
-          </View>
-
-          {/* Instagram-Style Bookmark Button */}
+          {/* Floating Glass Heart Bookmark */}
           <TouchableOpacity
-            onPress={handleSavePress}
-            style={[
-              styles.overlayBookmark,
-              isSaved && { backgroundColor: '#2563EB', borderColor: '#2563EB' },
-            ]}
             activeOpacity={0.8}
+            onPress={handleLike}
+            style={styles.frostedHeartBtn}
           >
             <Ionicons
-              name={isSaved ? 'bookmark' : 'bookmark-outline'}
-              size={15}
-              color={isSaved ? '#FFFFFF' : '#FFFFFF'}
+              name={isSaved ? 'heart' : 'heart-outline'}
+              size={18}
+              color={isSaved ? '#EF4444' : '#FFFFFF'}
             />
           </TouchableOpacity>
         </View>
-      </View>
 
-      <View style={styles.content}>
-        <View style={styles.titleRow}>
-          <Text style={[styles.name, { color: theme.text }]} numberOfLines={1}>
-            {destination.name}
-          </Text>
-          {destination.subtitle && (
-            <Text style={[styles.subtitleTag, { color: theme.primary }]}>
-              {destination.subtitle}
+        {/* Bottom Floating Frosted Glass Control Bar (Price, Destination Name, City) */}
+        <View
+          style={[
+            styles.bottomControlBar,
+            {
+              backgroundColor: isDark ? 'rgba(26, 30, 42, 0.72)' : 'rgba(255, 255, 255, 0.85)',
+              borderColor: isDark ? 'rgba(255, 255, 255, 0.20)' : 'rgba(0, 0, 0, 0.08)',
+            },
+          ]}
+        >
+          {/* Left Arrow Button */}
+          <View
+            style={[
+              styles.controlCircleBtn,
+              { backgroundColor: isDark ? 'rgba(255, 255, 255, 0.14)' : 'rgba(0, 0, 0, 0.06)' },
+            ]}
+          >
+            <Ionicons name="arrow-back" size={16} color={isDark ? '#FFFFFF' : theme.text} />
+          </View>
+
+          {/* Center: Destination Name, Subtitle & Price */}
+          <View style={styles.centerMetaWrap}>
+            <Text
+              style={[styles.destName, { color: isDark ? '#FFFFFF' : theme.text }]}
+              numberOfLines={1}
+            >
+              {destination.name}
             </Text>
-          )}
-        </View>
-
-        <Text style={[styles.location, { color: theme.textSecondary }]} numberOfLines={1}>
-          <Ionicons name="location-outline" size={12} color={theme.textMuted} />{' '}
-          {destination.state} · {destination.category}
-        </Text>
-
-        <Text style={[styles.description, { color: theme.textSecondary }]} numberOfLines={2}>
-          {destination.description}
-        </Text>
-
-        <View style={styles.badgesRow}>
-          <CrowdIndicator level={destination.crowdLevel} compact />
-          <EcoScoreBadge score={destination.ecoScore} size="small" showLabel={false} />
-        </View>
-
-        <View style={[styles.divider, { backgroundColor: theme.borderLight }]} />
-
-        <View style={styles.footer}>
-          <View style={styles.categoryPill}>
-            <Ionicons name="compass-outline" size={13} color={theme.primary} />
-            <Text style={[styles.categoryPillText, { color: theme.primary }]}>
-              {destination.category}
+            <Text
+              style={[styles.destSub, { color: isDark ? '#A1A8B8' : theme.textSecondary }]}
+              numberOfLines={1}
+            >
+              {destination.subtitle ||
+                `${destination.state || 'India'} · ${destination.category || 'Travel'}`}
+            </Text>
+            <Text style={[styles.priceTag, { color: isDark ? '#FFFFFF' : theme.primaryDark }]}>
+              {formatCurrency(destination.estimatedCost || 12000)}
             </Text>
           </View>
-          <View style={styles.durationPill}>
-            <Ionicons name="time-outline" size={13} color={theme.textSecondary} />
-            <Text style={[styles.durationText, { color: theme.textSecondary }]}>
-              {destination.duration}
-            </Text>
+
+          {/* Right Action Arrow Button */}
+          <View
+            style={[
+              styles.controlCircleBtn,
+              { backgroundColor: isDark ? 'rgba(255, 255, 255, 0.14)' : 'rgba(0, 0, 0, 0.06)' },
+            ]}
+          >
+            <Ionicons name="arrow-forward" size={16} color={isDark ? '#FFFFFF' : theme.text} />
           </View>
         </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
-  // Vertical card
-  card: {
-    borderRadius: 16,
-    borderWidth: 1,
-    overflow: 'hidden',
-    marginBottom: 16,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.07,
-    shadowRadius: 8,
-    elevation: 2,
+  heroCardWrap: {
+    height: 320,
+    marginBottom: 20,
+    overflow: 'visible',
   },
-  imageContainer: {
-    height: 180,
+  horizontalHeroCardWrap: {
+    width: 270,
+    height: 300,
+    marginRight: 16,
+    overflow: 'visible',
+  },
+  heroCardInner: {
     width: '100%',
+    height: '100%',
+    borderRadius: 28,
+    overflow: 'hidden',
     position: 'relative',
-    backgroundColor: '#E2E8F0',
+    borderWidth: 1,
+    backgroundColor: 'transparent',
   },
-  image: {
+  heroImage: {
     width: '100%',
     height: '100%',
   },
-  hiddenGemBadge: {
+  topRow: {
     position: 'absolute',
-    top: 12,
-    left: 12,
-    backgroundColor: 'rgba(22, 101, 52, 0.9)',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  hiddenGemText: {
-    color: '#BBF7D0',
-    fontSize: 11,
-    fontFamily: 'Manrope_700Bold',
-  },
-  topRightBadgeGroup: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  overlayRating: {
-    backgroundColor: 'rgba(15, 23, 42, 0.82)',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    gap: 4,
-  },
-  overlayRatingText: {
-    color: '#FFFFFF',
-    fontSize: 11,
-    fontFamily: 'Manrope_700Bold',
-  },
-  overlayBookmark: {
-    backgroundColor: 'rgba(15, 23, 42, 0.82)',
-    width: 28,
-    height: 28,
-    borderRadius: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  content: {
-    padding: 14,
-  },
-  titleRow: {
+    top: 14,
+    left: 14,
+    right: 14,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 2,
+    zIndex: 10,
   },
-  name: {
+  frostedPill: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 20,
+    backgroundColor: 'rgba(25, 28, 36, 0.65)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.22)',
+  },
+  frostedPillText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontFamily: 'Manrope_600SemiBold',
+    letterSpacing: 0.2,
+  },
+  frostedHeartBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(25, 28, 36, 0.65)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.22)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bottomControlBar: {
+    position: 'absolute',
+    bottom: 12,
+    left: 12,
+    right: 12,
+    borderRadius: 22,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    zIndex: 10,
+  },
+  controlCircleBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  centerMetaWrap: {
+    flex: 1,
+    alignItems: 'center',
+    paddingHorizontal: 8,
+  },
+  destName: {
     fontSize: 16,
     fontFamily: 'Manrope_700Bold',
     letterSpacing: -0.2,
-    flex: 1,
+    textAlign: 'center',
   },
-  subtitleTag: {
+  destSub: {
     fontSize: 11,
-    fontFamily: 'Manrope_600SemiBold',
-    marginLeft: 8,
-  },
-  location: {
-    fontSize: 12,
-    fontFamily: 'Manrope_400Regular',
-    marginBottom: 6,
-  },
-  description: {
-    fontSize: 12,
-    fontFamily: 'Manrope_400Regular',
-    lineHeight: 18,
-    marginBottom: 10,
-  },
-  badgesRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+    fontFamily: 'Manrope_500Medium',
+    marginTop: 1,
     marginBottom: 4,
+    textAlign: 'center',
   },
-  divider: {
-    height: 1,
-    marginVertical: 10,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  estLabel: {
-    fontSize: 10,
-    fontFamily: 'Manrope_500Medium',
-    textTransform: 'uppercase',
-    letterSpacing: 0.3,
-    marginBottom: 1,
-  },
-  cost: {
+  priceTag: {
     fontSize: 15,
-    fontFamily: 'Manrope_700Bold',
-  },
-  perPerson: {
-    fontSize: 11,
-    fontFamily: 'Manrope_400Regular',
-  },
-  categoryPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-  },
-  categoryPillText: {
-    fontSize: 12,
-    fontFamily: 'Manrope_700Bold',
-  },
-  durationPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  durationText: {
-    fontSize: 12,
-    fontFamily: 'Manrope_500Medium',
-  },
-
-  // Horizontal card
-  horizontalCard: {
-    width: 250,
-    borderRadius: 16,
-    borderWidth: 1,
-    overflow: 'hidden',
-    marginRight: 14,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  hImageWrap: {
-    width: '100%',
-    height: 140,
-    position: 'relative',
-    backgroundColor: '#E2E8F0',
-  },
-  horizontalImage: {
-    width: '100%',
-    height: '100%',
-  },
-  hOverlayRating: {
-    position: 'absolute',
-    top: 10,
-    left: 10,
-    backgroundColor: 'rgba(15, 23, 42, 0.82)',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: 6,
-    gap: 3,
-  },
-  hOverlayRatingText: {
-    color: '#FFFFFF',
-    fontSize: 11,
-    fontFamily: 'Manrope_700Bold',
-  },
-  hOverlayBookmark: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    backgroundColor: 'rgba(15, 23, 42, 0.82)',
-    width: 26,
-    height: 26,
-    borderRadius: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  horizontalContent: {
-    padding: 12,
-  },
-  altTag: {
-    fontSize: 11,
-    fontFamily: 'Manrope_600SemiBold',
-    marginVertical: 3,
-  },
-  bottomRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  duration: {
-    fontSize: 11,
-    fontFamily: 'Manrope_500Medium',
+    fontFamily: 'Manrope_800ExtraBold',
+    letterSpacing: 0.3,
   },
 });

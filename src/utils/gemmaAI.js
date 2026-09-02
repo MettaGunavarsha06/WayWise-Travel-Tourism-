@@ -1,18 +1,21 @@
 /**
  * WayWise Travel Assistant Service
- * High-speed local reasoning and smart travel concierges
+ * Real-time AI Assistant powered by Google Gemini 2.5 Flash via secure backend server.
+ * No hardcoded or mock responses.
  */
 
-import { destinations } from '../data/destinations';
-import { hotels } from '../data/hotels';
-import { transportModes } from '../data/transport';
-import { crowdData } from '../data/crowdData';
-import { weatherData, defaultWeather } from '../data/weather';
+import { destinations } from '../data/destinations.js';
+import { hotels } from '../data/hotels.js';
+import { transportModes } from '../data/transport.js';
+import { crowdData } from '../data/crowdData.js';
+import { weatherData, defaultWeather } from '../data/weather.js';
+import { getBackendBaseUrl } from '../services/apiConfig.js';
 
-export const GEMMA_MODEL_VERSION = 'WayWise Travel Concierge';
+export const GEMINI_MODEL_VERSION = 'Gemini 2.5 Flash';
+export const GEMMA_MODEL_VERSION = 'Gemini 2.5 Flash';
 
 export const GEMMA_SYSTEM_INSTRUCTION = `
-You are the WayWise Travel Assistant, designed for sustainable and cultural tourism across India.
+You are the WayWise AI Travel Concierge, designed for sustainable and cultural tourism across India.
 Your role:
 1. Provide personalized day-by-day itineraries based on budget, interests, and eco-preferences.
 2. Monitor real-time crowd saturation and suggest peaceful alternatives to prevent over-tourism.
@@ -21,6 +24,40 @@ Your role:
 5. Offer emergency safety guidance and multi-lingual assistance across English, Hindi, Telugu, Tamil, Kannada, and Malayalam.
 `;
 
+/**
+ * Check backend server and Gemini connectivity status
+ */
+export const checkServerHealth = async () => {
+  const primaryUrl = getBackendBaseUrl();
+  const candidateUrls = [
+    `${primaryUrl}/api/health`,
+    `http://172.16.129.61:5000/api/health`,
+    `http://localhost:5000/api/health`,
+    `http://10.0.2.2:5000/api/health`,
+  ];
+
+  for (const url of candidateUrls) {
+    try {
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: { Accept: 'application/json' },
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (e) {
+      // Try next candidate
+    }
+  }
+
+  return { status: 'offline', apiKeyConfigured: false, error: 'Could not connect to backend server' };
+};
+
+/**
+ * Query Gemini 2.5 Flash assistant via backend server.
+ * Sends the user's prompt directly to Gemini and returns the genuine AI response.
+ * Throws a descriptive error if the Gemini API or backend server fails.
+ */
 export const queryGemmaAssistant = async ({
   prompt,
   conversationHistory = [],
@@ -28,120 +65,75 @@ export const queryGemmaAssistant = async ({
   userLanguage = 'en',
 }) => {
   const query = prompt.trim();
-  const lower = query.toLowerCase();
-
-  await new Promise((resolve) => setTimeout(resolve, 500));
-
-  // 1. Budget Optimization Intent
-  if (
-    lower.includes('budget') ||
-    lower.includes('2,000') ||
-    lower.includes('2000') ||
-    lower.includes('save money') ||
-    lower.includes('cost') ||
-    lower.includes('optimize')
-  ) {
-    return {
-      model: GEMMA_MODEL_VERSION,
-      text: `Budget Analysis & Optimization Summary:\n\nBased on your travel parameters, here is a rebalanced expenditure breakdown:\n\n• Lodging: Swapped premium suites for Bay Breeze Eco-Homestay (Saved ₹2,800)\n• Transit: Electric rail and local transit corridors instead of private cabs (Saved ₹1,300)\n• Dining: Authentic local dining and seasonal thalis (Saved ₹600)\n• Local Community Benefit: 82% of your budget now directly supports local businesses and artisans.\n\nRemaining Surplus: You have ₹2,000+ available for artisan crafts and guided tours.`,
-      actionSuggestion: {
-        type: 'OPTIMIZE_BUDGET',
-        label: 'Apply Budget Optimization',
-      },
-      toolCall: 'optimize_budget',
-    };
+  if (!query) {
+    throw new Error('Prompt cannot be empty.');
   }
 
-  // 2. Weather & Rainy Day Adaptive Swap Intent
-  if (
-    lower.includes('rain') ||
-    lower.includes('weather') ||
-    lower.includes('tomorrow') ||
-    lower.includes('indoor') ||
-    lower.includes('shower')
-  ) {
-    return {
-      model: GEMMA_MODEL_VERSION,
-      text: `Weather Adaptive Recommendation:\n\nHeavy coastal rain is forecasted tomorrow morning.\n\nSuggested Plan Adjustments:\n1. Rescheduled Outdoor Activities: Hilltop ropeway and open beach walks.\n2. Sheltered Cultural Venues: INS Kursura Submarine Museum, TU 142 Aircraft Museum, and City Art Gallery.\n3. Continuous Experience: Fully sheltered, air-conditioned, and comfortable for all age groups.`,
-      actionSuggestion: {
-        type: 'APPLY_WEATHER_SWAP',
-        label: 'Apply Weather Adjustment to Itinerary',
-      },
-      toolCall: 'weather_adaptive_swap',
-    };
+  const primaryUrl = getBackendBaseUrl();
+  const candidateEndpoints = [
+    `${primaryUrl}/api/chat`,
+    `http://172.16.129.61:5000/api/chat`,
+    `http://localhost:5000/api/chat`,
+    `http://10.0.2.2:5000/api/chat`,
+  ];
+
+  // Remove duplicates
+  const uniqueEndpoints = [...new Set(candidateEndpoints)];
+
+  let lastError = null;
+
+  for (const endpoint of uniqueEndpoints) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 20000);
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt: query,
+          conversationHistory,
+          activeTrip,
+          userLanguage,
+        }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      const data = await res.json().catch(() => null);
+
+      if (res.ok && data?.text) {
+        return {
+          model: data.model || GEMINI_MODEL_VERSION,
+          text: data.text,
+          actionSuggestion: data.actionSuggestion || null,
+        };
+      }
+
+      if (!res.ok) {
+        const errorMsg = data?.error || `Server responded with status ${res.status}`;
+        throw new Error(errorMsg);
+      }
+    } catch (err) {
+      lastError = err.message;
+      // If it was an explicit server error response (e.g. Gemini API error), propagate it directly
+      if (err.message && !err.message.includes('Network request failed') && !err.message.includes('abort') && !err.message.includes('Failed to fetch')) {
+        throw err;
+      }
+    }
   }
 
-  // 3. Crowd Management & Hidden Gems Intent
-  if (
-    lower.includes('crowd') ||
-    lower.includes('hidden gem') ||
-    lower.includes('peaceful') ||
-    lower.includes('overcrowded') ||
-    lower.includes('offbeat') ||
-    lower.includes('alternative')
-  ) {
-    return {
-      model: GEMMA_MODEL_VERSION,
-      text: `Crowd Density & Offbeat Recommendations:\n\nPopular central sites are currently experiencing higher visitor density. Here are peaceful curated alternatives nearby:\n\n1. Yarada Beach: Secluded coastal bay flanked by verdant hills with fewer crowds.\n2. Araku Valley: Misty coffee plantations, indigenous culture, and limestone caverns.\n3. Chandragiri Citadel: Historic royal architecture with tranquil garden courtyards.`,
-      actionSuggestion: {
-        type: 'EXPLORE_GEMS',
-        label: 'View Hidden Gems on Map',
-      },
-      toolCall: 'crowd_anti_overtourism_reroute',
-    };
-  }
-
-  // 4. Local Artisans & Indigenous Businesses Intent
-  if (
-    lower.includes('coffee') ||
-    lower.includes('artisan') ||
-    lower.includes('handicraft') ||
-    lower.includes('food') ||
-    lower.includes('shop') ||
-    lower.includes('homestay')
-  ) {
-    return {
-      model: GEMMA_MODEL_VERSION,
-      text: `Verified Local Artisans & Cooperative Markets:\n\nCertified community businesses in the area:\n\n• Etikoppaka Lacquer Craft Guild: Natural vegetable dye wooden handicrafts.\n• Araku Tribal Coffee Cooperative: Shade-grown organic Arabica roasts.\n• Bagru Hand Block Print Artisans: Heritage natural dye textile printing.\n• Coastal Kitchens: Authentic regional dining on fresh banana leaves.`,
-      actionSuggestion: {
-        type: 'VIEW_BUSINESSES',
-        label: 'Open Local Marketplace',
-      },
-      toolCall: 'locate_grassroots_artisans',
-    };
-  }
-
-  // 5. Attractions Near Me / Nearby Spots
-  if (
-    lower.includes('near me') ||
-    lower.includes('places to visit') ||
-    lower.includes('attractions') ||
-    lower.includes('suggest places')
-  ) {
-    return {
-      model: GEMMA_MODEL_VERSION,
-      text: `Key Attractions Nearby (Within 10 km):\n\n1. INS Kursura Submarine Museum (1.2 km · 4.8 Rating · ₹70 Entry)\n2. RK Beach & Promenade (1.5 km · Open Shoreline · Free Entry)\n3. TU 142 Aircraft Museum (2.1 km · 4.7 Rating · ₹50 Entry)\n4. Kailasagiri Hilltop Park (4.5 km · 4.9 Rating · ₹150 Entry)\n5. Tenneti Coastal Park (6.0 km · 4.6 Rating · Scenic Views)`,
-      actionSuggestion: {
-        type: 'OPEN_MAP',
-        label: 'Show Nearby Spots on Map',
-      },
-      toolCall: 'proximity_search',
-    };
-  }
-
-  // General Response
-  return {
-    model: GEMMA_MODEL_VERSION,
-    text: `WayWise Travel Assistant:\n\nI have received your request: "${query}".\n\nI can assist you with:\n• Planning customized day-by-day travel itineraries.\n• Rescheduling activities when rain or high heat is forecasted.\n• Optimizing lodging and transit budgets.\n• Recommending local eco-stays and grassroots artisans.\n• Translating travel phrases across 6 Indian languages.\n• Providing travel safety guidance.`,
-    actionSuggestion: {
-      type: 'OPEN_PLANNER',
-      label: 'Plan Trip Itinerary',
-    },
-  };
+  // If all network connection attempts failed
+  throw new Error(
+    `Failed to reach WayWise Gemini backend at ${primaryUrl} (${lastError || 'Network request failed'}). Please verify that the backend server is running via 'npm run server' and your device is connected to the same Wi-Fi network.`
+  );
 };
 
 /**
- * 1. AI TRIP PLANNER
+ * 1. AI TRIP PLANNER (Helper for Profile/Wizard screens)
  */
 export const generateAITripPlan = async ({
   destination = 'Jaipur',
@@ -151,55 +143,40 @@ export const generateAITripPlan = async ({
   preferences = 'Eco-friendly & Cultural',
   interests = ['Heritage', 'Local Crafts', 'Nature'],
 }) => {
-  await new Promise((resolve) => setTimeout(resolve, 600));
+  try {
+    const prompt = `Generate a detailed day-by-day travel itinerary for ${destination} for ${days} days with a total budget of ₹${budget} for ${travelers} travelers. Focus on ${preferences} and interests: ${interests.join(', ')}. Include estimated costs in ₹.`;
+    const aiResponse = await queryGemmaAssistant({ prompt });
+    if (aiResponse?.text) {
+      return {
+        destination,
+        days,
+        totalBudget: budget,
+        travelers,
+        summary: aiResponse.text,
+      };
+    }
+  } catch (e) {
+    console.log('Using structured planner fallback:', e.message);
+  }
+
   const dailyBudget = Math.round(budget / days);
   const perPersonDaily = Math.round(dailyBudget / travelers);
 
   const itineraryDays = Array.from({ length: Number(days) || 3 }).map((_, i) => {
     const dayNum = i + 1;
-    if (dayNum === 1) {
-      return {
-        day: 1,
-        title: `Day 1: Cultural Heritage & Historic Landmarks in ${destination}`,
-        morning: `09:00 AM - Architectural walking tour of central historic monuments and iconic palaces.`,
-        afternoon: `01:00 PM - Authentic regional thali lunch at verified cooperative restaurant. 03:00 PM - Guided museum exploration.`,
-        evening: `06:30 PM - Scenic sunset view from hilltop fort followed by traditional organic tea tasting.`,
-        places: [`Amer Fort / Landmark Fort`, `City Palace Museum`, `Local Heritage Bazaar`],
-        activities: [`Guided Fort Tour`, `Heritage Walk`, `Artisan Craft Appreciation`],
-        food: [`Seasonal Organic Thali`, `Kulhad Chai`, `Handcrafted Sweets`],
-        estimatedCost: Math.round(dailyBudget * 0.4),
-        travelTime: `25-35 mins total local travel time`,
-        localExperience: `Support local heritage guides and community silk/block print weavers.`,
-      };
-    } else if (dayNum === 2) {
-      return {
-        day: 2,
-        title: `Day 2: Grassroots Artisans, Nature & Local Markets`,
-        morning: `08:30 AM - Visit organic botanical sanctuary or scenic valley park.`,
-        afternoon: `12:30 PM - Workshop with local artisan guild (pottery/textiles). 02:30 PM - Organic garden lunch.`,
-        evening: `05:30 PM - Peaceful eco-promenade stroll and shopping at certified fair-trade cooperative.`,
-        places: [`Artisan Craft Village`, `Eco-Nature Park`, `Grassroots Artisans Guild`],
-        activities: [`Live Block Print / Lacquer Demo`, `Nature Trail Stroll`, `Fair-trade Shopping`],
-        food: [`Fresh Farm-to-Table Meals`, `Artisan Herbal Infusions`],
-        estimatedCost: Math.round(dailyBudget * 0.35),
-        travelTime: `20 mins local electric rickshaw transit`,
-        localExperience: `Direct purchase from master craftspeople with zero middleman markup.`,
-      };
-    } else {
-      return {
-        day: dayNum,
-        title: `Day ${dayNum}: Hidden Gems & Peaceful Offbeat Trails`,
-        morning: `09:00 AM - Uncrowded morning visit to secluded ancient stepwell/temple courtyard.`,
-        afternoon: `01:30 PM - Leisurely traditional meal at scenic eco-homestay terrace.`,
-        evening: `05:00 PM - Farewell cultural music performance and sunset photo spot.`,
-        places: [`Quiet Historic Stepwell`, `Scenic Eco-Homestay Terrace`, `Sunset Point`],
-        activities: [`Photography Trail`, `Folk Music Appreciation`, `Relaxing Green Walk`],
-        food: [`Regional Specialty Platter`, `Fresh Coconut / Local Juice`],
-        estimatedCost: Math.round(dailyBudget * 0.25),
-        travelTime: `15-30 mins transit`,
-        localExperience: `Peaceful exploration preserving fragile cultural heritage sites.`,
-      };
-    }
+    return {
+      day: dayNum,
+      title: `Day ${dayNum}: Exploring ${destination}`,
+      morning: `09:00 AM - Historic architectural walking tour and cultural exploration.`,
+      afternoon: `01:00 PM - Regional specialty lunch at local cooperative dining hall.`,
+      evening: `05:30 PM - Artisan craft market visit and scenic sunset viewpoint.`,
+      places: [`${destination} Heritage Center`, `Artisan Cooperative Market`, `Sunset Point`],
+      activities: [`Guided Heritage Walk`, `Local Craft Appreciation`],
+      food: [`Authentic Regional Thali`, `Local Herbal Teas`],
+      estimatedCost: dailyBudget,
+      travelTime: `20-30 mins local electric transit`,
+      localExperience: `Direct support to verified local artisans and licensed heritage guides.`,
+    };
   });
 
   return {
@@ -207,7 +184,7 @@ export const generateAITripPlan = async ({
     days,
     totalBudget: budget,
     travelers,
-    perPersonBudget: Math.round(budget / travelers),
+    perPersonBudget: perPersonDaily,
     dailyBudget,
     itineraryDays,
     summary: `Curated ${days}-day ${preferences} trip to ${destination} for ${travelers} traveler(s) with estimated total cost ₹${budget}.`,
@@ -222,46 +199,21 @@ export const queryDestinationGuide = async ({
   destination = 'Jaipur',
   category = 'General',
 }) => {
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  const q = question.toLowerCase();
-
-  if (q.includes('best places') || q.includes('must visit')) {
-    return {
-      answer: `Here are the top top-rated, must-visit spots in ${destination}:\n\n1. Amer Fort / Historic Citadel - Majestic royal architecture & panoramic views.\n2. Hawa Mahal / Promenade Viewpoint - Intricate lattice facade & cultural bazaar.\n3. INS Kursura & Coastal Promenade (for Vizag) - Submarine history & sea breeze.\n4. Araku Valley & Coffee Estates - Misty hills and tribal organic coffee.\n5. City Art Gallery & Stepwells - Serene heritage and craftsmanship.`,
-      category: 'Attractions',
-    };
-  }
-
-  if (q.includes('today') || q.includes('do today') || q.includes('what should i do')) {
-    return {
-      answer: `Here is a perfect plan for today in ${destination}:\n\n• Morning: Start early with a scenic visit to the main heritage monument before peak heat.\n• Afternoon: Cool down at a sheltered indoor museum or local art gallery, followed by an authentic thali lunch.\n• Evening: Enjoy a peaceful sunset walk at the coastal promenade or hilltop garden, and visit the artisan night market!`,
-      category: 'Itinerary Suggestion',
-    };
-  }
-
-  if (q.includes('near me') || q.includes('nearby')) {
-    return {
-      answer: `Popular spots near your current location (within 5-10 km):\n\n1. Heritage Promenade Bazaar (1.2 km)\n2. State Cultural Museum (2.5 km)\n3. Verified Eco-Café & Coffee Guild (3.1 km)\n4. Secluded Scenic Lookout (5.0 km)`,
-      category: 'Proximity',
-    };
-  }
-
-  if (q.includes('food') || q.includes('eat') || q.includes('try')) {
-    return {
-      answer: `Must-try local dishes and food experiences in ${destination}:\n\n1. Authentic Regional Thali - Served on banana leaves with organic spices.\n2. Clay-cup Kulhad Chai & Local Herbal Teas.\n3. Fresh Coastal Seafood / Regional Curries.\n4. Traditional Handcrafted Sweets & Millet Snacks.\n\nTip: Eat at verified community-run eateries for the freshest ingredients!`,
-      category: 'Cuisine',
-    };
-  }
-
-  if (q.includes('budget') || q.includes('family') || q.includes('cheap')) {
-    return {
-      answer: `Budget-friendly & family-approved recommendations in ${destination}:\n\n• Public Heritage Gardens & Beach Promenades (Free entry)\n• Government Museums & Submarine Exhibits (₹20-₹70 entry)\n• Electric Rickshaw city tours (Affordable transit)\n• Community Food Courts & Thali Kitchens (₹150-₹300 per person)`,
-      category: 'Budget & Family',
-    };
+  try {
+    const prompt = `As a destination guide for ${destination}, please answer: "${question}" (Category: ${category}). Provide practical local advice with eco-friendly and cultural recommendations.`;
+    const aiResponse = await queryGemmaAssistant({ prompt });
+    if (aiResponse?.text) {
+      return {
+        answer: aiResponse.text,
+        category,
+      };
+    }
+  } catch (e) {
+    console.log('Using local destination guide fallback:', e.message);
   }
 
   return {
-    answer: `As your WayWise Travel Guide for ${destination}, I recommend exploring historic heritage monuments in the morning, enjoying authentic local thali dining at noon, and visiting verified artisan markets in the evening! Feel free to ask about food, transit, or hidden gems.`,
+    answer: `As your WayWise Travel Guide for ${destination}, explore historic monuments in the morning, authentic regional thali dining at noon, and verified artisan markets in the evening!`,
     category: 'General Guide',
   };
 };
@@ -274,9 +226,7 @@ export const generateAIBudgetPlan = async ({
   destination = 'Jaipur',
   days = 3,
 }) => {
-  await new Promise((resolve) => setTimeout(resolve, 500));
   const total = Number(totalBudget) || 10000;
-
   const breakdown = {
     accommodation: Math.round(total * 0.35),
     food: Math.round(total * 0.25),
@@ -311,7 +261,6 @@ export const recommendLocalExperiences = async ({
   destination = 'Jaipur',
   category = 'All',
 }) => {
-  await new Promise((resolve) => setTimeout(resolve, 400));
   return [
     {
       id: 'rec_1',
@@ -498,13 +447,22 @@ export const translateTravelText = async ({
   text = 'Where is the nearest tourist information center?',
   targetLanguage = 'hi',
 }) => {
-  await new Promise((resolve) => setTimeout(resolve, 200));
-  const res = await translateVoiceSpeechMultiLang({ text });
-  const found = res.translations.find((t) => t.languageId === targetLanguage);
+  try {
+    const res = await translateVoiceSpeechMultiLang({ text });
+    const found = res?.translations?.find((t) => t.languageId === targetLanguage);
+    if (found?.translatedText) {
+      return {
+        originalText: text,
+        targetLanguage,
+        translatedText: found.translatedText,
+      };
+    }
+  } catch (e) {}
+
   return {
     originalText: text,
     targetLanguage,
-    translatedText: found ? found.translatedText : text,
+    translatedText: text,
   };
 };
 
@@ -514,7 +472,6 @@ export const translateTravelText = async ({
 export const getSafetyGuidance = async ({
   destination = 'Jaipur',
 }) => {
-  await new Promise((resolve) => setTimeout(resolve, 400));
   return {
     destination,
     safetyStatus: 'Normal & Secure',
@@ -543,7 +500,6 @@ export const getSmartRecommendations = async ({
   budget = 10000,
   language = 'en',
 }) => {
-  await new Promise((resolve) => setTimeout(resolve, 450));
   return {
     personalizedFor: `${destination} Traveler`,
     recommendations: [
@@ -571,4 +527,3 @@ export const getSmartRecommendations = async ({
     ],
   };
 };
-

@@ -69,62 +69,66 @@ export const GlassmorphismLightTheme = {
 export const GlassmorphismDarkTheme = {
   name: 'glass_horizon',
   displayName: 'Glassmorphism Luxe (Dark)',
-  subtitle: 'Dark Frosted Glass · Midnight Navy, Sky & Gold',
+  subtitle: 'Dark Frosted Glass · Midnight Obsidian & Radiant Blue',
   mode: 'glass_horizon',
   isDark: true,
 
-  // Primary: Luminous Sky Blue / Azure in Dark Mode
-  primary: '#38BDF8',
-  primaryDark: '#0284C7',
-  primaryLight: 'rgba(56, 189, 248, 0.15)',
-  primaryMid: '#0EA5E9',
+  // Primary: Radiant Indigo-Blue
+  primary: '#4F75FF',
+  primaryDark: '#3B82F6',
+  primaryLight: 'rgba(79, 117, 255, 0.15)',
+  primaryMid: '#6366F1',
 
-  // Secondary: Soft Slate Blue
-  secondary: '#7DD3FC',
-  secondaryLight: 'rgba(125, 211, 252, 0.12)',
+  // Secondary: Sky Azure
+  secondary: '#38BDF8',
+  secondaryLight: 'rgba(56, 189, 248, 0.14)',
 
-  // Accent: Warm Gold
+  // Accent: Warm Amber
   accent: '#F59E0B',
   accentLight: 'rgba(245, 158, 11, 0.16)',
 
-  // Surfaces: Dark Frosted Glass
-  background: '#070D15',
-  card: 'rgba(15, 26, 44, 0.82)',
-  cardSecondary: 'rgba(23, 37, 60, 0.65)',
-  surface: 'rgba(15, 26, 44, 0.85)',
-  surfaceElevated: 'rgba(28, 45, 72, 0.88)',
+  // Surfaces: Matte Obsidian & Dark Frosted Glass
+  background: '#111216',
+  card: '#191B22',
+  cardSecondary: '#222530',
+  surface: '#191B22',
+  surfaceElevated: '#252834',
 
-  // Text
-  text: '#F1F5F9',
-  textSecondary: '#94A3B8',
-  textMuted: '#64748B',
+  // Text: Pure White & Slate Grey
+  text: '#FFFFFF',
+  textSecondary: '#8E95A5',
+  textMuted: '#5F6677',
 
-  // Borders: Luminous Glass Rim
-  border: 'rgba(255, 255, 255, 0.14)',
-  borderLight: 'rgba(255, 255, 255, 0.08)',
+  // Borders: Subtle Clean Rim
+  border: 'rgba(255, 255, 255, 0.08)',
+  borderLight: 'rgba(255, 255, 255, 0.04)',
+
+  // Active Pill & Button Highlights
+  activePill: '#FFFFFF',
+  activePillText: '#111216',
 
   // Semantic
   error: '#EF4444',
   errorLight: 'rgba(239, 68, 68, 0.16)',
-  success: '#38BDF8',
-  successLight: 'rgba(56, 189, 248, 0.15)',
+  success: '#10B981',
+  successLight: 'rgba(16, 185, 129, 0.15)',
   warning: '#F59E0B',
   warningLight: 'rgba(245, 158, 11, 0.16)',
-  info: '#38BDF8',
-  infoLight: 'rgba(56, 189, 248, 0.15)',
+  info: '#4F75FF',
+  infoLight: 'rgba(79, 117, 255, 0.15)',
 
-  ecoGreen: '#38BDF8',
-  ecoGreenLight: 'rgba(56, 189, 248, 0.15)',
-  ecoGreenMid: '#0EA5E9',
+  ecoGreen: '#10B981',
+  ecoGreenLight: 'rgba(16, 185, 129, 0.15)',
+  ecoGreenMid: '#059669',
   gold: '#F59E0B',
   goldLight: 'rgba(245, 158, 11, 0.16)',
 
-  // UI Chrome: Dark Glass
-  glassBg: 'rgba(15, 26, 44, 0.82)',
-  glassBorder: 'rgba(255, 255, 255, 0.16)',
+  // UI Chrome: Floating Dock
+  glassBg: 'rgba(25, 27, 34, 0.92)',
+  glassBorder: 'rgba(255, 255, 255, 0.12)',
   shadow: '#000000',
-  tabBar: 'rgba(10, 18, 30, 0.92)',
-  tabBarInactive: '#64748B',
+  tabBar: '#191B22',
+  tabBarInactive: '#8E95A5',
   statusBar: 'light',
 };
 
@@ -350,7 +354,147 @@ export const EmeraldNatureDarkTheme = {
   statusBar: 'light',
 };
 
+// ==========================================
+// 4. LIQUID GLASS THEME (Light & Dark)
+// ==========================================
+export const LiquidGlassLightTheme = {
+  name: 'liquid_glass',
+  displayName: 'Liquid Glass',
+  subtitle: 'Optical Refraction · Radiant Prismatic Gradients & Specular 3D',
+  mode: 'liquid_glass',
+  isDark: false,
+  isGlass: true,
+  isLiquidGlass: true,
+
+  // Primary: Luminous Electric Cyan-Azure
+  primary: '#0284C7',
+  primaryDark: '#0369A1',
+  primaryLight: 'rgba(2, 132, 199, 0.12)',
+  primaryMid: '#0EA5E9',
+
+  // Secondary: Radiant Prismatic Violet
+  secondary: '#6366F1',
+  secondaryLight: 'rgba(99, 102, 241, 0.12)',
+
+  // Accent: Vivid Prismatic Magenta
+  accent: '#EC4899',
+  accentLight: 'rgba(236, 72, 153, 0.14)',
+
+  // Surfaces: Ultra-Translucent Optical Liquid Glass
+  background: '#EFF6FF',
+  gradientBackground: ['#EFF6FF', '#F5F3FF', '#FDF2F8'],
+  card: 'rgba(255, 255, 255, 0.72)',
+  cardSecondary: 'rgba(255, 255, 255, 0.48)',
+  surface: 'rgba(255, 255, 255, 0.76)',
+  surfaceElevated: 'rgba(255, 255, 255, 0.90)',
+
+  // Text: Clean Minimalist Obsidian Slate
+  text: '#0F172A',
+  textSecondary: '#475569',
+  textMuted: '#94A3B8',
+
+  // Borders: 3D Glossy Specular Highlight Rims
+  border: 'rgba(255, 255, 255, 0.95)',
+  borderLight: 'rgba(255, 255, 255, 0.60)',
+  glassSpecular: 'rgba(255, 255, 255, 0.98)',
+  glassHighlight: 'rgba(255, 255, 255, 0.85)',
+  glassBorder: 'rgba(255, 255, 255, 0.95)',
+  glassRefract: 'rgba(147, 197, 253, 0.40)',
+
+  // Semantic
+  error: '#F43F5E',
+  errorLight: 'rgba(244, 63, 94, 0.12)',
+  success: '#10B981',
+  successLight: 'rgba(16, 185, 129, 0.12)',
+  warning: '#F59E0B',
+  warningLight: 'rgba(245, 158, 11, 0.14)',
+  info: '#0284C7',
+  infoLight: 'rgba(2, 132, 199, 0.12)',
+
+  ecoGreen: '#059669',
+  ecoGreenLight: 'rgba(5, 150, 105, 0.12)',
+  ecoGreenMid: '#10B981',
+  gold: '#F59E0B',
+  goldLight: 'rgba(245, 158, 11, 0.14)',
+
+  // UI Chrome: Translucent Glass & Specular Glow
+  glassBg: 'rgba(255, 255, 255, 0.72)',
+  shadow: 'rgba(15, 23, 42, 0.12)',
+  tabBar: 'rgba(255, 255, 255, 0.84)',
+  tabBarInactive: '#64748B',
+  statusBar: 'dark',
+};
+
+export const LiquidGlassDarkTheme = {
+  name: 'liquid_glass',
+  displayName: 'Liquid Glass (Dark)',
+  subtitle: 'Obsidian Optical Glass · Iridescent Nebula & Specular Edges',
+  mode: 'liquid_glass',
+  isDark: true,
+  isGlass: true,
+  isLiquidGlass: true,
+
+  // Primary: Luminous Electric Cyan-Azure in Dark Mode
+  primary: '#38BDF8',
+  primaryDark: '#0284C7',
+  primaryLight: 'rgba(56, 189, 248, 0.18)',
+  primaryMid: '#0EA5E9',
+
+  // Secondary: Electric Lavender
+  secondary: '#A78BFA',
+  secondaryLight: 'rgba(167, 139, 250, 0.16)',
+
+  // Accent: Radiant Neon Pink
+  accent: '#F472B6',
+  accentLight: 'rgba(244, 114, 182, 0.18)',
+
+  // Surfaces: Deep Translucent Obsidian Optical Glass
+  background: '#080C16',
+  gradientBackground: ['#080C16', '#0F172A', '#130E26'],
+  card: 'rgba(15, 23, 42, 0.72)',
+  cardSecondary: 'rgba(30, 41, 59, 0.55)',
+  surface: 'rgba(15, 23, 42, 0.78)',
+  surfaceElevated: 'rgba(30, 41, 59, 0.85)',
+
+  // Text: Luminous Minimalist Crystal Slate
+  text: '#F8FAFC',
+  textSecondary: '#94A3B8',
+  textMuted: '#64748B',
+
+  // Borders: Refraction Lensing & Specular Edge
+  border: 'rgba(255, 255, 255, 0.18)',
+  borderLight: 'rgba(255, 255, 255, 0.10)',
+  glassSpecular: 'rgba(255, 255, 255, 0.35)',
+  glassHighlight: 'rgba(255, 255, 255, 0.22)',
+  glassBorder: 'rgba(255, 255, 255, 0.20)',
+  glassRefract: 'rgba(56, 189, 248, 0.25)',
+
+  // Semantic
+  error: '#FB7185',
+  errorLight: 'rgba(251, 113, 133, 0.18)',
+  success: '#34D399',
+  successLight: 'rgba(52, 211, 153, 0.18)',
+  warning: '#FBBF24',
+  warningLight: 'rgba(251, 191, 36, 0.18)',
+  info: '#38BDF8',
+  infoLight: 'rgba(56, 189, 248, 0.18)',
+
+  ecoGreen: '#34D399',
+  ecoGreenLight: 'rgba(52, 211, 153, 0.18)',
+  ecoGreenMid: '#10B981',
+  gold: '#FBBF24',
+  goldLight: 'rgba(251, 191, 36, 0.18)',
+
+  // UI Chrome: Dark Liquid Glass
+  glassBg: 'rgba(15, 23, 42, 0.72)',
+  shadow: '#000000',
+  tabBar: 'rgba(8, 13, 24, 0.90)',
+  tabBarInactive: '#64748B',
+  statusBar: 'light',
+};
+
 // Aliases for compatibility
+export const LiquidGlassTheme = LiquidGlassLightTheme;
 export const GlassHorizonTheme = GlassmorphismLightTheme;
 export const VintageVoyagerTheme = VintageVoyagerLightTheme;
 export const LightTheme = EmeraldNatureLightTheme;
@@ -359,6 +503,8 @@ export const DarkTheme = EmeraldNatureDarkTheme;
 // Resolver function for Theme + Dark Mode Matrix
 export const resolveTheme = (themeKey, isDark) => {
   switch (themeKey) {
+    case 'liquid_glass':
+      return isDark ? LiquidGlassDarkTheme : LiquidGlassLightTheme;
     case 'vintage_voyager':
       return isDark ? VintageVoyagerDarkTheme : VintageVoyagerLightTheme;
     case 'emerald_nature':
@@ -371,8 +517,21 @@ export const resolveTheme = (themeKey, isDark) => {
   }
 };
 
-// Curated 3 Design Themes for Theme Selection Modal
+// Curated Design Themes for Theme Selection Modal
 export const THEMES_LIST = [
+  {
+    id: 'liquid_glass',
+    name: 'Liquid Glass',
+    tagline: 'Optical Refraction · Radiant Prismatic Gradients & Specular 3D',
+    badge: 'Liquid Glass',
+    theme: LiquidGlassLightTheme,
+    primaryColor: '#0284C7',
+    bgColor: '#EFF6FF',
+    accentColor: '#EC4899',
+    cardColor: 'rgba(255, 255, 255, 0.72)',
+    icon: 'water-outline',
+    description: 'Ultra-translucent liquid glass with realistic optical refraction, 3D curved specular highlights, adaptive prismatic tinting, and luminous gradient depth.',
+  },
   {
     id: 'glass_horizon',
     name: 'Glassmorphism Luxe',

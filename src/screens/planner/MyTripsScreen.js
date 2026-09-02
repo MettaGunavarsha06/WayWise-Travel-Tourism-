@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -6,406 +6,331 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
-  Alert,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../context/ThemeContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTrips } from '../../context/TripContext';
-import { EcoScoreBadge } from '../../components/EcoScoreBadge';
-import { CrowdIndicator } from '../../components/CrowdIndicator';
 import { Button } from '../../components/Button';
-import { formatCurrency } from '../../utils/helpers';
+import { DestinationCard } from '../../components/DestinationCard';
+import { InteractiveItineraryMapCard } from '../../components/InteractiveItineraryMapCard';
+import { ScrollFadeItem } from '../../components/ScrollFadeItem';
 
-export const MyTripsScreen = ({ navigation, route }) => {
-  const { theme } = useTheme();
-  const { t } = useLanguage();
-  const {
-    pastMemories,
-    savedPlaces,
-    savedCollections,
-    toggleSavePlace,
-    deletePastMemory,
-  } = useTrips();
+const MockupTripCard = ({ trip, navigation, setActiveTripById }) => {
+  const floatAnim = useRef(new Animated.Value(0)).current;
+  const itemCount = trip.daysPlan?.length
+    ? `${trip.daysPlan.length * 3} Items`
+    : `${trip.days * 3} Items`;
 
-  // Primary tabs: 'past' (Past Memories) and 'saved' (Saved Places) - Old 'trips' option is disabled
-  const initialTab = route?.params?.initialTab === 'saved' ? 'saved' : 'past';
-  const [activeTab, setActiveTab] = useState(initialTab);
-  const [selectedCollection, setSelectedCollection] = useState('All Saved');
+  const handlePressIn = () => {
+    Animated.spring(floatAnim, {
+      toValue: 1,
+      bounciness: 9,
+      speed: 18,
+      useNativeDriver: true,
+    }).start();
+  };
 
-  // Filter saved places by collection
-  const filteredSavedPlaces = savedPlaces.filter((p) => {
-    if (selectedCollection === 'All Saved') return true;
-    return p.collection === selectedCollection;
+  const handlePressOut = () => {
+    Animated.spring(floatAnim, {
+      toValue: 0,
+      bounciness: 6,
+      speed: 14,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const cardScale = floatAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 1.04],
   });
 
-  const handleDeleteMemory = (memory) => {
-    Alert.alert(
-      'Delete Past Memory',
-      `Are you sure you want to remove "${memory.destinationName}" from your completed memories?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
+  const cardTranslateY = floatAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -7],
+  });
+
+  return (
+    <Animated.View
+      style={[
+        styles.tripMockupCard,
         {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => deletePastMemory(memory.id),
+          transform: [{ scale: cardScale }, { translateY: cardTranslateY }],
         },
-      ]
-    );
-  };
+      ]}
+    >
+      <TouchableOpacity
+        activeOpacity={0.94}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        onPress={() => {
+          setActiveTripById?.(trip.id);
+          navigation.navigate('ItineraryDetail', { trip });
+        }}
+        style={styles.tripCardInner}
+      >
+        {/* Full Cover Trip Image */}
+        <Image
+          source={{
+            uri:
+              trip.bannerImage ||
+              'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+          }}
+          style={styles.tripMockupImg}
+          resizeMode="cover"
+        />
+
+        {/* Gradient Scrim */}
+        <LinearGradient
+          colors={['rgba(0,0,0,0.15)', 'transparent', 'rgba(10,12,16,0.85)']}
+          locations={[0, 0.4, 1]}
+          style={StyleSheet.absoluteFillObject}
+        />
+
+        {/* Top Row: Items Badge & Heart */}
+        <View style={styles.tripTopRow}>
+          <View style={styles.itemsGlassBadge}>
+            <Text style={styles.itemsGlassBadgeText}>{itemCount}</Text>
+          </View>
+
+          <View style={styles.heartCircleGlass}>
+            <Ionicons name="heart" size={17} color="#EF4444" />
+          </View>
+        </View>
+
+        {/* Bottom Frosted Glass Title Strip */}
+        <View style={styles.tripBottomStrip}>
+          <View style={styles.tripTitleGroup}>
+            <Text style={styles.tripMainTitle} numberOfLines={1}>
+              Trip to {trip.destinationName}
+            </Text>
+            <Text style={styles.tripDateSub}>
+              {trip.dates || '18/09/2026 - 20/09/2026'}
+            </Text>
+          </View>
+
+          <TouchableOpacity
+            onPress={(e) => {
+              e.stopPropagation();
+              setActiveTripById?.(trip.id);
+              navigation.navigate('ItineraryDetail', { trip });
+            }}
+            style={styles.editPenCircle}
+          >
+            <Ionicons name="pencil" size={15} color="#FFFFFF" />
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+};
+
+export const MyTripsScreen = ({ navigation }) => {
+  const { theme, isDark } = useTheme();
+  const { t } = useLanguage?.() || { t: (k) => k };
+  const { trips = [], activeTrip, setActiveTripById, savedPlaces = [] } = useTrips?.() || {};
+  const [activeTab, setActiveTab] = useState('upcoming');
+  const scrollY = useRef(new Animated.Value(0)).current;
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       {/* Top Header */}
       <View style={[styles.header, { borderBottomColor: theme.border }]}>
-        <View>
-          <Text style={[styles.headerTitle, { color: theme.text }]}>{t('pastMemories') || 'Memories & Saved'}</Text>
-          <Text style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
-            {t('completedJourneys') || 'Completed Journeys & Wishlist'}
-          </Text>
-        </View>
+        <Text style={[styles.headerTitle, { color: theme.text }]}>
+          {t('myTrips') || 'My Trips'}
+        </Text>
         <Button
-          title="+ Plan New Trip"
+          title={t('newAITrip') || '+ New AI Trip'}
           variant="primary"
           size="small"
-          icon="sparkles"
           onPress={() => navigation.navigate('TripPlannerWizard')}
         />
       </View>
 
-      {/* 2 Focused Tabs (Past Memories | Saved Collections) - Trips Option Disabled */}
+      {/* 3 Tabs: Upcoming Trips, Saved Places, Past Travels */}
       <View style={[styles.tabBar, { borderBottomColor: theme.border }]}>
-        {/* 1. Past Memories Tab (Completed Trips) */}
         <TouchableOpacity
-          onPress={() => setActiveTab('past')}
+          onPress={() => setActiveTab('upcoming')}
           style={[
             styles.tabItem,
-            activeTab === 'past' && { borderBottomColor: theme.primary, borderBottomWidth: 2.5 },
+            activeTab === 'upcoming' && { borderBottomColor: theme.primary },
           ]}
+          activeOpacity={0.75}
         >
-          <View style={styles.tabBadgeRow}>
-            <Ionicons
-              name={activeTab === 'past' ? 'images' : 'images-outline'}
-              size={15}
-              color={activeTab === 'past' ? theme.primary : theme.textSecondary}
-            />
-            <Text
-              style={[
-                styles.tabText,
-                { color: activeTab === 'past' ? theme.primary : theme.textSecondary },
-              ]}
-            >
-              {t('pastMemories') || 'Past Memories'} ({pastMemories.length})
-            </Text>
-          </View>
+          <Text
+            style={[
+              styles.tabText,
+              { color: activeTab === 'upcoming' ? theme.primary : theme.textSecondary, fontFamily: activeTab === 'upcoming' ? 'Manrope_700Bold' : 'Manrope_600SemiBold' },
+            ]}
+            numberOfLines={1}
+          >
+            {t('upcomingTrips') || 'Upcoming'} ({trips.length})
+          </Text>
         </TouchableOpacity>
 
-        {/* 2. Instagram-Style Saved Collections Tab */}
         <TouchableOpacity
           onPress={() => setActiveTab('saved')}
           style={[
             styles.tabItem,
-            activeTab === 'saved' && { borderBottomColor: theme.primary, borderBottomWidth: 2.5 },
+            activeTab === 'saved' && { borderBottomColor: theme.primary },
           ]}
+          activeOpacity={0.75}
         >
-          <View style={styles.tabBadgeRow}>
-            <Ionicons
-              name={activeTab === 'saved' ? 'bookmark' : 'bookmark-outline'}
-              size={15}
-              color={activeTab === 'saved' ? theme.primary : theme.textSecondary}
-            />
-            <Text
-              style={[
-                styles.tabText,
-                { color: activeTab === 'saved' ? theme.primary : theme.textSecondary },
-              ]}
-            >
-              {t('savedPlaces') || 'Saved'} ({savedPlaces.length})
-            </Text>
-          </View>
+          <Text
+            style={[
+              styles.tabText,
+              { color: activeTab === 'saved' ? theme.primary : theme.textSecondary, fontFamily: activeTab === 'saved' ? 'Manrope_700Bold' : 'Manrope_600SemiBold' },
+            ]}
+            numberOfLines={1}
+          >
+            {t('savedPlaces') || 'Saved'} ({savedPlaces.length})
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => setActiveTab('past')}
+          style={[
+            styles.tabItem,
+            activeTab === 'past' && { borderBottomColor: theme.primary },
+          ]}
+          activeOpacity={0.75}
+        >
+          <Text
+            style={[
+              styles.tabText,
+              { color: activeTab === 'past' ? theme.primary : theme.textSecondary, fontFamily: activeTab === 'past' ? 'Manrope_700Bold' : 'Manrope_600SemiBold' },
+            ]}
+            numberOfLines={1}
+          >
+            {t('pastTravels') || 'Past'} (2)
+          </Text>
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* 1. PAST MEMORIES TAB (COMPLETED TRIPS SAVED FOR USER) */}
-        {activeTab === 'past' && (
-          <View style={styles.memoriesSection}>
-            {pastMemories.length === 0 ? (
-              <View style={[styles.emptyBox, { backgroundColor: theme.card, borderColor: theme.border }]}>
-                <Ionicons name="images-outline" size={48} color={theme.textMuted} />
-                <Text style={[styles.emptyTitle, { color: theme.text }]}>No Past Memories Yet</Text>
-                <Text style={[styles.emptyDesc, { color: theme.textSecondary }]}>
-                  When you complete a trip itinerary, mark it as completed to save your travel stats, visited places, and memories here!
-                </Text>
-                <Button
-                  title="Plan an AI Trip"
-                  variant="primary"
-                  size="small"
-                  icon="sparkles"
-                  onPress={() => navigation.navigate('TripPlannerWizard')}
-                  style={{ marginTop: 14 }}
+      <Animated.ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: true }
+        )}
+        scrollEventThrottle={16}
+      >
+        {activeTab === 'upcoming' && (
+          <View>
+            {/* Interactive Itinerary Map Feature Card */}
+            {activeTrip && (
+              <ScrollFadeItem scrollY={scrollY}>
+                <View style={{ marginHorizontal: 16, marginBottom: 16, marginTop: 10 }}>
+                  <InteractiveItineraryMapCard
+                    trip={activeTrip}
+                    onPressExpand={() => navigation.navigate('ItineraryDetail', { trip: activeTrip })}
+                  />
+                </View>
+              </ScrollFadeItem>
+            )}
+
+            {/* Trips Section Header */}
+            <View style={styles.sectionHeaderWrap}>
+              <Text style={[styles.mockupSectionTitle, { color: theme.text }]}>
+                {t('myItineraries') || 'Itineraries'}
+              </Text>
+              <Text style={[styles.mockupSectionSub, { color: theme.textSecondary }]}>
+                {t('savedUpcomingSub') || 'Your saved upcoming itineraries'}
+              </Text>
+            </View>
+
+            {trips.map((trip) => (
+              <ScrollFadeItem key={trip.id} scrollY={scrollY}>
+                <MockupTripCard
+                  trip={trip}
+                  navigation={navigation}
+                  setActiveTripById={setActiveTripById}
                 />
+              </ScrollFadeItem>
+            ))}
+
+            {/* Radiant Blue Gradient Action Button */}
+            <ScrollFadeItem scrollY={scrollY}>
+              <TouchableOpacity
+                activeOpacity={0.88}
+                onPress={() => navigation.navigate('TripPlannerWizard')}
+                style={styles.addNewLocationBtnWrap}
+              >
+                <LinearGradient
+                  colors={['#4F75FF', '#3B82F6']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.addNewLocationGrad}
+                >
+                  <Text style={styles.addNewLocationText}>
+                    {t('addNewLocation') || 'Add new location'}
+                  </Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </ScrollFadeItem>
+          </View>
+        )}
+
+        {activeTab === 'saved' && (
+          <View style={{ paddingHorizontal: 16, paddingTop: 12 }}>
+            <View style={styles.sectionHeaderWrap}>
+              <Text style={[styles.mockupSectionTitle, { color: theme.text }]}>
+                {t('savedDestinations') || 'Saved Destinations'}
+              </Text>
+              <Text style={[styles.mockupSectionSub, { color: theme.textSecondary }]}>
+                {t('savedDestinationsSub') || 'Places and spots bookmarked across your journeys'}
+              </Text>
+            </View>
+
+            {savedPlaces.length === 0 ? (
+              <View style={[styles.emptySavedBox, { borderColor: theme.border, backgroundColor: theme.card }]}>
+                <Ionicons name="bookmark-outline" size={48} color={theme.textMuted} />
+                <Text style={[styles.emptySavedTitle, { color: theme.text }]}>
+                  {t('noSavedPlacesYet') || 'No Saved Places Yet'}
+                </Text>
+                <Text style={[styles.emptySavedSub, { color: theme.textSecondary }]}>
+                  {t('tapBookmarkToSave') || 'Tap the heart/bookmark icon on any destination or attraction to save it here.'}
+                </Text>
               </View>
             ) : (
-              pastMemories.map((memory) => (
-                <View
-                  key={memory.id}
-                  style={[
-                    styles.memoryCard,
-                    {
-                      backgroundColor: theme.card,
-                      borderColor: theme.border,
-                      shadowColor: theme.shadow,
-                    },
-                  ]}
-                >
-                  {/* Hero Cover Image & Badges */}
-                  <View style={styles.memoryImageWrap}>
-                    <Image source={{ uri: memory.bannerImage }} style={styles.memoryImg} resizeMode="cover" />
-                    
-                    {/* Completed Tag */}
-                    <View style={styles.completedBadge}>
-                      <Ionicons name="checkmark-circle" size={13} color="#FFFFFF" />
-                      <Text style={styles.completedBadgeText}>Completed • {memory.completedDate}</Text>
-                    </View>
-
-                    {/* 5-Star Rating Badge */}
-                    <View style={styles.memoryRatingBadge}>
-                      <Ionicons name="star" size={12} color="#F59E0B" />
-                      <Text style={styles.memoryRatingText}>{memory.userRating}.0</Text>
-                    </View>
-
-                    {/* Delete Button */}
-                    <TouchableOpacity
-                      onPress={() => handleDeleteMemory(memory)}
-                      style={styles.deleteMemoryBtn}
-                    >
-                      <Ionicons name="trash-outline" size={14} color="#EF4444" />
-                    </TouchableOpacity>
-                  </View>
-
-                  {/* Body Content */}
-                  <View style={styles.memoryBody}>
-                    <View style={styles.memoryTitleRow}>
-                      <Text style={[styles.memoryTitle, { color: theme.text }]} numberOfLines={1}>
-                        {memory.destinationName}
-                      </Text>
-                      <EcoScoreBadge score={memory.ecoScore} size="small" />
-                    </View>
-
-                    {/* Stats Row (Duration, Travelers, Total Spent) */}
-                    <View style={[styles.statsRow, { backgroundColor: theme.cardSecondary }]}>
-                      <View style={styles.statCol}>
-                        <Text style={[styles.statLabel, { color: theme.textMuted }]}>DURATION</Text>
-                        <Text style={[styles.statVal, { color: theme.text }]}>{memory.days} Days</Text>
-                      </View>
-                      <View style={styles.statDivider} />
-                      <View style={styles.statCol}>
-                        <Text style={[styles.statLabel, { color: theme.textMuted }]}>TRAVELERS</Text>
-                        <Text style={[styles.statVal, { color: theme.text }]}>{memory.travelers} Persons</Text>
-                      </View>
-                      <View style={styles.statDivider} />
-                      <View style={styles.statCol}>
-                        <Text style={[styles.statLabel, { color: theme.textMuted }]}>TOTAL SPENT</Text>
-                        <Text style={[styles.statVal, { color: theme.primary, fontWeight: '700' }]}>
-                          {formatCurrency(memory.totalSpent)}
-                        </Text>
-                      </View>
-                    </View>
-
-                    {/* Visited Sights Chips */}
-                    {memory.spotsVisited && memory.spotsVisited.length > 0 && (
-                      <View style={styles.visitedSection}>
-                        <Text style={[styles.visitedLabel, { color: theme.textSecondary }]}>
-                          📍 Places Visited ({memory.spotsVisited.length}):
-                        </Text>
-                        <View style={styles.visitedChipsRow}>
-                          {memory.spotsVisited.map((spot, idx) => (
-                            <View
-                              key={idx}
-                              style={[styles.visitedChip, { backgroundColor: theme.cardSecondary, borderColor: theme.border }]}
-                            >
-                              <Text style={[styles.visitedChipText, { color: theme.text }]}>{spot}</Text>
-                            </View>
-                          ))}
-                        </View>
-                      </View>
-                    )}
-
-                    {/* Travel Notes / Journal */}
-                    {memory.notes && (
-                      <View style={[styles.notesBox, { backgroundColor: '#F8FAFC', borderColor: '#E2E8F0' }]}>
-                        <Ionicons name="chatbox-ellipses-outline" size={14} color="#64748B" style={{ marginTop: 1 }} />
-                        <Text style={styles.notesText}>{memory.notes}</Text>
-                      </View>
-                    )}
-
-                    {/* Action Buttons */}
-                    <View style={styles.memoryBtnRow}>
-                      <Button
-                        title="Relive / View Details"
-                        variant="primary"
-                        size="small"
-                        icon="calendar-outline"
-                        onPress={() => {
-                          if (memory.fullTripData) {
-                            navigation.navigate('ItineraryDetail', { trip: memory.fullTripData });
-                          } else {
-                            Alert.alert(
-                              memory.destinationName,
-                              `Trip completed with ${memory.spotsVisited?.join(', ')}. Total expenditure was ${formatCurrency(memory.totalSpent)}.`
-                            );
-                          }
-                        }}
-                        style={{ flex: 1.2 }}
-                      />
-                      <Button
-                        title="Review"
-                        variant="outline"
-                        size="small"
-                        icon="star-outline"
-                        onPress={() => navigation.navigate('Feedback')}
-                        style={{ flex: 0.8 }}
-                      />
-                    </View>
-                  </View>
-                </View>
+              savedPlaces.map((place) => (
+                <ScrollFadeItem key={place.id} scrollY={scrollY}>
+                  <DestinationCard
+                    destination={place}
+                    onPress={() => navigation.navigate('DestinationDetail', { destination: place })}
+                  />
+                </ScrollFadeItem>
               ))
             )}
           </View>
         )}
 
-        {/* 2. INSTAGRAM-STYLE SAVED PLACES & COLLECTIONS TAB */}
-        {activeTab === 'saved' && (
-          <View style={styles.savedSection}>
-            {/* Collections Filter Chips */}
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.collectionsScroll}
-            >
-              {savedCollections.map((col) => {
-                const isSelected = selectedCollection === col;
-                return (
-                  <TouchableOpacity
-                    key={col}
-                    onPress={() => setSelectedCollection(col)}
-                    style={[
-                      styles.colChip,
-                      {
-                        backgroundColor: isSelected ? theme.primary : theme.cardSecondary,
-                        borderColor: isSelected ? theme.primary : theme.border,
-                      },
-                    ]}
-                  >
-                    <Ionicons
-                      name="bookmark"
-                      size={13}
-                      color={isSelected ? '#FFFFFF' : theme.textSecondary}
-                    />
-                    <Text
-                      style={[
-                        styles.colChipText,
-                        { color: isSelected ? '#FFFFFF' : theme.text },
-                      ]}
-                    >
-                      {col}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-
-            {/* Saved Places List */}
-            {filteredSavedPlaces.length === 0 ? (
-              <View style={[styles.emptyBox, { backgroundColor: theme.card, borderColor: theme.border }]}>
-                <Ionicons name="bookmark-outline" size={48} color={theme.textMuted} />
-                <Text style={[styles.emptyTitle, { color: theme.text }]}>No Saved Places Yet</Text>
-                <Text style={[styles.emptyDesc, { color: theme.textSecondary }]}>
-                  Save destinations and tourist attractions by tapping the bookmark ribbon icon on any place card!
-                </Text>
-                <Button
-                  title="Explore Destinations"
-                  variant="primary"
-                  size="small"
-                  icon="compass-outline"
-                  onPress={() => navigation.navigate('HomeTab')}
-                  style={{ marginTop: 14 }}
-                />
+        {activeTab === 'past' && (
+          <ScrollFadeItem scrollY={scrollY}>
+            <View style={styles.pastCardMockup}>
+              <Image
+                source={{
+                  uri: 'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=800&q=80',
+                }}
+                style={styles.pastImg}
+                resizeMode="cover"
+              />
+              <LinearGradient
+                colors={['transparent', 'rgba(10, 12, 16, 0.90)']}
+                style={StyleSheet.absoluteFillObject}
+              />
+              <View style={styles.pastOverlay}>
+                <Text style={styles.pastTitle}>Visakhapatnam Coast & Araku Valley</Text>
+                <Text style={styles.pastDate}>Completed · 12 August 2026</Text>
               </View>
-            ) : (
-              <View style={styles.savedGrid}>
-                {filteredSavedPlaces.map((place) => (
-                  <View
-                    key={place.id}
-                    style={[styles.savedCard, { backgroundColor: theme.card, borderColor: theme.border }]}
-                  >
-                    <Image source={{ uri: place.image }} style={styles.savedCardImage} resizeMode="cover" />
-
-                    {/* Bookmark Ribbon on image */}
-                    <TouchableOpacity
-                      onPress={() => {
-                        toggleSavePlace(place);
-                        Alert.alert('Removed', `${place.name} removed from saved.`);
-                      }}
-                      style={styles.savedBookmarkBadge}
-                    >
-                      <Ionicons name="bookmark" size={16} color="#2563EB" />
-                    </TouchableOpacity>
-
-                    <View style={styles.savedCardBody}>
-                      <View style={styles.savedCardTitleRow}>
-                        <Text style={[styles.savedPlaceName, { color: theme.text }]} numberOfLines={1}>
-                          {place.name}
-                        </Text>
-                        <View style={styles.savedRating}>
-                          <Ionicons name="star" size={11} color="#F59E0B" />
-                          <Text style={styles.savedRatingText}>{place.rating || '4.8'}</Text>
-                        </View>
-                      </View>
-
-                      <Text style={[styles.savedPlaceSub, { color: theme.textSecondary }]} numberOfLines={1}>
-                        {place.state || place.subtitle || place.category}
-                      </Text>
-
-                      {place.collection && (
-                        <View style={styles.savedCollectionTag}>
-                          <Text style={styles.savedCollectionTagText}>📁 {place.collection}</Text>
-                        </View>
-                      )}
-
-                      <View style={styles.savedActionsRow}>
-                        <TouchableOpacity
-                          onPress={() => navigation.navigate('DestinationDetail', { destination: place })}
-                          style={[styles.savedViewBtn, { borderColor: theme.border, backgroundColor: theme.cardSecondary }]}
-                        >
-                          <Text style={[styles.savedViewBtnText, { color: theme.text }]}>Details</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                          onPress={() =>
-                            navigation.navigate('TripPlannerWizard', {
-                              initialDestination: place,
-                              startAtBudget: true,
-                            })
-                          }
-                          style={styles.savedPlanBtn}
-                        >
-                          <Ionicons name="sparkles" size={12} color="#FFFFFF" />
-                          <Text style={styles.savedPlanBtnText}>Plan Trip</Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  </View>
-                ))}
-              </View>
-            )}
-          </View>
+            </View>
+          </ScrollFadeItem>
         )}
-
-        <View style={{ height: 40 }} />
-      </ScrollView>
+      </Animated.ScrollView>
     </SafeAreaView>
   );
 };
@@ -423,327 +348,216 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontFamily: 'Manrope_700Bold',
-  },
-  headerSubtitle: {
-    fontSize: 11.5,
-    fontFamily: 'Manrope_500Medium',
-    marginTop: 1,
   },
   tabBar: {
     flexDirection: 'row',
     borderBottomWidth: 1,
+    paddingHorizontal: 12,
+    alignItems: 'stretch',
   },
   tabItem: {
     flex: 1,
-    paddingVertical: 12,
+    paddingVertical: 14,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  tabBadgeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
+    marginHorizontal: 4,
+    borderBottomWidth: 2.5,
+    borderBottomColor: 'transparent',
   },
   tabText: {
-    fontSize: 13,
-    fontFamily: 'Manrope_700Bold',
+    fontSize: 12.5,
+    fontFamily: 'Manrope_600SemiBold',
+    textAlign: 'center',
   },
   scrollContent: {
-    padding: 16,
+    paddingBottom: 40,
   },
-
-  /* Past Memories / Completed Trips Section */
-  memoriesSection: {
-    gap: 16,
+  sectionHeaderWrap: {
+    paddingHorizontal: 4,
+    marginTop: 14,
+    marginBottom: 10,
   },
-  memoryCard: {
-    borderRadius: 18,
-    borderWidth: 1,
-    overflow: 'hidden',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 3,
+  mockupSectionTitle: {
+    fontSize: 20,
+    fontFamily: 'Manrope_700Bold',
+    letterSpacing: -0.3,
   },
-  memoryImageWrap: {
-    height: 150,
+  mockupSectionSub: {
+    fontSize: 12,
+    fontFamily: 'Manrope_500Medium',
+    marginTop: 2,
+  },
+  tripMockupCard: {
+    height: 230,
+    marginHorizontal: 16,
+    marginBottom: 20,
+    overflow: 'visible',
+  },
+  tripCardInner: {
     width: '100%',
+    height: '100%',
+    borderRadius: 24,
+    overflow: 'hidden',
     position: 'relative',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.10)',
+    backgroundColor: '#16181F',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 14,
+    elevation: 8,
   },
-  memoryImg: {
+  tripMockupImg: {
     width: '100%',
     height: '100%',
   },
-  completedBadge: {
+  tripTopRow: {
     position: 'absolute',
-    top: 10,
-    left: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    backgroundColor: '#16A34A', // Vibrant green completed badge
-    paddingHorizontal: 9,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  completedBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 11,
-    fontFamily: 'Manrope_700Bold',
-  },
-  memoryRatingBadge: {
-    position: 'absolute',
-    top: 10,
-    right: 46,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    backgroundColor: 'rgba(15, 23, 42, 0.85)',
-    paddingHorizontal: 7,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  memoryRatingText: {
-    color: '#FFFFFF',
-    fontSize: 11,
-    fontFamily: 'Manrope_700Bold',
-  },
-  deleteMemoryBtn: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255, 255, 255, 0.92)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  memoryBody: {
-    padding: 14,
-  },
-  memoryTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  memoryTitle: {
-    fontSize: 16,
-    fontFamily: 'Manrope_700Bold',
-    flex: 1,
-  },
-  statsRow: {
+    top: 14,
+    left: 14,
+    right: 14,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    padding: 10,
-    borderRadius: 12,
-    marginBottom: 10,
-  },
-  statCol: {
-    flex: 1,
     alignItems: 'center',
+    zIndex: 10,
   },
-  statLabel: {
-    fontSize: 9.5,
-    fontFamily: 'Manrope_700Bold',
-    letterSpacing: 0.3,
-  },
-  statVal: {
-    fontSize: 12.5,
-    fontFamily: 'Manrope_600SemiBold',
-    marginTop: 2,
-  },
-  statDivider: {
-    width: 1,
-    height: '80%',
-    backgroundColor: 'rgba(0,0,0,0.08)',
-    alignSelf: 'center',
-  },
-  visitedSection: {
-    marginBottom: 10,
-  },
-  visitedLabel: {
-    fontSize: 11,
-    fontFamily: 'Manrope_600SemiBold',
-    marginBottom: 6,
-  },
-  visitedChipsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-  },
-  visitedChip: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  visitedChipText: {
-    fontSize: 11,
-    fontFamily: 'Manrope_500Medium',
-  },
-  notesBox: {
-    flexDirection: 'row',
-    gap: 6,
-    padding: 10,
-    borderRadius: 10,
-    borderWidth: 1,
-    marginBottom: 12,
-  },
-  notesText: {
-    fontSize: 11.5,
-    fontFamily: 'Manrope_400Regular',
-    color: '#475569',
-    flex: 1,
-    lineHeight: 16,
-  },
-  memoryBtnRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-
-  /* Saved Places Section */
-  savedSection: {
-    gap: 14,
-  },
-  collectionsScroll: {
-    gap: 8,
-    paddingBottom: 4,
-  },
-  colChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
+  itemsGlassBadge: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 16,
+    borderRadius: 18,
+    backgroundColor: 'rgba(25, 28, 36, 0.65)',
     borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.18)',
   },
-  colChipText: {
-    fontSize: 12,
+  itemsGlassBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 11,
     fontFamily: 'Manrope_600SemiBold',
   },
-  emptyBox: {
+  heartCircleGlass: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(25, 28, 36, 0.65)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.18)',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 30,
+  },
+  tripBottomStrip: {
+    position: 'absolute',
+    bottom: 12,
+    left: 12,
+    right: 12,
+    borderRadius: 18,
+    backgroundColor: 'rgba(20, 23, 31, 0.85)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.14)',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    zIndex: 10,
+  },
+  tripTitleGroup: {
+    flex: 1,
+  },
+  tripMainTitle: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontFamily: 'Manrope_700Bold',
+  },
+  tripDateSub: {
+    color: '#8E95A5',
+    fontSize: 11,
+    fontFamily: 'Manrope_500Medium',
+    marginTop: 2,
+  },
+  editPenCircle: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addNewLocationBtnWrap: {
+    marginHorizontal: 16,
+    marginTop: 10,
+    marginBottom: 30,
+    borderRadius: 26,
+    overflow: 'hidden',
+    shadowColor: '#4F75FF',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  addNewLocationGrad: {
+    height: 52,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addNewLocationText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontFamily: 'Manrope_700Bold',
+    letterSpacing: 0.2,
+  },
+  pastCardMockup: {
+    height: 200,
+    marginHorizontal: 16,
+    marginTop: 10,
+    borderRadius: 24,
+    overflow: 'hidden',
+    position: 'relative',
+    backgroundColor: '#16181F',
+  },
+  pastImg: {
+    width: '100%',
+    height: '100%',
+  },
+  pastOverlay: {
+    position: 'absolute',
+    bottom: 14,
+    left: 14,
+    right: 14,
+  },
+  pastTitle: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontFamily: 'Manrope_700Bold',
+  },
+  pastDate: {
+    color: '#8E95A5',
+    fontSize: 12,
+    fontFamily: 'Manrope_500Medium',
+    marginTop: 2,
+  },
+  emptySavedBox: {
     borderRadius: 18,
     borderWidth: 1,
-    marginTop: 20,
+    padding: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 18,
   },
-  emptyTitle: {
+  emptySavedTitle: {
     fontSize: 16,
     fontFamily: 'Manrope_700Bold',
     marginTop: 12,
+    marginBottom: 6,
   },
-  emptyDesc: {
-    fontSize: 12,
+  emptySavedSub: {
+    fontSize: 12.5,
     fontFamily: 'Manrope_400Regular',
     textAlign: 'center',
     lineHeight: 18,
-    marginTop: 6,
-  },
-  savedGrid: {
-    gap: 14,
-  },
-  savedCard: {
-    flexDirection: 'row',
-    borderRadius: 16,
-    borderWidth: 1,
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  savedCardImage: {
-    width: 110,
-    height: 110,
-  },
-  savedBookmarkBadge: {
-    position: 'absolute',
-    top: 8,
-    left: 8,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 3,
-  },
-  savedCardBody: {
-    flex: 1,
-    padding: 10,
-    justifyContent: 'space-between',
-  },
-  savedCardTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  savedPlaceName: {
-    fontSize: 14,
-    fontFamily: 'Manrope_700Bold',
-    flex: 1,
-  },
-  savedRating: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-  },
-  savedRatingText: {
-    fontSize: 11,
-    fontFamily: 'Manrope_700Bold',
-    color: '#D97706',
-  },
-  savedPlaceSub: {
-    fontSize: 11,
-    fontFamily: 'Manrope_500Medium',
-  },
-  savedCollectionTag: {
-    backgroundColor: '#EFF6FF',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-    alignSelf: 'flex-start',
-    marginVertical: 2,
-  },
-  savedCollectionTagText: {
-    color: '#2563EB',
-    fontSize: 10,
-    fontFamily: 'Manrope_700Bold',
-  },
-  savedActionsRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 4,
-  },
-  savedViewBtn: {
-    flex: 1,
-    paddingVertical: 5,
-    borderRadius: 8,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  savedViewBtnText: {
-    fontSize: 11.5,
-    fontFamily: 'Manrope_600SemiBold',
-  },
-  savedPlanBtn: {
-    flex: 1.2,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-    backgroundColor: '#2563EB',
-    paddingVertical: 5,
-    borderRadius: 8,
-  },
-  savedPlanBtnText: {
-    color: '#FFFFFF',
-    fontSize: 11.5,
-    fontFamily: 'Manrope_700Bold',
   },
 });

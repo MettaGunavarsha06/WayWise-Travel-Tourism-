@@ -21,7 +21,7 @@ const ThemeContext = createContext({
 
 export const ThemeProvider = ({ children }) => {
   const [themeName, setThemeNameState] = useState('glass_horizon');
-  const [isDark, setIsDarkState] = useState(false);
+  const [isDark, setIsDarkState] = useState(true);
 
   useEffect(() => {
     loadSavedSettings();

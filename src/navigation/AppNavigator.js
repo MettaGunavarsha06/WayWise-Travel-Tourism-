@@ -45,6 +45,10 @@ export const AppNavigator = () => {
           headerShown: false,
           contentStyle: { backgroundColor: theme.background },
           animation: 'slide_from_right',
+          animationDuration: 380,
+          gestureEnabled: true,
+          gestureDirection: 'horizontal',
+          fullScreenGestureEnabled: true,
         }}
       >
         {!isAuthenticated ? (

@@ -10,9 +10,11 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Speech from 'expo-speech';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useTrips } from '../context/TripContext';
@@ -30,6 +32,7 @@ export const GemmaAssistantModal = ({ visible, onClose, navigation }) => {
   const { theme } = useTheme();
   const { currentLanguage } = useLanguage();
   const { activeTrip, applyWeatherAdjustment, optimizeBudget } = useTrips();
+  const insets = useSafeAreaInsets();
   const scrollViewRef = useRef(null);
 
   const [input, setInput] = useState('');
@@ -99,6 +102,13 @@ export const GemmaAssistantModal = ({ visible, onClose, navigation }) => {
       handleSpeak(response.text);
     } catch (e) {
       setLoading(false);
+      const errBubble = {
+        id: `gemma_err_${Date.now()}`,
+        sender: 'gemma',
+        text: `⚠️ Gemini Request Failed: ${e.message || 'Unable to connect to backend server'}.`,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      };
+      setMessages((prev) => [...prev, errBubble]);
     }
   };
 
@@ -134,7 +144,15 @@ export const GemmaAssistantModal = ({ visible, onClose, navigation }) => {
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <View style={styles.modalOverlay}>
+      <View
+        style={[
+          styles.modalOverlay,
+          {
+            paddingBottom: insets.bottom > 0 ? insets.bottom + 8 : 16,
+            paddingTop: insets.top > 0 ? insets.top + 10 : 24,
+          },
+        ]}
+      >
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={[styles.modalSheet, { backgroundColor: theme.card, borderColor: theme.border }]}
@@ -148,7 +166,7 @@ export const GemmaAssistantModal = ({ visible, onClose, navigation }) => {
               <View>
                 <Text style={[styles.title, { color: theme.text }]}>Travel Assistant</Text>
                 <Text style={[styles.modelSub, { color: theme.textSecondary }]}>
-                  Personalized travel guidance
+                  Powered by Gemini 2.5 Flash
                 </Text>
               </View>
             </View>
@@ -217,8 +235,12 @@ export const GemmaAssistantModal = ({ visible, onClose, navigation }) => {
                             styles.userBubble,
                             {
                               backgroundColor: theme.primary,
-                              borderColor: theme.mode === 'glass_horizon' ? 'rgba(255, 255, 255, 0.40)' : 'transparent',
-                              borderWidth: theme.mode === 'glass_horizon' ? 1 : 0,
+                            borderColor:
+                              theme.mode === 'glass_horizon' || theme.mode === 'liquid_glass'
+                                ? 'rgba(255, 255, 255, 0.40)'
+                                : 'transparent',
+                            borderWidth:
+                              theme.mode === 'glass_horizon' || theme.mode === 'liquid_glass' ? 1 : 0,
                             },
                           ]
                         : [
@@ -264,6 +286,22 @@ export const GemmaAssistantModal = ({ visible, onClose, navigation }) => {
                 </View>
               );
             })}
+
+            {loading && (
+              <View style={[styles.msgRow, styles.gemmaMsgRow]}>
+                <View style={[styles.botAvatar, { backgroundColor: theme.primaryLight }]}>
+                  <Ionicons name="compass-outline" size={14} color={theme.primary} />
+                </View>
+                <View style={[styles.bubble, styles.gemmaBubble, { backgroundColor: theme.cardSecondary, borderColor: theme.border }]}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <ActivityIndicator size="small" color={theme.primary} />
+                    <Text style={{ color: theme.textSecondary, fontSize: 12, fontFamily: 'Manrope_500Medium' }}>
+                      Gemini is thinking...
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            )}
           </ScrollView>
 
           {/* Bottom Chat Input */}
@@ -303,15 +341,21 @@ export const GemmaAssistantModal = ({ visible, onClose, navigation }) => {
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.55)',
+    backgroundColor: 'rgba(10, 12, 16, 0.70)',
     justifyContent: 'flex-end',
+    paddingHorizontal: 12,
+    paddingBottom: 16,
   },
   modalSheet: {
-    height: '82%',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    borderTopWidth: 1,
+    height: '84%',
+    borderRadius: 28,
+    borderWidth: 1.5,
     overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 14 },
+    shadowOpacity: 0.45,
+    shadowRadius: 24,
+    elevation: 18,
   },
   header: {
     flexDirection: 'row',

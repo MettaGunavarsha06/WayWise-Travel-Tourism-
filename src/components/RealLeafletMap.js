@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useImperativeHandle, forwardRef } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
 
@@ -6,7 +6,7 @@ import { WebView } from 'react-native-webview';
  * RealLeafletMap - State-of-the-Art Interactive Real Map & Google Maps Navigation Engine
  * Renders real OpenStreetMap, CartoDB, and Satellite tiles with dynamic category filtering and routing
  */
-export const RealLeafletMap = ({
+export const RealLeafletMap = forwardRef(({
   userLocation,
   places = [],
   selectedPlace = null,
@@ -15,8 +15,39 @@ export const RealLeafletMap = ({
   showRoute = false,
   travelMode = 'driving', // 'driving' | 'walking' | 'bicycling' | 'transit'
   isDarkMode = false,
-}) => {
+}, ref) => {
   const webViewRef = useRef(null);
+
+  useImperativeHandle(ref, () => ({
+    zoomIn: () => {
+      if (Platform.OS === 'web') {
+        window.postMessage(JSON.stringify({ type: 'ZOOM_IN' }), '*');
+      } else {
+        webViewRef.current?.injectJavaScript('if (window.map) { window.map.zoomIn(); } true;');
+      }
+    },
+    zoomOut: () => {
+      if (Platform.OS === 'web') {
+        window.postMessage(JSON.stringify({ type: 'ZOOM_OUT' }), '*');
+      } else {
+        webViewRef.current?.injectJavaScript('if (window.map) { window.map.zoomOut(); } true;');
+      }
+    },
+    panTo: (lat, lng, zoom = 15) => {
+      if (Platform.OS === 'web') {
+        window.postMessage(JSON.stringify({ type: 'PAN_TO', lat, lng, zoom }), '*');
+      } else {
+        webViewRef.current?.injectJavaScript(`if (window.map) { window.map.flyTo([${lat}, ${lng}], ${zoom}, { duration: 1.2 }); } true;`);
+      }
+    },
+    fitRoute: () => {
+      if (Platform.OS === 'web') {
+        window.postMessage(JSON.stringify({ type: 'FIT_ROUTE' }), '*');
+      } else {
+        webViewRef.current?.injectJavaScript('if (window.adjustMapBounds) { window.adjustMapBounds(); } true;');
+      }
+    },
+  }));
 
   // Generate HTML for the Leaflet Map with Google Maps Navigation Style & Category Bounds
   const generateMapHtml = () => {
@@ -29,7 +60,7 @@ export const RealLeafletMap = ({
 <html>
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
@@ -140,14 +171,18 @@ export const RealLeafletMap = ({
       overflow: hidden;
       box-shadow: 0 4px 16px rgba(0,0,0,0.25) !important;
       border: none !important;
+      margin-top: 14px !important;
+      margin-left: 14px !important;
     }
     .leaflet-bar a {
       background-color: #1E293B !important;
       color: #F8FAFC !important;
       border-bottom: 1px solid #334155 !important;
-      width: 34px !important;
-      height: 34px !important;
-      line-height: 34px !important;
+      width: 38px !important;
+      height: 38px !important;
+      line-height: 38px !important;
+      font-size: 20px !important;
+      font-weight: bold !important;
     }
     .leaflet-bar a:hover {
       background-color: #334155 !important;
@@ -190,14 +225,22 @@ export const RealLeafletMap = ({
 
     var selectedTile = tileLayers[mapType] || tileLayers.standard;
 
-    // Initialize Leaflet Map
+    // Initialize Leaflet Map with mobile touch enabled
     var map = L.map('map', {
       zoomControl: false,
-      attributionControl: false
+      attributionControl: false,
+      tap: false,
+      touchZoom: true,
+      dragging: true,
+      doubleClickZoom: true,
+      scrollWheelZoom: true,
+      boxZoom: true,
     });
+    window.map = map;
 
     L.tileLayer(selectedTile.url, selectedTile.options).addTo(map);
-    L.control.zoom({ position: 'topright' }).addTo(map);
+    // Add zoom controls at topleft so they don't conflict with topright floating action buttons
+    L.control.zoom({ position: 'topleft' }).addTo(map);
 
     // Layers
     var markersGroup = L.layerGroup().addTo(map);
@@ -248,105 +291,102 @@ export const RealLeafletMap = ({
         var sym = place.symbolConfig || { symbol: '📍', color: '#2563EB', bg: '#EFF6FF' };
 
         var html = '<div class="place-pin-wrap ' + (isSelected ? 'selected' : '') + '">' +
-          '<div class="place-pin-badge ' + (isSelected ? 'selected' : '') + '" style="border-color: ' + sym.color + '; background: ' + (isSelected ? sym.color : sym.bg) + ';">' +
+          '<div class="place-pin-badge ' + (isSelected ? 'selected' : '') + '" style="background: ' + sym.bg + '; border-color: ' + sym.color + ';">' +
             sym.symbol +
           '</div>' +
           '<div class="place-pin-tip" style="border-top-color: ' + sym.color + ';"></div>' +
-          '<div class="place-distance-tag">' + (place.distanceKm || 0) + ' km</div>' +
+          (place.distanceKm ? '<div class="place-distance-tag">' + place.distanceKm + ' km</div>' : '') +
         '</div>';
 
-        var customIcon = L.divIcon({
-          className: 'custom-place-marker',
+        var pinIcon = L.divIcon({
+          className: 'custom-place-pin',
           html: html,
-          iconSize: [60, 52],
-          iconAnchor: [30, 48]
+          iconSize: [40, 56],
+          iconAnchor: [20, 56]
         });
 
         var marker = L.marker([place.coords.latitude, place.coords.longitude], {
-          icon: customIcon,
-          zIndexOffset: isSelected ? 900 : 100
+          icon: pinIcon,
+          zIndexOffset: isSelected ? 800 : 200
         });
 
         marker.on('click', function() {
           notifyRN({ type: 'SELECT_PLACE', placeId: place.id });
         });
 
-        markersGroup.addLayer(marker);
+        marker.addTo(markersGroup);
       });
     }
 
-    // Generate realistic multi-segment road coordinates connecting start to end
+    // Generate simulated road curvature points between start and end
     function generateRealisticRoadPath(start, end) {
-      var points = [start];
-      var dLat = end[0] - start[0];
-      var dLng = end[1] - start[1];
-
-      // Segment 1: Head along primary arterial road (45% latitude first)
-      var wp1 = [start[0] + dLat * 0.45, start[1] + dLng * 0.1];
-      // Segment 2: Turn onto main connecting highway / avenue
-      var wp2 = [start[0] + dLat * 0.7, start[1] + dLng * 0.55];
-      // Segment 3: Turn onto destination corridor
-      var wp3 = [start[0] + dLat * 0.9, start[1] + dLng * 0.85];
-
-      points.push(wp1);
-      points.push(wp2);
-      points.push(wp3);
-      points.push(end);
+      var points = [];
+      var steps = 18;
+      for (var i = 0; i <= steps; i++) {
+        var t = i / steps;
+        var lat = start[0] + (end[0] - start[0]) * t;
+        var lng = start[1] + (end[1] - start[1]) * t;
+        if (i > 0 && i < steps) {
+          var wobble = Math.sin(t * Math.PI) * 0.0035;
+          lat += (i % 2 === 0 ? wobble : -wobble * 0.7);
+          lng += (i % 3 === 0 ? wobble * 0.8 : -wobble * 0.4);
+        }
+        points.push([lat, lng]);
+      }
       return points;
     }
 
-    // Draw Google Maps Style Navigation Route
+    // Draw Google Maps Turn-by-Turn Style Polyline
     function drawGoogleMapsRoute() {
       routeGroup.clearLayers();
-
       if (!currentSelectedPlace || !currentUserLocation) return;
 
       var start = [currentUserLocation.latitude, currentUserLocation.longitude];
       var end = [currentSelectedPlace.coords.latitude, currentSelectedPlace.coords.longitude];
-
       var routePoints = generateRealisticRoadPath(start, end);
 
-      // 1. Outer Darker Navy Border / Glow (Weight 9)
-      var outerCasing = L.polyline(routePoints, {
-        color: '#1E3A8A',
+      var casingColor = isDarkMode ? '#0F172A' : '#1E3A8A';
+      var mainRouteColor = travelMode === 'walking' ? '#059669' : (travelMode === 'transit' ? '#D97706' : '#2563EB');
+      var isDashed = travelMode === 'walking';
+
+      // 1. Dark Shadow Casing Polyline
+      L.polyline(routePoints, {
+        color: casingColor,
         weight: 9,
-        opacity: 0.9,
+        opacity: 0.65,
         lineCap: 'round',
         lineJoin: 'round'
-      });
-      routeGroup.addLayer(outerCasing);
+      }).addTo(routeGroup);
 
-      // 2. Inner Google Maps Luminous Cyan-Blue Highway Line (Weight 5.5)
-      var innerLine = L.polyline(routePoints, {
-        color: '#38BDF8',
-        weight: 5.5,
-        opacity: 1,
+      // 2. Vibrant Google Maps Route Polyline
+      L.polyline(routePoints, {
+        color: mainRouteColor,
+        weight: 6,
+        opacity: 0.95,
+        dashArray: isDashed ? '8, 8' : null,
         lineCap: 'round',
         lineJoin: 'round'
-      });
-      routeGroup.addLayer(innerLine);
+      }).addTo(routeGroup);
 
-      // 3. Waypoint Turn Dots
-      for (var i = 1; i < routePoints.length - 1; i++) {
-        var wpIcon = L.divIcon({
-          className: 'nav-wp',
+      // 3. Navigation Chevron Arrows / Waypoint Dots along path
+      for (var i = 4; i < routePoints.length - 2; i += 5) {
+        var dotIcon = L.divIcon({
+          className: 'route-waypoint',
           html: '<div class="nav-waypoint-dot"></div>',
           iconSize: [10, 10],
           iconAnchor: [5, 5]
         });
-        var wpMarker = L.marker(routePoints[i], { icon: wpIcon });
-        routeGroup.addLayer(wpMarker);
+        L.marker(routePoints[i], { icon: dotIcon, zIndexOffset: 450 }).addTo(routeGroup);
       }
 
-      // 4. Destination Checkered Finish Pin 🏁
+      // 4. Finish Destination Pin Flag
       var finishIcon = L.divIcon({
-        className: 'dest-finish',
+        className: 'dest-flag-icon',
         html: '<div class="dest-finish-flag">🏁</div>',
-        iconSize: [38, 38],
-        iconAnchor: [19, 19]
+        iconSize: [28, 28],
+        iconAnchor: [14, 28]
       });
-      var finishMarker = L.marker(end, { icon: finishIcon, zIndexOffset: 950 });
-      routeGroup.addLayer(finishMarker);
+      L.marker(end, { icon: finishIcon, zIndexOffset: 700 }).addTo(routeGroup);
     }
 
     // Auto-fit bounds logic
@@ -368,6 +408,7 @@ export const RealLeafletMap = ({
         map.setView([currentUserLocation.latitude, currentUserLocation.longitude], 14);
       }
     }
+    window.adjustMapBounds = adjustMapBounds;
 
     // Initialize all layers
     renderUserLocation();
@@ -377,16 +418,27 @@ export const RealLeafletMap = ({
     }
     adjustMapBounds();
 
-    // Listen for messages from React Native
-    window.addEventListener('message', function(event) {
+    function handleIncomingMessage(msg) {
       try {
-        var data = JSON.parse(event.data);
+        var data = typeof msg === 'string' ? JSON.parse(msg) : msg;
         if (data.type === 'PAN_TO') {
           map.flyTo([data.lat, data.lng], data.zoom || 15, { duration: 1.2 });
         } else if (data.type === 'FIT_ROUTE') {
           adjustMapBounds();
+        } else if (data.type === 'ZOOM_IN') {
+          map.zoomIn();
+        } else if (data.type === 'ZOOM_OUT') {
+          map.zoomOut();
         }
       } catch (e) {}
+    }
+
+    // Listen on both window and document for maximum platform compatibility
+    window.addEventListener('message', function(event) {
+      handleIncomingMessage(event.data);
+    });
+    document.addEventListener('message', function(event) {
+      handleIncomingMessage(event.data);
     });
 
   </script>
@@ -444,13 +496,14 @@ export const RealLeafletMap = ({
         onMessage={handleMessage}
         javaScriptEnabled={true}
         domStorageEnabled={true}
-        scrollEnabled={false}
+        scrollEnabled={true}
+        nestedScrollEnabled={true}
         showsHorizontalScrollIndicator={false}
         showsVerticalScrollIndicator={false}
       />
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {

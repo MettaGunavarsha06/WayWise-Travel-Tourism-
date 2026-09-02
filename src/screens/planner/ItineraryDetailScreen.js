@@ -16,6 +16,7 @@ import { EcoScoreBadge } from '../../components/EcoScoreBadge';
 import { WeatherAlertCard } from '../../components/WeatherAlertCard';
 import { BudgetBreakdownChart } from '../../components/BudgetBreakdownChart';
 import { Button } from '../../components/Button';
+import { InteractiveItineraryMapCard } from '../../components/InteractiveItineraryMapCard';
 import { formatCurrency } from '../../utils/helpers';
 
 export const ItineraryDetailScreen = ({ route, navigation }) => {
@@ -151,6 +152,16 @@ export const ItineraryDetailScreen = ({ route, navigation }) => {
           alertMessage="Rain forecasted tomorrow. Outdoor activities have been adapted to sheltered cultural sites."
           onApplyChanges={handleWeatherApply}
           isApplied={trip.daysPlan?.some((d) => d.isWeatherAdjusted)}
+        />
+
+        {/* Interactive Spring-Animated Route Map Card */}
+        <InteractiveItineraryMapCard
+          trip={trip}
+          destinationName={trip?.destinationName || 'Expedition Route'}
+          dates={`${trip?.days || 4}-Day Expedition`}
+          currentDay={selectedDay}
+          totalDays={trip?.days || 4}
+          progress={selectedDay / (trip?.days || 4)}
         />
 
         {/* Day Selector Tabs */}
